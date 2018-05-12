@@ -3,6 +3,7 @@ const Contest = require('../models/Contest');
 const User = require('../models/User');
 const Submission = require('../models/Submission');
 const runner = require('../lib/runner');
+const contests = require('../contests');
 const qs = require('querystring');
 const {getCodeLimit} = require('../controllers/utils');
 const assert = require('assert');
@@ -20,6 +21,7 @@ module.exports.base = async (req, res, next) => {
 	}
 
 	req.contest = contest;
+	req.contestData = contests[contest.id];
 	next();
 };
 
@@ -50,6 +52,10 @@ module.exports.postSubmission = async (req, res) => {
 	try {
 		if (!req.contest.isOpen()) {
 			throw new Error('Competition has closed');
+		}
+
+		if (!['node', 'c-gcc', 'python3'].includes(req.body.language)) {
+			throw new Error('language unknown');
 		}
 
 		let code = null;
@@ -88,18 +94,19 @@ module.exports.postSubmission = async (req, res) => {
 			name: null,
 			user: req.user._id,
 			contest: req.contest,
-			language: 'node',
+			language: req.body.language,
 			code,
 			size: code.length,
 		});
 
 		const submission = await submissionRecord.save();
 
-		const randomPreset = await Submission.findOne({contest: req.contest, name: 'random'});
-
-		runner.battle([submission, randomPreset], req.contest).catch((e) => {
-			console.error(e);
-		});
+		for (const presetName of Object.keys(req.contestData.presets)) {
+			const preset = await Submission.findOne({contest: req.contest, name: presetName});
+			runner.battle([submission, preset], req.contest).catch((e) => {
+				console.error(e);
+			});
+		}
 
 		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {

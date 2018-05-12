@@ -4,7 +4,7 @@ include mixins
 
 block content
   .container.content
-    if turn.user === user || contest.isEnded()
+    if (turn.submission.user && turn.submission.user._id.equals(user) )|| contest.isEnded()
       p
         pre= turn.submission.code
         
@@ -16,6 +16,7 @@ block content
     p
       pre= turn.stdout
 
-    h4 stderr
-    p
-      pre= turn.stderr
+    if (turn.submission.user && turn.submission.user._id.equals(user) )|| contest.isEnded()
+      h4 stderr
+      p
+        pre= turn.stderr

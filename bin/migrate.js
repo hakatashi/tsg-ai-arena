@@ -47,26 +47,20 @@ mongoose.Promise = global.Promise;
 		end: new Date('2018-12-31T23:59:59+0900'),
 		description: {
 			ja: stripIndent`
-				じゃんけんを5回行います。
-				グー、チョキ、パーのいずれかを出してください。
+				石取りゲームを行います。
 
 				## 入力
 
 				\`\`\`
 				N
-				a_1 b_1
-				a_2 b=2
-				...
-				a_N-1 b_N-1
 				\`\`\`
 
-				* 1行目は、このじゃんけんが何回目かを表す整数Nが与えられる。
-				* 2～N行目は、自分と相手がこれまでに出した手が空白区切りで与えられる。
+				* 1行目に、残りの石の数Nが与えられる。
 
 				## 出力
 
-				* グーならば0を、チョキならば1を、パーならば2を出力してください。
-				* 不正な出力をした場合、必ず負けます。
+				* 取る石の数を1から3までの整数で出力せよ。
+				* 不正な出力をした場合、3個の石を取る。
 			`,
 			en: stripIndent`
 			`,
@@ -75,17 +69,19 @@ mongoose.Promise = global.Promise;
 
 	await contest3.save();
 
-	const preset = new Submission({
-		isPreset: true,
-		name: 'random',
-		user: null,
-		contest: contest3,
-		language: null,
-		code: null,
-		size: null,
-	});
+	for (const presetName of ['random', 'clever']) {
+		const preset = new Submission({
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contest3,
+			language: null,
+			code: null,
+			size: null,
+		});
 
-	await preset.save();
+		await preset.save();
+	}
 
 	mongoose.connection.close();
 })();

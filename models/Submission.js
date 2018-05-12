@@ -7,7 +7,7 @@ const submissionSchema = new mongoose.Schema(
 		name: String,
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		contest: {type: mongoose.Schema.Types.ObjectId, ref: 'Contest'},
-		language: {type: String, enum: [null, 'node']},
+		language: {type: String, enum: [null, 'node', 'c-gcc', 'python3']},
 		code: Buffer,
 		size: {type: Number, min: 0},
 	},
@@ -22,7 +22,7 @@ submissionSchema.methods.timeText = function() {
 
 submissionSchema.methods.userText = function () {
 	if (this.isPreset) {
-		return 'BOT';
+		return `BOT (${this.name})`;
 	}
 
 	return this.user.name();

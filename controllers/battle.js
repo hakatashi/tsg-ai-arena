@@ -46,6 +46,7 @@ module.exports.getBattles = async (req, res) => {
 	const battles = await Battle.find({
 		contest: req.contest,
 	})
+		.sort({_id: -1})
 		.populate({
 			path: 'players',
 			populate: {path: 'user'},
