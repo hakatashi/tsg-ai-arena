@@ -77,12 +77,11 @@ pre.hexdump {
 }
 
 .jumbotron-wrap {
-  color: white;
+  color: dimgray;
 }
 
 .jumbotron-wrap:hover {
   text-decoration: none;
-  color: white;
 }
 
 .contest-1 {
@@ -116,6 +115,7 @@ pre.hexdump {
 .contest-unknown {
   background-color: #050505;
   background-image: url('/img/contest/noise.png');
+  color: white;
 }
 
 .team-badge {
