@@ -127,7 +127,7 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		points: [0, 0],
 	};
 
-	while (state.frames < 100 && state.balls.length > 0) {
+	while (state.frames < 1000 && state.balls.length > 0) {
 		if (state.frames % 10 === 0) {
 			const stdin1 = serialize(state);
 			const stdin2 = serialize({...state, players: state.players.slice().reverse()});
