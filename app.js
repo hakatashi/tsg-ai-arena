@@ -178,6 +178,11 @@ router.get(
 	submissionController.getSubmission
 );
 router.get(
+	'/contests/:contest/battles',
+	contestController.base,
+	battleController.getBattles
+);
+router.get(
 	'/contests/:contest/battles/:battle',
 	contestController.base,
 	battleController.getBattle

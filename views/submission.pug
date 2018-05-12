@@ -13,7 +13,7 @@ block content
     if user && user.admin && submission.error && submission.error.stack
       pre= submission.error.stack
 
-    if submission.user === user || contest.isEnded()
+    if submission.user._id.equals(user) || contest.isEnded()
       p
         pre= code
 

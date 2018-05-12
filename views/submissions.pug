@@ -15,30 +15,15 @@ block content
           thead
             tr
               th Author
-              th Language
               th Size
-              th Status
               th Date
           tbody
             each submission in submissions
-              -
-                const tableClass = {pending: 'table-active', success: 'table-success', failed: 'table-warning', error: 'table-danger'}[submission.status]
-              tr(class=tableClass)
-                td
-                  a(href=`?${encode({author: submission.user.email.replace(/@.+$/, '')})}`)
-                    - const team = submission.user.team.find((t) => t.contest.equals(contest._id))
-                    if team
-                      span.team-badge(class=`team-${team.value}`)
-                    = submission.user.name()
-                td
-                  strong
-                    a(href=`?${encode({language: submission.language.slug})}`)= submission.language.slug
+              tr
+                td= submission.userText()
                 td= `${submission.size}bytes`
                 td
-                  +submissionBadge(submission)
-                td
                   a(href=`./submissions/${submission._id}`)= submission.timeText()
-                      
       
       nav(aria-label='Submission result pages')
         ul.pagination.justify-content-center

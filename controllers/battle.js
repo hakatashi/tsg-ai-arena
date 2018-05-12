@@ -41,3 +41,24 @@ module.exports.getBattle = async (req, res) => {
 		turns,
 	});
 };
+
+module.exports.getBattles = async (req, res) => {
+	const battles = await Battle.find({
+		contest: req.contest,
+	})
+		.populate({
+			path: 'players',
+			populate: {path: 'user'},
+		})
+		.populate({
+			path: 'winner',
+			populate: {path: 'user'},
+		})
+		.limit(500)
+		.exec();
+
+	res.render('battles', {
+		contest: req.contest,
+		battles,
+	});
+};

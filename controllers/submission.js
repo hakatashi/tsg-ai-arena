@@ -10,6 +10,7 @@ const qs = require('querystring');
 module.exports.getSubmissions = async (req, res) => {
 	const query = {
 		contest: req.contest,
+		isPreset: false,
 	};
 
 	if (req.query.author) {
@@ -18,16 +19,6 @@ module.exports.getSubmissions = async (req, res) => {
 		});
 		if (author) {
 			query.user = author._id;
-		}
-	}
-
-	if (req.query.language) {
-		const language = await Language.findOne({
-			slug: req.query.language,
-			contest: req.contest,
-		});
-		if (language) {
-			query.language = language._id;
 		}
 	}
 
@@ -40,7 +31,6 @@ module.exports.getSubmissions = async (req, res) => {
 	const submissions = await Submission.find(query)
 		.sort({_id: -1})
 		.populate('user')
-		.populate('language')
 		.skip(500 * page)
 		.limit(500)
 		.exec();

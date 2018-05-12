@@ -1,0 +1,44 @@
+extends layout
+
+include mixins
+
+block content
+  .container.content
+    if !contest.isStarted() && (!user || !user.admin)
+      include partials/countdown.pug
+    else
+      .page-header
+        h3 Battles
+
+      .table-responsive
+        table.table
+          thead
+            tr
+              th Player1
+              th Player2
+              th Result
+              th Date
+          tbody
+            each battle in battles
+              tr
+                td
+                  if battle.players[0].isPreset
+                    = battle.players[0].userText()
+                  else
+                    a(href=`./submissions/${battle.players[0]._id}`)= battle.players[0].userText()
+                td
+                  if battle.players[1].isPreset
+                    = battle.players[1].userText()
+                  else
+                    a(href=`./submissions/${battle.players[1]._id}`)= battle.players[1].userText()
+                td
+                  if battle.result === 'pending'
+                    | Pending
+                  else if battle.result === 'draw'
+                    | Draw
+                  else if battle.result === 'settled'
+                    = battle.winner.userText()
+                    = ' '
+                    | Won
+                td
+                  a(href=`./battles/${battle._id}`)= battle.timeText()

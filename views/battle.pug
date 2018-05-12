@@ -33,7 +33,11 @@ block content
           each turn in turns
             tr
               td= turn.index
-              td= turn.submission.userText()
+              td
+                if turn.submission.isPreset
+                  = turn.submission.userText()
+                else
+                  a(href=`/contests/${contest.id}/submissions/${turn.submission._id}`)= turn.submission.userText()
               td= turn.stdout.slice(0, 24)
               td
                 a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()
