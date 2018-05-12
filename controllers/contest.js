@@ -29,8 +29,11 @@ module.exports.base = async (req, res, next) => {
  * GET /
  * Home page.
  */
-module.exports.index = (req, res) => {
+module.exports.index = async (req, res) => {
 	const markdown = new MarkdownIt();
+
+	const presets = await Submission.find({contest: req.contest, isPreset: true});
+
 	res.render('contest', {
 		title: '',
 		contest: req.contest,
@@ -38,6 +41,7 @@ module.exports.index = (req, res) => {
 			ja: markdown.render(req.contest.description.ja),
 			en: markdown.render(req.contest.description.en),
 		},
+		presets,
 	});
 };
 
@@ -49,6 +53,12 @@ module.exports.postSubmission = async (req, res) => {
 
 		if (!['node', 'c-gcc', 'python3'].includes(req.body.language)) {
 			throw new Error('language unknown');
+		}
+
+		const competitor = await Submission.findOne({contest: req.contest, isPreset: true, name: req.body.competitor});
+
+		if (competitor === null) {
+			throw new Error('competitor unknown');
 		}
 
 		let code = null;
@@ -94,12 +104,9 @@ module.exports.postSubmission = async (req, res) => {
 
 		const submission = await submissionRecord.save();
 
-		for (const presetName of Object.keys(req.contestData.presets)) {
-			const preset = await Submission.findOne({contest: req.contest, name: presetName});
-			runner.battle([submission, preset], req.contest).catch((e) => {
-				console.error(e);
-			});
-		}
+		runner.battle([submission, competitor], req.contest).catch((e) => {
+			console.error(e);
+		});
 
 		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {

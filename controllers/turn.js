@@ -5,12 +5,14 @@ module.exports.getTurn = async (req, res) => {
 
 	const turn = await Turn.findOne({_id})
 		.populate({
-			path: 'submission',
-			populate: {path: 'user'},
-		})
-		.populate({
 			path: 'battle',
-			populate: {path: 'contest'},
+			populate: [
+				{path: 'contest'},
+				{
+					path: 'players',
+					populate: {path: 'user'},
+				},
+			],
 		})
 		.exec();
 

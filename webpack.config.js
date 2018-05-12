@@ -23,6 +23,7 @@ module.exports = (env, argv = {}) => {
 		entry: Object.assign(
 			...[
 				['contest-test', 'js/contests/test/index.babel.js'],
+				['contest-dragon-ball', 'js/contests/dragon-ball/index.babel.js'],
 			].map(([name, entry]) => ({
 				[name]: [
 					...(argv.mode === 'development'

@@ -3,6 +3,8 @@ extends layout
 block head
   if contest.id === 'test'
     script(src='/js/contest-test.js', defer)
+  else if contest.id === 'dragon-ball'
+    script(src='/js/contest-dragon-ball.js', defer)
       
   style.
     body {

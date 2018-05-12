@@ -29,5 +29,8 @@ block content
             | bytes
           textarea.form-control.code.checker-code(name='code')
         .form-group
-          input.form-contril-file.checker-file(type='file')
+          label Compete with
+          select.form-control.checker-language(name='competitor')
+            each preset in presets
+              option(value=preset.name)= preset.userText()
         button.btn.btn-primary.checker-submit(type='submit') Submit
