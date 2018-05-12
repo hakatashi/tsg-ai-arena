@@ -1,0 +1,40 @@
+extends layout
+
+include mixins
+
+block content
+  .container.content
+    .page-header
+      h1= battle.versusText()
+
+    h3 Result
+
+    p
+      if battle.result === 'pending'
+        | Pending
+      else if battle.result === 'draw'
+        | Draw
+      else if battle.result === 'settled'
+        = battle.winner.userText()
+        = ' '
+        | Won
+
+    h3 Turns
+
+    .table-responsive
+      table.table
+        thead
+          tr
+            th #
+            th Player
+            th Output
+            th Date
+        tbody
+          each turn in turns
+            tr
+              td= turn.index
+              td= turn.submission.userText()
+              td= turn.stdout.slice(0, 24)
+              td
+                a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn._id
+                

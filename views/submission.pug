@@ -6,49 +6,44 @@ block content
   .container.content
     .page-header
       h1
-        strong= `${submission.language.slug}, ${submission.size} bytes`
-
-      p
-        | by
-        - const team = submission.user.team.find((t) => t.contest.equals(contest._id))
-        if team
-          span.team-badge(class=`team-${team.value}`)
+        | Submission by
+        = ' '
         = submission.user.name()
 
-    h4
-      | Result
-      if submission.url
-        = ' '
-        small
-          a(href=submission.url, target='_blank') [link]
-        
-    p
-      +submissionBadge(submission)
-
-    if submission.duration
-      h4 Duration
-      p= `${submission.duration}ms`
-    
     if user && user.admin && submission.error && submission.error.stack
       pre= submission.error.stack
 
-    if selfTeam || contest.isEnded()
-      h4
-        | Code
-        = ' '
-        small
-          a(href=`${submission._id}/raw`) [DL]
+    if submission.user === user || contest.isEnded()
       p
-        pre(class = isHexdump ? 'hexdump' : '')= code
+        pre= code
 
-      h4 stdin
-      p
-        pre= submission.input
+    h2 Battle History
 
-      h4 stdout
-      p
-        pre= submission.stdout
-
-      h4 stderr
-      p
-        pre= submission.stderr
+    .table-responsive
+      table.table
+        thead
+          tr
+            th Opponent
+            th Result
+            th Date
+        tbody
+          each battle in battles
+            tr
+              td
+                if battle.isPreset
+                  | Preset
+                else
+                  = battle._id
+              td
+                if battle.result === 'pending'
+                  | Pending
+                else if battle.result === 'draw'
+                  | Draw
+                else if battle.result === 'settled'
+                  if battle.winner._id.equals(submission._id)
+                    | Win
+                  else
+                    | Lose
+              td
+                a(href=`/contests/${contest.id}/battles/${battle._id}`)= battle.timeText()
+                

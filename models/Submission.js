@@ -20,6 +20,14 @@ submissionSchema.methods.timeText = function() {
 		.format('YYYY/MM/DD HH:mm:ss');
 };
 
+submissionSchema.methods.userText = function () {
+	if (this.isPreset) {
+		return 'BOT';
+	}
+
+	return this.user.name();
+};
+
 const Submission = mongoose.model('Submission', submissionSchema);
 
 module.exports = Submission;

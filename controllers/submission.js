@@ -1,8 +1,7 @@
 const Submission = require('../models/Submission');
 const User = require('../models/User');
 const Language = require('../models/Language');
-const concatStream = require('concat-stream');
-const isValidUTF8 = require('utf-8-validate');
+const Battle = require('../models/Battle');
 const qs = require('querystring');
 
 /*
@@ -84,19 +83,20 @@ module.exports.getSubmission = async (req, res) => {
 		return;
 	}
 
-	const {code, isHexdump} = await new Promise((resolve) => {
-		resolve({code: submission.code.toString(), isHexdump: false});
-	});
+	const battles = await Battle.find({players: submission})
+		.populate('players')
+		.populate({
+			path: 'winner',
+			populate: {path: 'user'},
+		})
+		.exec();
 
 	res.render('submission', {
 		contest: req.contest,
-		title: `Submission by ${submission.user.name()} (, ${submission.size} bytes)`,
+		title: `Submission by ${submission.user.name()}`,
 		submission,
-		code,
-		isHexdump,
-		selfTeam:
-			req.user &&
-			req.user.getTeam(req.contest) === submission.user.getTeam(req.contest),
+		code: submission.code.toString(),
+		battles,
 	});
 };
 

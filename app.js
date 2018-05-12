@@ -38,6 +38,7 @@ const userController = require('./controllers/user');
 const submissionController = require('./controllers/submission');
 const apiController = require('./controllers/api');
 const contestController = require('./controllers/contest');
+const battleController = require('./controllers/battle');
 
 /*
  * Build-up Webpack compiler
@@ -174,6 +175,11 @@ router.get(
 	'/contests/:contest/submissions/:submission',
 	contestController.base,
 	submissionController.getSubmission
+);
+router.get(
+	'/contests/:contest/battles/:battle',
+	contestController.base,
+	battleController.getBattle
 );
 router.get(
 	'/contests/:contest/submissions/:submission/raw',
