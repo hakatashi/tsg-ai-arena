@@ -1,12 +1,6 @@
 extends layout
 
 block content
-  .jumbotron.jumbotron-fluid
-    .container
-      h1.display-4(style={'word-wrap': 'break-word'})= helloworld
-      hr.my-4
-      p Welcome to <strong>Esolang Ballter</strong>. This is a contest system for codegolf competitions held by TSG. Hang tight to match new contest or check out the shining records of the past contests!
-
   .container
     each contest in contests
       a.jumbotron-wrap(href=`/contests/${contest.id}`)

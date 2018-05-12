@@ -3,31 +3,23 @@ extends layout
 block head
   if contest.isStarted() || (user && user.admin)
     style
-      if contest.id === '1'
-        include:scss maps/1.scss
-      else if contest.id === '2'
-        include:scss maps/2.scss
-      else if contest.id === '3'
-        include:scss maps/3.scss
-      else if contest.id === '4'
-        include:scss maps/4.scss
-      
-    if contest.id === '4'
-      script(src='/js/contest-4.js', defer)
 
 block content
   if !contest.isStarted() && (!user || !user.admin)
     .container
       .content
         include partials/countdown.pug
-  else if contest.id === '4'
-    #app
   else
-    .container
-      .board
-        if contest.id === '1'
-          include maps/1.pug
-        else if contest.id === '2'
-          include maps/2.pug
-        else if contest.id === '3'
-          include maps/3.pug
+    .container.content
+      h1 Submit Code
+      form#checker(data-persist='garlic')
+        .form-group
+          label Code
+          p.text-secondary
+            span.checker-count 0
+            = ' '
+            | bytes
+          textarea.form-control.code.checker-code(name='code')
+        .form-group
+          input.form-contril-file.checker-file(type='file')
+        button.btn.btn-primary.checker-submit(type='button') Submit

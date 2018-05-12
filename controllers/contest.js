@@ -24,14 +24,10 @@ module.exports.base = async (req, res, next) => {
  * GET /
  * Home page.
  */
-module.exports.index = async (req, res) => {
-	const languageMap = await getLanguageMap({contest: req.contest});
+module.exports.index = (req, res) => {
 	res.render('contest', {
 		title: '',
 		contest: req.contest,
-		languageMap,
-		classnames,
-		hideFooter: true,
 	});
 };
 
