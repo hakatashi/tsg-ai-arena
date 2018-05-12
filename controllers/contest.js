@@ -1,9 +1,13 @@
-const classnames = require('classnames');
 const MarkdownIt = require('markdown-it');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
-const {getLanguageMap} = require('../controllers/utils');
+const Submission = require('../models/Submission');
+const Language = require('../models/Language');
+const validation = require('../lib/validation');
 const qs = require('querystring');
+const {getCodeLimit} = require('../controllers/utils');
+const assert = require('assert');
+const concatStream = require('concat-stream');
 
 /*
  * Middleware for all /contest/:contest routes
@@ -43,6 +47,62 @@ module.exports.rule = (req, res) => {
 	});
 };
 
+module.exports.postSubmission = async (req, res) => {
+	try {
+		if (!req.contest.isOpen()) {
+			throw new Error('Competition has closed');
+		}
+
+		let code = null;
+
+		if (req.files && req.files.file && req.files.file.length === 1) {
+			assert(
+				req.files.file[0].size < getCodeLimit(req.body.language),
+				'Code cannot be longer than 10,000 bytes'
+			);
+			code = await new Promise((resolve) => {
+				const stream = concatStream(resolve);
+				req.files.file[0].stream.pipe(stream);
+			});
+		} else {
+			code = Buffer.from(req.body.code.replace(/\r\n/g, '\n'), 'utf8');
+		}
+
+		assert(code.length >= 1, 'Code cannot be empty');
+		assert(
+			code.length <= getCodeLimit(req.body.language),
+			'Code cannot be longer than 10,000 bytes'
+		);
+
+		const latestSubmission = await Submission.findOne({user: req.user})
+			.sort({createdAt: -1})
+			.exec();
+		if (
+			latestSubmission !== null &&
+			latestSubmission.createdAt > Date.now() - 5 * 1000
+		) {
+			throw new Error('Submission interval is too short');
+		}
+		console.log(Submission);
+		const submissionRecord = new Submission({
+			user: req.user._id,
+			contest: req.contest,
+			language: 'node',
+			code,
+			size: code.length,
+		});
+		console.log('ao');
+
+		const submission = await submissionRecord.save();
+		console.log(submission);
+
+		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
+	} catch (error) {
+		// eslint-disable-next-line callback-return
+		res.status(400).json({error: error.message});
+	}
+};
+
 /*
  * GET /contest/:contest/admin
  */
@@ -68,26 +128,5 @@ module.exports.getAdmin = async (req, res) => {
 		teams: ['Red', 'Blue', 'Green'],
 		colors: ['#ef2011', '#0e30ec', '#167516'],
 		qs,
-	});
-};
-
-/*
- * GET /contest/:contest/check
- */
-module.exports.getCheck = async (req, res) => {
-	if (!req.contest.isOpen()) {
-		res.redirect(`/contests/${req.contest.id}`);
-		return;
-	}
-
-	const languages = await getLanguageMap({contest: req.contest});
-	const availableLanguages = languages
-		.filter(({type}) => type === 'language')
-		.sort(({name: nameA}, {name: nameB}) => nameA.localeCompare(nameB));
-
-	res.render('check', {
-		title: 'Check',
-		contest: req.contest,
-		availableLanguages,
 	});
 };

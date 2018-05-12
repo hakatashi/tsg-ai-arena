@@ -69,7 +69,6 @@ module.exports.getSubmission = async (req, res) => {
 
 	const submission = await Submission.findOne({_id})
 		.populate('user')
-		.populate('language')
 		.populate('contest')
 		.exec();
 
@@ -91,9 +90,7 @@ module.exports.getSubmission = async (req, res) => {
 
 	res.render('submission', {
 		contest: req.contest,
-		title: `Submission by ${submission.user.name()} (${
-			submission.language.slug
-		}, ${submission.size} bytes)`,
+		title: `Submission by ${submission.user.name()} (, ${submission.size} bytes)`,
 		submission,
 		code,
 		isHexdump,
