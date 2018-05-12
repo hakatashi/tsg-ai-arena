@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
+const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
 
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
+
+	await mongoose.connection.db.dropDatabase();
 
 	const contest1 = new Contest({
 		name: '五月祭2018 Live AI Contest day1',
@@ -44,7 +47,7 @@ mongoose.Promise = global.Promise;
 		end: new Date('2018-12-31T23:59:59+0900'),
 		description: {
 			ja: stripIndent`
-				じゃんけんを100回行います。
+				じゃんけんを5回行います。
 				グー、チョキ、パーのいずれかを出してください。
 
 				## 入力
@@ -71,6 +74,18 @@ mongoose.Promise = global.Promise;
 	});
 
 	await contest3.save();
+
+	const preset = new Submission({
+		isPreset: true,
+		name: 'random',
+		user: null,
+		contest: contest3,
+		language: null,
+		code: null,
+		size: null,
+	});
+
+	await preset.save();
 
 	mongoose.connection.close();
 })();

@@ -3,9 +3,11 @@ const moment = require('moment');
 
 const submissionSchema = new mongoose.Schema(
 	{
+		isPreset: Boolean,
+		name: String,
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		contest: {type: mongoose.Schema.Types.ObjectId, ref: 'Contest'},
-		language: {type: String, enum: ['node']},
+		language: {type: String, enum: [null, 'node']},
 		code: Buffer,
 		size: {type: Number, min: 0},
 	},

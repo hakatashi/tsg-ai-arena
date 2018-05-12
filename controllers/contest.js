@@ -2,8 +2,7 @@ const MarkdownIt = require('markdown-it');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
 const Submission = require('../models/Submission');
-const Language = require('../models/Language');
-const validation = require('../lib/validation');
+const runner = require('../lib/runner');
 const qs = require('querystring');
 const {getCodeLimit} = require('../controllers/utils');
 const assert = require('assert');
@@ -83,18 +82,24 @@ module.exports.postSubmission = async (req, res) => {
 		) {
 			throw new Error('Submission interval is too short');
 		}
-		console.log(Submission);
+
 		const submissionRecord = new Submission({
+			isPreset: false,
+			name: null,
 			user: req.user._id,
 			contest: req.contest,
 			language: 'node',
 			code,
 			size: code.length,
 		});
-		console.log('ao');
 
 		const submission = await submissionRecord.save();
-		console.log(submission);
+
+		const randomPreset = await Submission.findOne({contest: req.contest, name: 'random'});
+
+		runner.battle([submission, randomPreset], req.contest).catch((e) => {
+			console.error(e);
+		});
 
 		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {

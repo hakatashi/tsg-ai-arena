@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node app.js",
     "test": "mocha --reporter spec",
-    "dev": "nodemon app.js --ignore public",
+    "dev": "nodemon app.js --ignore public --ignore bin",
     "lint": "prettier-eslint **/*.js **/*.jsx --ignore public/js/lib/** --write && eslint **/*.js --ignore-pattern public/js/lib/**"
   },
   "engines": {
