@@ -177,6 +177,11 @@ router.get(
 	contestController.base,
 	battleController.getBattles
 );
+router.post(
+	'/contests/:contest/battles',
+	contestController.base,
+	battleController.postBattles
+);
 router.get(
 	'/contests/:contest/battles/:battle',
 	contestController.base,

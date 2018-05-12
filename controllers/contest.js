@@ -77,7 +77,7 @@ module.exports.postSubmission = async (req, res) => {
 			.exec();
 		if (
 			latestSubmission !== null &&
-			latestSubmission.createdAt > Date.now() - 5 * 1000
+			latestSubmission.createdAt > Date.now() - 15 * 1000
 		) {
 			throw new Error('Submission interval is too short');
 		}

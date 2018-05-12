@@ -16,10 +16,6 @@ class App extends React.Component {
 		setTimeout(this.turn, 1000);
 	}
 
-	getPlayerIndex = (player) => (
-		this.data.players.findIndex((p) => p === player)
-	)
-
 	turn = () => {
 		this.setState((prevState) => {
 			if (this.remainingStones <= 0) {
@@ -36,7 +32,7 @@ class App extends React.Component {
 			for (const index of Array(takenStones).keys()) {
 				const stoneIndex = this.remainingStones + index;
 				if (prevState.stones[stoneIndex] !== undefined) {
-					prevState.stones[stoneIndex] = this.getPlayerIndex(turn.player) + 1;
+					prevState.stones[stoneIndex] = turn.player + 1;
 				}
 			}
 
@@ -96,7 +92,7 @@ class App extends React.Component {
 							top: '50%',
 							left: '50%',
 							transform: 'translate(-50%, -50%)',
-							color: ['red', 'blue'][this.getPlayerIndex(this.state.winner)],
+							color: ['red', 'blue'][this.state.winner],
 							fontSize: '6em',
 							fontWeight: 'bold',
 							textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
@@ -104,7 +100,7 @@ class App extends React.Component {
 							textAlign: 'center',
 						}}
 					>
-						Winner: {this.state.winner}
+						Winner: {this.data.players[this.state.winner]}
 					</div>
 				)}
 			</div>

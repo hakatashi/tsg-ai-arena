@@ -40,7 +40,7 @@ block content
                 else if battle.result === 'draw'
                   | Draw
                 else if battle.result === 'settled'
-                  if battle.winner._id.equals(submission._id)
+                  if battle.getWinner()._id.equals(submission._id)
                     | Win
                   else
                     | Lose

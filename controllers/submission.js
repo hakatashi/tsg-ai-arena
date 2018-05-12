@@ -78,10 +78,6 @@ module.exports.getSubmission = async (req, res) => {
 			path: 'players',
 			populate: {path: 'user'},
 		})
-		.populate({
-			path: 'winner',
-			populate: {path: 'user'},
-		})
 		.exec();
 
 	res.render('submission', {

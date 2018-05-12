@@ -6,7 +6,7 @@ const battleSchema = new mongoose.Schema(
 		contest: {type: mongoose.Schema.Types.ObjectId, ref: 'Contest'},
 		players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Submission'}],
 		result: {type: String, enum: ['pending', 'draw', 'settled']},
-		winner: {type: mongoose.Schema.Types.ObjectId, ref: 'Submission'},
+		winner: Number,
 	},
 	{timestamps: true}
 );
@@ -24,5 +24,9 @@ battleSchema.methods.timeText = function() {
 battleSchema.methods.getOpponents = function(submission) {
 	return this.players.filter(({_id}) => !_id.equals(submission._id));
 };
+
+battleSchema.methods.getWinner = function () {
+	return this.players[this.winner];
+}
 
 module.exports = mongoose.model('Battle', battleSchema);

@@ -1,5 +1,7 @@
 const Turn = require('../models/Turn');
 const Battle = require('../models/Battle');
+const Submission = require('../models/Submission');
+const runner = require('../lib/runner');
 
 module.exports.getBattle = async (req, res) => {
 	const _id = req.params.battle;
@@ -10,10 +12,6 @@ module.exports.getBattle = async (req, res) => {
 			populate: {path: 'user'},
 		})
 		.populate('contest')
-		.populate({
-			path: 'winner',
-			populate: {path: 'user'},
-		})
 		.exec();
 
 	if (battle === null) {
@@ -30,8 +28,11 @@ module.exports.getBattle = async (req, res) => {
 
 	const turns = await Turn.find({battle})
 		.populate({
-			path: 'submission',
-			populate: {path: 'user'},
+			path: 'battle',
+			populate: {
+				path: 'players',
+				populate: {path: 'user'},
+			},
 		})
 		.exec();
 
@@ -42,6 +43,35 @@ module.exports.getBattle = async (req, res) => {
 	});
 };
 
+module.exports.postBattles = async (req, res) => {
+	try {
+		if (!req.contest.isOpen()) {
+			throw new Error('Competition has closed');
+		}
+
+		const player1 = await Submission.findOne({_id: req.body.player1});
+		if (player1 === null) {
+			res.sendStatus(404);
+			return;
+		}
+
+		const player2 = await Submission.findOne({_id: req.body.player2});
+		if (player2 === null) {
+			res.sendStatus(404);
+			return;
+		}
+
+		const battle = await runner.battle([player1, player2], req.contest).catch((e) => {
+			console.error(e);
+		});
+
+		res.redirect(`/contests/${req.contest.id}/battles/${battle._id}`);
+	} catch (error) {
+		// eslint-disable-next-line callback-return
+		res.status(400).json({error: error.message});
+	}
+};
+
 module.exports.getBattleVisualizer = async (req, res) => {
 	const _id = req.params.battle;
 
@@ -49,10 +79,6 @@ module.exports.getBattleVisualizer = async (req, res) => {
 		.populate('contest')
 		.populate({
 			path: 'players',
-			populate: {path: 'user'},
-		})
-		.populate({
-			path: 'winner',
 			populate: {path: 'user'},
 		})
 		.exec();
@@ -71,17 +97,20 @@ module.exports.getBattleVisualizer = async (req, res) => {
 
 	const turns = await Turn.find({battle})
 		.populate({
-			path: 'submission',
-			populate: {path: 'user'},
+			path: 'battle',
+			populate: {
+				path: 'players',
+				populate: {path: 'user'},
+			},
 		})
 		.exec();
 
 	const data = {
 		result: battle.result,
-		winner: battle.winner.userText(),
+		winner: battle.winner,
 		players: battle.players.map((player) => player.userText()),
 		turns: turns.map((turn) => ({
-			player: turn.submission.userText(),
+			player: turn.player,
 			index: turn.index,
 			input: turn.input,
 			stdout: turn.stdout,
@@ -102,10 +131,6 @@ module.exports.getBattles = async (req, res) => {
 		.sort({_id: -1})
 		.populate({
 			path: 'players',
-			populate: {path: 'user'},
-		})
-		.populate({
-			path: 'winner',
 			populate: {path: 'user'},
 		})
 		.limit(500)

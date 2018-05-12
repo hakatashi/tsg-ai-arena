@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const turnSchema = new mongoose.Schema(
 	{
-		submission: {type: mongoose.Schema.Types.ObjectId, ref: 'Submission'},
+		player: Number,
 		battle: {type: mongoose.Schema.Types.ObjectId, ref: 'Battle'},
 		index: Number,
 		input: String,
@@ -23,5 +23,9 @@ turnSchema.methods.timeText = function() {
 		.utcOffset(9)
 		.format('YYYY/MM/DD HH:mm:ss');
 };
+
+turnSchema.methods.getSubmission = function () {
+	return this.battle.players[this.player];
+}
 
 module.exports = mongoose.model('Turn', turnSchema);

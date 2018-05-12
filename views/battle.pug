@@ -17,7 +17,7 @@ block content
       else if battle.result === 'draw'
         | Draw
       else if battle.result === 'settled'
-        = battle.winner.userText()
+        = battle.getWinner().userText()
         = ' '
         | Won
 
@@ -36,10 +36,10 @@ block content
             tr
               td= turn.index
               td
-                if turn.submission.isPreset
-                  = turn.submission.userText()
+                if turn.getSubmission().isPreset
+                  = turn.getSubmission().userText()
                 else
-                  a(href=`/contests/${contest.id}/submissions/${turn.submission._id}`)= turn.submission.userText()
+                  a(href=`/contests/${contest.id}/submissions/${turn.getSubmission()._id}`)= turn.getSubmission().userText()
               td= turn.stdout.slice(0, 24)
               td
                 a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()
