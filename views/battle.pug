@@ -6,6 +6,8 @@ block content
   .container.content
     .page-header
       h1= battle.versusText()
+    
+    a.btn.btn-primary.btn-lg(href=`/contests/${contest.id}/battles/${battle._id}/visualizer`, style={margin: '1em 0'}) Launch Visualizer
 
     h3 Result
 

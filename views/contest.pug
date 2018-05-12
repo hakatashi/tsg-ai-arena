@@ -11,6 +11,7 @@ block content
         include partials/countdown.pug
   else
     .container.content
+      != description.ja
       h1 Submit Code
       form#checker(data-persist='garlic', method='POST')
         input(type='hidden', name='_csrf', value=_csrf)

@@ -19,13 +19,10 @@ module.exports = (env, argv = {}) => {
 		debug: true,
 	};
 
-	const entries = ['js/contests/4/index.babel.js', 'js/check.babel.js'];
-
 	return {
 		entry: Object.assign(
 			...[
-				['contest-4', 'js/contests/4/index.babel.js'],
-				['check', 'js/check.babel.js'],
+				['contest-test', 'js/contests/test/index.babel.js'],
 			].map(([name, entry]) => ({
 				[name]: [
 					...(argv.mode === 'development'

@@ -163,11 +163,6 @@ router.get(
 	contestController.index
 );
 router.get(
-	'/contests/:contest/rule',
-	contestController.base,
-	contestController.rule
-);
-router.get(
 	'/contests/:contest/submissions',
 	contestController.base,
 	submissionController.getSubmissions
@@ -186,6 +181,11 @@ router.get(
 	'/contests/:contest/battles/:battle',
 	contestController.base,
 	battleController.getBattle
+);
+router.get(
+	'/contests/:contest/battles/:battle/visualizer',
+	contestController.base,
+	battleController.getBattleVisualizer
 );
 router.get(
 	'/contests/:contest/turns/:turn',

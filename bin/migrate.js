@@ -47,7 +47,7 @@ mongoose.Promise = global.Promise;
 		end: new Date('2018-12-31T23:59:59+0900'),
 		description: {
 			ja: stripIndent`
-				石取りゲームを行います。
+				# 石取りゲーム
 
 				## 入力
 
