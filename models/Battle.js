@@ -21,4 +21,8 @@ battleSchema.methods.timeText = function() {
 		.format('YYYY/MM/DD HH:mm:ss');
 };
 
+battleSchema.methods.getOpponents = function(submission) {
+	return this.players.filter(({_id}) => !_id.equals(submission._id));
+};
+
 module.exports = mongoose.model('Battle', battleSchema);

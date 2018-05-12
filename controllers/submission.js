@@ -84,7 +84,10 @@ module.exports.getSubmission = async (req, res) => {
 	}
 
 	const battles = await Battle.find({players: submission})
-		.populate('players')
+		.populate({
+			path: 'players',
+			populate: {path: 'user'},
+		})
 		.populate({
 			path: 'winner',
 			populate: {path: 'user'},
@@ -117,33 +120,3 @@ module.exports.getOldSubmission = async (req, res) => {
 	);
 };
 
-/*
- * GET /contest/:contest/submissions/:submission/raw
- */
-module.exports.getRawSubmission = async (req, res) => {
-	const _id = req.params.submission;
-
-	const submission = await Submission.findOne({_id})
-		.populate('user')
-		.exec();
-	const selfTeam =
-		req.user &&
-		req.user.getTeam(req.contest) === submission.user.getTeam(req.contest);
-
-	if (!selfTeam && !req.contest.isEnded()) {
-		res.sendStatus(403);
-		return;
-	}
-
-	if (submission === null) {
-		res.sendStatus(404);
-		return;
-	}
-
-	res.set({
-		'Content-Type': 'text/plain',
-		'Content-Disposition': 'attachment',
-	});
-
-	res.send(submission.code);
-};

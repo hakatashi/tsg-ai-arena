@@ -22,7 +22,7 @@ block content
     h3 Turns
 
     .table-responsive
-      table.table
+      table.table.table-sm
         thead
           tr
             th #
@@ -36,5 +36,4 @@ block content
               td= turn.submission.userText()
               td= turn.stdout.slice(0, 24)
               td
-                a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn._id
-                
+                a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()

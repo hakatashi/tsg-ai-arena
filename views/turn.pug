@@ -1,0 +1,21 @@
+extends layout
+
+include mixins
+
+block content
+  .container.content
+    if turn.user === user || contest.isEnded()
+      p
+        pre= turn.submission.code
+        
+    h4 stdin
+    p
+      pre= turn.input
+
+    h4 stdout
+    p
+      pre= turn.stdout
+
+    h4 stderr
+    p
+      pre= turn.stderr

@@ -33,7 +33,7 @@ block content
                 if battle.isPreset
                   | Preset
                 else
-                  = battle._id
+                  = battle.getOpponents(submission)[0].userText()
               td
                 if battle.result === 'pending'
                   | Pending
