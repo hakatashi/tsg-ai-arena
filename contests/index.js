@@ -1,7 +1,9 @@
 const test = require('./test');
 const dragonBall = require('./dragon-ball');
+const mayfes2018Day1 = require('./mayfes2018-day1');
 
 module.exports = {
 	test,
 	'dragon-ball': dragonBall,
+	'mayfes2018-day1': mayfes2018Day1,
 };

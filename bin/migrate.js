@@ -25,6 +25,20 @@ mongoose.Promise = global.Promise;
 
 	await contest1.save();
 
+	for (const presetName of ['random', 'clever']) {
+		const preset = new Submission({
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contest1,
+			language: null,
+			code: null,
+			size: null,
+		});
+
+		await preset.save();
+	}
+
 	const contest2 = new Contest({
 		name: '五月祭2018 Live AI Contest day2',
 		id: 'mayfes2018-day2',
