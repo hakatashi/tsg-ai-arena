@@ -173,6 +173,6 @@ module.exports.getBattles = async (req, res) => {
 	res.render('battles', {
 		contest: req.contest,
 		battles,
-		submissions: presets.concat(mySubmissions),
+		submissions: req.user && presets.concat(mySubmissions),
 	});
 };
