@@ -8,6 +8,7 @@
         "camelcase": "off",
         "no-console": "off",
         "max-len": "off",
+        "max-depth": "off",
         "no-underscore-dangle": "off",
         "private-props/no-use-outside": "off",
         "react/forbid-component-props": "off",
