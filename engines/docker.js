@@ -138,7 +138,7 @@ module.exports = async ({id, code, stdin}) => {
 		]);
 
 		const executionStart = Date.now();
-		const [stdout, stderr, containerData] = await runner.timeout(20000);
+		const [stdout, stderr, containerData] = await runner.timeout(10000);
 		const executionEnd = Date.now();
 
 		cleanup();

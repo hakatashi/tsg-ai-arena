@@ -30,7 +30,17 @@ module.exports.deserialize = deserialize;
 
 module.exports.presets = {
 	random: () => `${random(1, SIZE)} ${random(1, SIZE)} ${random(0, 1)}`,
-	clever: () => '',
+	fill: (input) => {
+		const state = deserialize(input);
+
+		if (state.turns % 10 === 0) {
+			return `1 ${state.turns / 10 * 3 + 2} 1`;
+		}
+
+		const index = state.turns % 10 - 1;
+
+		return `${index % 3 * 3 + 3} ${Math.floor(index / 3) + Math.floor(state.turns / 10) * 3 + 1} 0`;
+	},
 };
 
 module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
@@ -75,7 +85,7 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 				return {x: nx, y: ny, rot: nrot};
 			})();
 
-			outputs.push({x, y, rot})
+			outputs.push({x, y, rot});
 
 			const increment = playerIndex === 0 ? 1 : -1;
 
