@@ -101,7 +101,7 @@ module.exports.postSubmission = async (req, res) => {
 			language: req.body.language,
 			code,
 			size: code.length,
-			id: latestIdSubmission.id + 1, // FIXME: Lock
+			id: (latestIdSubmission.id || 0) + 1, // FIXME: Lock
 		});
 
 		const submission = await submissionRecord.save();
