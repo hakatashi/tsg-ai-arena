@@ -66,7 +66,7 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 				const [nx, ny, nrot] = tokens.map((token) => parseInt(token));
 
-				if (nx < 1 || nx > 10 || ny < 1 || ny > 10 || nrot < 0 || nrot > 1) {
+				if (nx < 1 || nx > SIZE || ny < 1 || ny > SIZE || nrot < 0 || nrot > 1) {
 					return {x: 5, y: 5, rot: 0};
 				}
 
@@ -77,23 +77,29 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 			if (rot === 0) {
 				for (const dx of [-1, 0, 1]) {
-					if (x + dx >= 1 && x + dx <= 10) {
-						state.field[x + dx - 1][y - 1] = clamp(state.field[x + dx - 1][y - 1] + increment, -3, 3);
+					if (x + dx >= 1 && x + dx <= SIZE) {
+						state.field[x + dx - 1][y - 1] += increment;
 					}
 				}
 			} else {
 				for (const dy of [-1, 0, 1]) {
-					if (y + dy >= 1 && y + dy <= 10) {
-						state.field[x - 1][y + dy - 1] = clamp(state.field[x - 1][y + dy - 1] + increment, -3, 3);
+					if (y + dy >= 1 && y + dy <= SIZE) {
+						state.field[x - 1][y + dy - 1] += increment;
 					}
 				}
+			}
+		}
+
+		for (const x of Array(SIZE).keys()) {
+			for (const y of Array(SIZE).keys()) {
+				state.field[x][y] = clamp(state.field[x][y], -3, 3);
 			}
 		}
 
 		for (const playerIndex of [0, 1]) {
 			let longestPath = 0;
 
-			for (const y of Array(10).keys()) {
+			for (const y of Array(SIZE).keys()) {
 				const row = state.field[y].map((value) => {
 					if (playerIndex === 0) {
 						return value > 0 ? '1' : '0';
@@ -102,11 +108,11 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 					return value < 0 ? '1' : '0';
 				}).join('');
 
-				const longestRowPath = maxBy(row.split('0'), 'length').length;
-				longestPath = Math.max(longestPath, longestRowPath);
+				const longestRowPath = maxBy(row.split('0'), 'length');
+				longestPath = Math.max(longestPath, longestRowPath ? longestRowPath.length : 0);
 			}
 
-			for (const x of Array(10).keys()) {
+			for (const x of Array(SIZE).keys()) {
 				const column = transpose(state.field)[x].map((value) => {
 					if (playerIndex === 0) {
 						return value > 0 ? '1' : '0';
@@ -115,8 +121,8 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 					return value < 0 ? '1' : '0';
 				}).join('');
 
-				const longestColumnPath = maxBy(column.split('0'), 'length').length;
-				longestPath = Math.max(longestPath, longestColumnPath);
+				const longestColumnPath = maxBy(column.split('0'), 'length');
+				longestPath = Math.max(longestPath, longestColumnPath ? longestColumnPath.length : 0);
 			}
 
 			state.points[playerIndex] = longestPath;

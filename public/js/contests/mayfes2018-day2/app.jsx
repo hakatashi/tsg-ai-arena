@@ -1,6 +1,9 @@
+/* eslint array-plural/array-plural: off */
+
 const React = require('react');
 const cloneDeep = require('lodash/cloneDeep');
 const pick = require('lodash/pick');
+const maxBy = require('lodash/maxBy');
 const transpose = require('lodash/unzip');
 const contest = require('../../../../contests/mayfes2018-day2.js');
 
@@ -27,6 +30,7 @@ class App extends React.Component {
 			...contest.deserialize(this.data.turns[0].input),
 			points: [0, 0],
 			winner: null,
+			longestPathsList: [],
 		};
 		this.frame = 0;
 
@@ -63,15 +67,84 @@ class App extends React.Component {
 			if (this.state.points[0] === this.state.points[1]) {
 				this.setState({winner: 0});
 			} else {
-				this.setState({winner: this.state.points[0] > this.state.points[1] ? 1 : 2});
+				this.setState(({points}) => ({
+					winner: points[0] > points[1] ? 1 : 2,
+				}));
 			}
 			return;
 		}
 
-		this.setState(this.frames[this.frame]);
+		const newState = this.frames[this.frame];
+
+		const longestPathsList = [0, 1].map((playerIndex) => {
+			let longestPathLength = 0;
+			let longestPaths = [];
+
+			for (const [rowsIndex, rows] of [newState.field, transpose(newState.field)].entries()) {
+				for (const [rowIndex, values] of rows.entries()) {
+					const row = values.map((value) => {
+						if (playerIndex === 0) {
+							return value > 0;
+						}
+
+						return value < 0;
+					});
+
+					const chunks = [];
+					let start = 0;
+					for (const [index, value] of row.entries()) {
+						const prevValue = index - 1 < 0 ? false : row[index - 1];
+						const nextValue = index + 1 >= row.length ? false : row[index + 1];
+
+						if (value === true && prevValue === false) {
+							start = index;
+						}
+
+						if (value === true && nextValue === false) {
+							chunks.push({
+
+								start: rowsIndex === 0 ? {
+									x: rowIndex,
+									y: start,
+								} : {
+									x: start,
+									y: rowIndex,
+								},
+								end: rowsIndex === 0 ? {
+									x: rowIndex,
+									y: index,
+								} : {
+									x: index,
+									y: rowIndex,
+								},
+								length: index - start + 1,
+							});
+						}
+					}
+
+					const longestRowPath = maxBy(chunks, 'length');
+					const longestRowPathLength = longestRowPath ? longestRowPath.length : 0;
+					const longestRowChunks = chunks.filter(({length}) => length === longestRowPathLength);
+
+					if (longestRowPathLength === longestPathLength) {
+						longestPaths.push(...longestRowChunks);
+					} else if (longestRowPathLength > longestPathLength) {
+						longestPaths = longestRowChunks;
+						longestPathLength = longestRowPathLength;
+					}
+				}
+			}
+
+			return longestPaths;
+		});
+
+		this.setState({
+			...newState,
+			longestPathsList,
+		});
 		this.frame++;
 
-		setTimeout(this.handleFrame, 500);
+		setTimeout(this.handleFrame, 2000);
 	}
 
 	renderContent = () => (
@@ -120,7 +193,7 @@ class App extends React.Component {
 					/>
 				))}
 			</div>
-			<div
+			<svg
 				style={{
 					width: '500px',
 					height: '500px',
@@ -129,29 +202,43 @@ class App extends React.Component {
 					boxSizing: 'content-box',
 					position: 'relative',
 				}}
+				viewBox="0 0 500 500"
 			>
-				{transpose(this.state.field).map((row, index) => (
-					<div
-						key={index}
-						style={{
-							width: '100%',
-							height: '50px',
-							display: 'flex',
-						}}
+				{transpose(this.state.field).map((row, y) => (
+					<g
+						key={y}
 					>
-						{row.map((value, valueIndex) => (
-							<div
-								key={valueIndex}
-								style={{
-									width: '50px',
-									height: '50px',
-									background: getColor(value),
-								}}
+						{row.map((value, x) => (
+							<rect
+								key={x}
+								x={x * 50}
+								y={y * 50}
+								width="50px"
+								height="50px"
+								fill={getColor(value)}
 							/>
 						))}
-					</div>
+					</g>
 				))}
-			</div>
+				{this.state.longestPathsList.map((longestPaths, playerIndex) => (
+					<g
+						key={playerIndex}
+					>
+						{longestPaths.map((path, pathIndex) => (
+							<line
+								key={pathIndex}
+								x1={path.start.x * 50 + 25}
+								y1={path.start.y * 50 + 25}
+								x2={path.end.x * 50 + 25}
+								y2={path.end.y * 50 + 25}
+								stroke={playerIndex === 0 ? 'red' : 'blue'}
+								strokeWidth="10"
+								strokeLinecap="round"
+							/>
+						))}
+					</g>
+				))}
+			</svg>
 			<div
 				style={{
 					color: 'blue',
