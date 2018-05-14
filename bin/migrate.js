@@ -68,6 +68,20 @@ mongoose.Promise = global.Promise;
 	await Submission.remove({contest: contest1});
 	await Battle.remove({contest: contest1});
 
+	for (const presetName of ['random', 'fill']) {
+		const preset = new Submission({
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contest1,
+			language: null,
+			code: null,
+			size: null,
+		});
+
+		await preset.save();
+	}
+
 	for (const username of ['kivantium', 'hakatashi', 'kurgm', 'kuromunori', 'progrunner17']) {
 		const user = await User.findOne({email: `${username}@twitter.com`});
 
