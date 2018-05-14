@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
+const Battle = require('../models/Battle');
 const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
@@ -66,6 +67,14 @@ mongoose.Promise = global.Promise;
 
 	await Submission.remove({
 		isPreset: true,
+		contest,
+	});
+
+	await Submission.remove({
+		contest,
+	});
+
+	await Battle.remove({
 		contest,
 	});
 
