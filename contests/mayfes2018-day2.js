@@ -56,6 +56,8 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		const {stdout: stdout1} = await execute(stdin1, 0);
 		const {stdout: stdout2} = await execute(stdin2, 1);
 
+		const outputs = [];
+
 		for (const [playerIndex, stdout] of [stdout1, stdout2].entries()) {
 			const tokens = stdout.toString().trim().split(/\s+/);
 
@@ -72,6 +74,8 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 				return {x: nx, y: ny, rot: nrot};
 			})();
+
+			outputs.push({x, y, rot})
 
 			const increment = playerIndex === 0 ? 1 : -1;
 
@@ -128,7 +132,7 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 			state.points[playerIndex] = longestPath;
 		}
 
-		onFrame(state);
+		onFrame({state, outputs});
 	}
 
 	if (state.points[0] === state.points[1]) {

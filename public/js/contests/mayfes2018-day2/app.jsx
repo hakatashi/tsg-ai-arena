@@ -31,6 +31,7 @@ class App extends React.Component {
 			points: [0, 0],
 			winner: null,
 			longestPathsList: [],
+			tempBlocks: null,
 		};
 		this.frame = 0;
 
@@ -62,7 +63,7 @@ class App extends React.Component {
 		this.frames = frames;
 	}
 
-	handleFrame = () => {
+	handleFrame = async () => {
 		if (this.frame >= this.frames.length) {
 			if (this.state.points[0] === this.state.points[1]) {
 				this.setState({winner: 0});
@@ -74,7 +75,7 @@ class App extends React.Component {
 			return;
 		}
 
-		const newState = this.frames[this.frame];
+		const newState = this.frames[this.frame].state;
 
 		const longestPathsList = [0, 1].map((playerIndex) => {
 			let longestPathLength = 0;
@@ -138,9 +139,39 @@ class App extends React.Component {
 			return longestPaths;
 		});
 
-		this.setState({
-			...newState,
-			longestPathsList,
+		await new Promise((resolve) => {
+			this.setState({
+				tempBlocks: [
+					{x: -2, y: 3, rot: 0, opacity: 0.3},
+					{x: 13, y: 3, rot: 0, opacity: 0.3},
+				],
+			}, resolve);
+		});
+
+		await new Promise((resolve) => {
+			setTimeout(resolve, 0);
+		});
+
+		await new Promise((resolve) => {
+			this.setState({
+				tempBlocks: this.frames[this.frame].outputs.map((block) => ({
+					...block,
+					opacity: 1,
+				})),
+				turns: newState.turns,
+			}, resolve);
+		});
+
+		await new Promise((resolve) => {
+			setTimeout(resolve, 1000);
+		});
+
+		await new Promise((resolve) => {
+			this.setState({
+				...newState,
+				longestPathsList,
+				tempBlocks: null,
+			}, resolve);
 		});
 		this.frame++;
 
@@ -201,6 +232,7 @@ class App extends React.Component {
 					border: '1px solid #555',
 					boxSizing: 'content-box',
 					position: 'relative',
+					overflow: 'visible',
 				}}
 				viewBox="0 0 500 500"
 			>
@@ -237,6 +269,19 @@ class App extends React.Component {
 							/>
 						))}
 					</g>
+				))}
+				{this.state.tempBlocks && this.state.tempBlocks.map((block, playerIndex) => (
+					<rect
+						key={playerIndex}
+						width="150"
+						height="50"
+						transform={`translate(${block.x * 50 - 25}, ${block.y * 50 - 25}) ${block.rot === 1 ? 'rotate(90)' : ''} translate(-75, -25)`}
+						opacity={block.opacity}
+						fill={playerIndex === 0 ? 'red' : 'blue'}
+						style={{
+							transition: 'all 0.5s',
+						}}
+					/>
 				))}
 			</svg>
 			<div
