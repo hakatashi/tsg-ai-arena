@@ -10,6 +10,7 @@ const submissionSchema = new mongoose.Schema(
 		language: {type: String, enum: [null, 'node', 'c-gcc', 'python3']},
 		code: Buffer,
 		size: {type: Number, min: 0},
+		id: {type: Number, min: 0},
 	},
 	{timestamps: true}
 );
@@ -25,7 +26,7 @@ submissionSchema.methods.userText = function () {
 		return `BOT (${this.name})`;
 	}
 
-	return this.user.name();
+	return `${this.user.name()} (#${this.id})`;
 };
 
 const Submission = mongoose.model('Submission', submissionSchema);

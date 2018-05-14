@@ -27,6 +27,18 @@ battleSchema.methods.getOpponents = function(submission) {
 
 battleSchema.methods.getWinner = function () {
 	return this.players[this.winner];
-}
+};
+
+battleSchema.methods.isViewableBy = function (user) {
+	if (this.players.every((player) => player.isPreset)) {
+		return true;
+	}
+
+	if (!user) {
+		return false;
+	}
+
+	return this.players.some((player) => !player.isPreset && player.user._id.equals(user._id));
+};
 
 module.exports = mongoose.model('Battle', battleSchema);

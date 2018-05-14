@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
-const Battle = require('../models/Battle');
 const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
@@ -10,11 +9,11 @@ mongoose.Promise = global.Promise;
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
-	const contest = await Contest.findOne({id: 'mayfes2018-day2'});
+	const contest1 = await Contest.findOne({id: 'mayfes2018-day2'});
 
-	contest.start = new Date('2018-05-19T14:05:00+0900');
-	contest.end = new Date('2018-05-19T15:05:00+0900');
-	contest.description.ja = stripIndent`
+	contest1.start = new Date('2018-05-19T14:05:00+0900');
+	contest1.end = new Date('2018-05-19T15:05:00+0900');
+	contest1.description.ja = stripIndent`
 		# ブロック並べ
 
 		フィールド上に3x1のブロックを配置して、自分の陣地に最長の直線を作ろう。
@@ -63,34 +62,7 @@ mongoose.Promise = global.Promise;
 		* 不正な出力をした場合、\`5 5 0\`を出力したものとみなされる。
 	`;
 
-	await contest.save();
-
-	await Submission.remove({
-		isPreset: true,
-		contest,
-	});
-
-	await Submission.remove({
-		contest,
-	});
-
-	await Battle.remove({
-		contest,
-	});
-
-	for (const presetName of ['random', 'fill']) {
-		const preset = new Submission({
-			isPreset: true,
-			name: presetName,
-			user: null,
-			contest,
-			language: null,
-			code: null,
-			size: null,
-		});
-
-		await preset.save();
-	}
+	await contest1.save();
 
 	for (const username of ['kivantium', 'hakatashi', 'kurgm', 'kuromunori', 'progrunner17']) {
 		const user = await User.findOne({email: `${username}@twitter.com`});
@@ -98,6 +70,23 @@ mongoose.Promise = global.Promise;
 		if (user !== null) {
 			user.admin = true;
 			await user.save();
+		}
+	}
+
+	const contests = await Contest.find();
+
+	for (const contest of contests) {
+		const submissions = await Submission.find({contest}).sort({_id: 1}).exec();
+		let id = 1;
+		for (const submission of submissions) {
+			if (submission.isPreset) {
+				submission.id = 0;
+				await submission.save();
+				continue;
+			}
+			submission.id = id;
+			id++;
+			await submission.save();
 		}
 	}
 

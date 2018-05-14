@@ -88,6 +88,11 @@ module.exports.getBattleVisualizer = async (req, res) => {
 		return;
 	}
 
+	if (!battle.isViewableBy(req.user)) {
+		res.sendStatus(403);
+		return;
+	}
+
 	if (battle.contest.id !== req.params.contest) {
 		res.redirect(
 			`/contests/${battle.contest.id}/battles/${battle._id}/visualizer`

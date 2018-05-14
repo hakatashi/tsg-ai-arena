@@ -1,6 +1,5 @@
 const Submission = require('../models/Submission');
 const User = require('../models/User');
-const Language = require('../models/Language');
 const Battle = require('../models/Battle');
 const qs = require('querystring');
 

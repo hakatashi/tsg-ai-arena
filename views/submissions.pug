@@ -14,12 +14,14 @@ block content
         table.table
           thead
             tr
+              th #
               th Author
               th Size
               th Date
           tbody
             each submission in submissions
               tr
+                td= `#${submission.id}`
                 td= submission.userText()
                 td= `${submission.size}bytes`
                 td

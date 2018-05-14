@@ -7,7 +7,8 @@ block content
     .page-header
       h1= battle.versusText()
     
-    a.btn.btn-primary.btn-lg(href=`/contests/${contest.id}/battles/${battle._id}/visualizer`, style={margin: '1em 0'}) Launch Visualizer
+    if contest.isEnded() || battle.isViewableBy(user)
+      a.btn.btn-primary.btn-lg(href=`/contests/${contest.id}/battles/${battle._id}/visualizer`, style={margin: '1em 0'}) Launch Visualizer
 
     h3 Result
 
@@ -21,25 +22,26 @@ block content
         = ' '
         | Won
 
-    h3 Turns
+    if contest.isEnded() || battle.isViewableBy(user)
+      h3 Turns
 
-    .table-responsive
-      table.table.table-sm
-        thead
-          tr
-            th #
-            th Player
-            th Output
-            th Date
-        tbody
-          each turn in turns
+      .table-responsive
+        table.table.table-sm
+          thead
             tr
-              td= turn.index
-              td
-                if turn.getSubmission().isPreset
-                  = turn.getSubmission().userText()
-                else
-                  a(href=`/contests/${contest.id}/submissions/${turn.getSubmission()._id}`)= turn.getSubmission().userText()
-              td= turn.stdout.slice(0, 24)
-              td
-                a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()
+              th #
+              th Player
+              th Output
+              th Date
+          tbody
+            each turn in turns
+              tr
+                td= turn.index
+                td
+                  if turn.getSubmission().isPreset
+                    = turn.getSubmission().userText()
+                  else
+                    a(href=`/contests/${contest.id}/submissions/${turn.getSubmission()._id}`)= turn.getSubmission().userText()
+                td= turn.stdout.slice(0, 24)
+                td
+                  a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()
