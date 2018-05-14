@@ -77,6 +77,7 @@ mongoose.Promise = global.Promise;
 			language: null,
 			code: null,
 			size: null,
+			id: 0,
 		});
 
 		await preset.save();

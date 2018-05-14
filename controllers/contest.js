@@ -91,7 +91,7 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Submission interval is too short');
 		}
 
-		const latestIdSubmission = await Submission.findOne().sort({id: -1}).exec();
+		const latestIdSubmission = await Submission.findOne({contest: req.contest}).sort({id: -1}).exec();
 
 		const submissionRecord = new Submission({
 			isPreset: false,
