@@ -26,6 +26,6 @@ turnSchema.methods.timeText = function() {
 
 turnSchema.methods.getSubmission = function () {
 	return this.battle.players[this.player];
-}
+};
 
 module.exports = mongoose.model('Turn', turnSchema);

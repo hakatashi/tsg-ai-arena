@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
+const Battle = require('../models/Battle');
 const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
@@ -88,6 +89,12 @@ mongoose.Promise = global.Promise;
 			id++;
 			await submission.save();
 		}
+	}
+
+	const battles = await Battle.find();
+	const hakatashi = await User.findOne({email: 'hakatashi@twitter.com'});
+	for (const battle of battles) {
+		battle.user = hakatashi;
 	}
 
 	mongoose.connection.close();

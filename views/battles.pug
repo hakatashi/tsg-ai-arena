@@ -10,17 +10,22 @@ block content
       .page-header
         h3 Battles
       
-      form(action='./battles', method='POST')
-        .form-row.align-items-center
-          input(type='hidden', name='_csrf', value=_csrf)
-          .col-auto
-            label.sr-only(for='inlineFormInput') Player1
-            input#inlineFormInput.form-control.mb-2(type='text', placeholder='ID of Player1', name='player1')
-          .col-auto
-            label.sr-only(for='inlineFormInput') Player2
-            input#inlineFormInput.form-control.mb-2(type='text', placeholder='ID of Player2', name='player2')
-          .col-auto
-            button.btn.btn-primary.mb-2(type='submit') Start New Battle
+      if user
+        form(action='./battles', method='POST')
+          .form-row.align-items-center
+            input(type='hidden', name='_csrf', value=_csrf)
+            .form-group.col-md-5.mb-2
+              label Player1
+              select.form-control(name='player1')
+                each submission in submissions
+                  option(value=submission._id)= submission.userText()
+            .form-group.col-md-5.mb-2
+              label Player2
+              select.form-control(name='player2')
+                each submission in submissions
+                  option(value=submission._id)= submission.userText()
+            .col-md-2
+              button.btn.btn-primary.mb-2(type='submit') Start New Battle
 
       .table-responsive
         table.table

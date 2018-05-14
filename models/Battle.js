@@ -7,6 +7,7 @@ const battleSchema = new mongoose.Schema(
 		players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Submission'}],
 		result: {type: String, enum: ['pending', 'draw', 'settled']},
 		winner: Number,
+		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 	},
 	{timestamps: true}
 );

@@ -103,7 +103,7 @@ module.exports.postSubmission = async (req, res) => {
 
 		const submission = await submissionRecord.save();
 
-		runner.battle([submission, competitor], req.contest).catch((e) => {
+		runner.battle([submission, competitor], req.contest, req.user).catch((e) => {
 			console.error(e);
 		});
 

@@ -45,8 +45,18 @@ module.exports.getBattle = async (req, res) => {
 
 module.exports.postBattles = async (req, res) => {
 	try {
-		if (!req.contest.isOpen()) {
+		if (!req.contest.isOpen() && !req.user.admin) {
 			throw new Error('Competition has closed');
+		}
+
+		const latestBattle = await Battle.findOne({user: req.user})
+			.sort({createdAt: -1})
+			.exec();
+		if (
+			latestBattle !== null &&
+			latestBattle.createdAt > Date.now() - 20 * 1000
+		) {
+			throw new Error('Submission interval is too short');
 		}
 
 		const player1 = await Submission.findOne({_id: req.body.player1});
@@ -61,7 +71,7 @@ module.exports.postBattles = async (req, res) => {
 			return;
 		}
 
-		const battle = await runner.battle([player1, player2], req.contest).catch((e) => {
+		const battle = await runner.battle([player1, player2], req.contest, req.user).catch((e) => {
 			console.error(e);
 		});
 
@@ -108,6 +118,7 @@ module.exports.getBattleVisualizer = async (req, res) => {
 				populate: {path: 'user'},
 			},
 		})
+		.sort({index: 1})
 		.exec();
 
 	const data = {
@@ -141,8 +152,27 @@ module.exports.getBattles = async (req, res) => {
 		.limit(500)
 		.exec();
 
+	const presets = req.user && await Submission.find({
+		contest: req.contest,
+		isPreset: true,
+	})
+		.populate('user')
+		.sort({id: -1})
+		.exec();
+
+	const mySubmissions = req.user && await Submission.find({
+		contest: req.contest,
+		user: req.user,
+		isPreset: false,
+	})
+		.populate('user')
+		.sort({id: -1})
+		.limit(15)
+		.exec();
+
 	res.render('battles', {
 		contest: req.contest,
 		battles,
+		submissions: presets.concat(mySubmissions),
 	});
 };
