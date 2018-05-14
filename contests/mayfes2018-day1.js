@@ -1,32 +1,47 @@
 module.exports.presets = {
-	random: () => (Math.floor(Math.random() * 3) + 1).toString(),
-	clever: (stdin) => {
-		const stones = parseInt(stdin);
-
-		if ((stones - 1) % 4 === 0) {
-			return (Math.floor(Math.random() * 3) + 1).toString();
-		}
-
-		return ((stones - 1) % 4).toString();
-	},
+	random: () => (Math.floor(Math.random() * 5)).toString(),
 };
 
 module.exports.battler = async (execute) => {
+    const size = 11;
+
+    var field = new Array(size)
+    for(var y=0; y<size; y++) {
+        field[y] = new Array(size).fill(0);
+    }
+
 	const state = {
-		stones: 24,
 		turn: 0,
+        p1_area: 0,
+        p2_area: 0,
+	};
+	const p1 = {
+        x: 0,
+        y: 0,
+        soup: 0,
+	};
+	const p2 = {
+        x: 10,
+        y: 10,
+        soup: 0,
 	};
 
-	while (state.stones >= 1) {
-		const {stdout} = await execute(state.stones.toString(), state.turn);
+    var player = 1;
 
-		const rawAnswer = parseInt(stdout.toString().trim());
-		const answer = [1, 2, 3].includes(rawAnswer) ? rawAnswer : 3;
+	while (state.turn <= 100) {
+        var input = state.turn.toString() + " " + player.toString() + "\n";
+        input += p1.x.toString() + " " + p1.y.toString() + "\n";
+        input += p2.x.toString() + " " + p2.y.toString() + "\n";
+        for(var y=0; y<size; y++) {
+            input += field[y].join(" ");
+            input += "\n";
+        }
+        input += "0\n";
 
-		state.stones -= answer;
-		if (state.stones >= 1) {
-			state.turn = state.turn === 0 ? 1 : 0;
-		}
+		const {stdout} = await execute(input, state.turn);
+
+        turn += 1;
+        player = player === 1 ? 2 : 1;
 	}
 
 	return {
