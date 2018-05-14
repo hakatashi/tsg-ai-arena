@@ -12,15 +12,9 @@ block content
         thead
           tr
             th Name
-            th Team
-            th Set Team
+            th Admin
         tbody
           each user in users
             tr
               td= user.name()
-              td
-                button.btn.text-white(style={'background-color': colors[user.getTeam(contest)]})= teams[user.getTeam(contest)]
-              td
-                each color, index in colors
-                  a.btn.text-white(style={'background-color': color}, href=`?${qs.encode({user: user._id.toString(), team: index})}`)= teams[index]
-                  = ' '
+              td= user.admin

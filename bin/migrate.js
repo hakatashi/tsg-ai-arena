@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
+const User = require('../models/User');
 const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
@@ -75,6 +76,15 @@ mongoose.Promise = global.Promise;
 		});
 
 		await preset.save();
+	}
+
+	for (const username of ['kivantium', 'hakatashi', 'kurgm', 'kuromunori', 'progrunner17']) {
+		const user = await User.findOne({email: `${username}@twitter.com`});
+
+		if (user !== null) {
+			user.admin = true;
+			await user.save();
+		}
 	}
 
 	mongoose.connection.close();

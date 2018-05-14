@@ -4,7 +4,6 @@ const User = require('../models/User');
 const Submission = require('../models/Submission');
 const runner = require('../lib/runner');
 const contests = require('../contests');
-const qs = require('querystring');
 const {getCodeLimit} = require('../controllers/utils');
 const assert = require('assert');
 const concatStream = require('concat-stream');
@@ -47,7 +46,7 @@ module.exports.index = async (req, res) => {
 
 module.exports.postSubmission = async (req, res) => {
 	try {
-		if (!req.contest.isOpen()) {
+		if (!req.contest.isOpen() && !req.user.admin) {
 			throw new Error('Competition has closed');
 		}
 
@@ -124,21 +123,10 @@ module.exports.getAdmin = async (req, res) => {
 		return;
 	}
 
-	if (req.query.user && req.query.team) {
-		const user = await User.findOne({_id: req.query.user});
-		user.setTeam(req.contest, req.query.team);
-		await user.save();
-		res.redirect(`/contests/${req.params.contest}/admin`);
-		return;
-	}
-
 	const users = await User.find();
 
 	res.render('admin', {
 		contest: req.contest,
 		users,
-		teams: ['Red', 'Blue', 'Green'],
-		colors: ['#ef2011', '#0e30ec', '#167516'],
-		qs,
 	});
 };
