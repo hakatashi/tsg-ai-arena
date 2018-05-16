@@ -5,7 +5,6 @@ const flatten = (arrays) => arrays.reduce((a, b) => a.concat(b), []);
 const data = JSON.parse(
 	document.querySelector('meta[name="data"]').getAttribute('content')
 );
-console.log(data);
 
 const app = document.querySelector('#app');
 Object.assign(app.style, {
@@ -17,7 +16,7 @@ Object.assign(app.style, {
 
 let turn = 0;
 
-setInterval(() => {
+const handleTurn = () => {
 	const lines = data.turns[turn].input.split('\n');
 	const [T, P] = lines[0].split(' ').map((token) => parseInt(token));
 	const [x1, y1] = lines[1].split(' ').map((token) => parseInt(token));
@@ -127,4 +126,48 @@ setInterval(() => {
 	}
 
 	document.querySelector('#app').innerHTML = output;
-}, 500);
+};
+
+if (data.result === 'pending') {
+	const resultEl = document.createElement('div');
+	resultEl.textContent = 'Battle is pending...';
+	Object.assign(resultEl.style, {
+		position: 'absolute',
+		top: '50%',
+		left: '50%',
+		transform: 'translate(-50%, -50%)',
+		color: 'gray',
+		fontSize: '6em',
+		fontWeight: 'bold',
+		textShadow:
+			'-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+		width: '100%',
+		textAlign: 'center',
+	});
+	app.appendChild(resultEl);
+
+	setTimeout(() => {
+		location.reload();
+	}, 3000);
+} else {
+	const buttonEl = document.createElement('button');
+	Object.assign(buttonEl, {
+		type: 'button',
+		textContent: 'Start',
+		onclick: () => {
+			setInterval(handleTurn, 500);
+		},
+	});
+	Object.assign(buttonEl.style, {
+		backgroundColor: '#2196f3',
+		fontSize: '6em',
+		fontWeight: 'bold',
+		width: '50%',
+		textAlign: 'center',
+		border: 'none',
+		color: 'white',
+		borderRadius: '10px',
+		cursor: 'pointer',
+	});
+	app.appendChild(buttonEl);
+}

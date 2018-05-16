@@ -75,7 +75,7 @@ module.exports.postBattles = async (req, res) => {
 				console.error(e);
 			});
 
-		res.redirect(`/contests/${req.contest.id}/battles/${battle._id}`);
+		res.redirect(`/contests/${req.contest.id}/battles/${battle._id}/visualizer`);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});
