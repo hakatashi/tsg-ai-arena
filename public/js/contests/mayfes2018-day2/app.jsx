@@ -1,4 +1,4 @@
-/* eslint array-plural/array-plural: off */
+/* eslint array-plural/array-plural: off, no-nested-ternary: off */
 
 const React = require('react');
 const cloneDeep = require('lodash/cloneDeep');
@@ -29,6 +29,7 @@ class App extends React.Component {
 
 		this.state = {
 			isReady: false,
+			isCollated: false,
 			...contest.deserialize(this.data.turns[0].input),
 			points: [0, 0],
 			winner: null,
@@ -37,12 +38,17 @@ class App extends React.Component {
 		};
 		this.frame = 0;
 
-		this.collateFrames().then(() => {
-			this.setState({
-				isReady: true,
+		if (this.data.result === 'pending') {
+			setTimeout(() => {
+				location.reload();
+			}, 3000);
+		} else {
+			this.collateFrames().then(() => {
+				this.setState({
+					isCollated: true,
+				});
 			});
-			setTimeout(this.handleFrame, 1000);
-		});
+		}
 	}
 
 	collateFrames = async () => {
@@ -66,6 +72,11 @@ class App extends React.Component {
 		);
 
 		this.frames = frames;
+	};
+
+	handleClickStart = () => {
+		this.setState({isReady: true});
+		setTimeout(this.handleFrame, 300);
 	};
 
 	handleFrame = async () => {
@@ -160,8 +171,8 @@ class App extends React.Component {
 			this.setState(
 				{
 					tempBlocks: [
-						{x: -2, y: 3, rot: 0, opacity: 0.3},
-						{x: 13, y: 3, rot: 0, opacity: 0.3},
+						{x: -1.7, y: 3.3, rot: 0, opacity: 0.3, scale: 0.3},
+						{x: 12.7, y: 3.3, rot: 0, opacity: 0.3, scale: 0.3},
 					],
 				},
 				resolve
@@ -178,6 +189,7 @@ class App extends React.Component {
 					tempBlocks: this.frames[this.frame].outputs.map((block) => ({
 						...block,
 						opacity: 1,
+						scale: 1,
 					})),
 					turns: newState.turns,
 				},
@@ -302,7 +314,7 @@ class App extends React.Component {
 							transform={`translate(${block.x * 50 - 25}, ${block.y * 50 -
 								25}) ${
 								block.rot === 1 ? 'rotate(90)' : ''
-							} translate(-75, -25)`}
+							} scale(${block.scale}) translate(-75, -25)`}
 							opacity={block.opacity}
 							fill={playerIndex === 0 ? 'red' : 'blue'}
 							style={{
@@ -364,7 +376,29 @@ class App extends React.Component {
 				{this.state.isReady ? (
 					this.renderContent()
 				) : (
-					<h1>Battle is Pending...</h1>
+					this.data.result === 'pending' ? (
+						<h1>Battle is Pending...</h1>
+					) : (
+						this.state.isCollated && (
+							<button
+								type="button"
+								onClick={this.handleClickStart}
+								style={{
+									backgroundColor: '#2196f3',
+									fontSize: '6em',
+									fontWeight: 'bold',
+									width: '50%',
+									textAlign: 'center',
+									border: 'none',
+									color: 'white',
+									borderRadius: '10px',
+									cursor: 'pointer',
+								}}
+							>
+							Start
+							</button>
+						)
+					)
 				)}
 				{this.state.winner !== null && (
 					<div
