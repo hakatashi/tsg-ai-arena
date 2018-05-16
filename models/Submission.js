@@ -21,7 +21,7 @@ submissionSchema.methods.timeText = function() {
 		.format('YYYY/MM/DD HH:mm:ss');
 };
 
-submissionSchema.methods.userText = function () {
+submissionSchema.methods.userText = function() {
 	if (this.isPreset) {
 		return `BOT (${this.name})`;
 	}

@@ -7,7 +7,9 @@ class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
 
-		this.data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
+		this.data = JSON.parse(
+			document.querySelector('meta[name="data"]').getAttribute('content')
+		);
 
 		this.state = {
 			isReady: false,
@@ -29,28 +31,33 @@ class App extends React.Component {
 		const frames = [];
 		let turnIndex = 0;
 
-		await contest.battler(() => {
-			if (this.data.turns[turnIndex] === undefined) {
-				return Promise.resolve({stdout: ''});
-			}
+		await contest.battler(
+			() => {
+				if (this.data.turns[turnIndex] === undefined) {
+					return Promise.resolve({stdout: ''});
+				}
 
-			const {stdout} = this.data.turns[turnIndex];
-			turnIndex++;
-			return Promise.resolve({stdout});
-		}, {
-			onFrame: (state) => frames.push(cloneDeep(state)),
-			initState: pick(this.state, ['frames', 'balls', 'players', 'points']),
-		});
+				const {stdout} = this.data.turns[turnIndex];
+				turnIndex++;
+				return Promise.resolve({stdout});
+			},
+			{
+				onFrame: (state) => frames.push(cloneDeep(state)),
+				initState: pick(this.state, ['frames', 'balls', 'players', 'points']),
+			}
+		);
 
 		this.frames = frames;
-	}
+	};
 
 	handleFrame = () => {
 		if (this.frame >= this.frames.length) {
 			if (this.state.points[0] === this.state.points[1]) {
 				this.setState({winner: 0});
 			} else {
-				this.setState({winner: this.state.points[0] > this.state.points[1] ? 1 : 2});
+				this.setState({
+					winner: this.state.points[0] > this.state.points[1] ? 1 : 2,
+				});
 			}
 			return;
 		}
@@ -59,7 +66,7 @@ class App extends React.Component {
 		this.frame++;
 
 		setTimeout(this.handleFrame, 50);
-	}
+	};
 
 	renderContent = () => (
 		<div style={{width: '512px'}}>
@@ -99,27 +106,37 @@ class App extends React.Component {
 							borderLeft: '10px solid transparent',
 							borderRight: '10px solid transparent',
 							borderBottom: `20px solid ${index === 0 ? 'red' : 'blue'}`,
-							transform: `translate(-50%, -50%) rotate(${180 - Math.atan2(player.sx, player.sy) / Math.PI * 180}deg)`,
+							transform: `translate(-50%, -50%) rotate(${180 -
+								Math.atan2(player.sx, player.sy) / Math.PI * 180}deg)`,
 							top: `${player.y / 2}px`,
 							left: `${player.x / 2}px`,
 						}}
 					/>
 				))}
 			</div>
-			<div style={{color: 'red', textAlign: 'center', fontSize: '3em'}}>▲ {this.data.players[0]}</div>
-			<div style={{color: 'blue', textAlign: 'center', fontSize: '3em'}}>▲ {this.data.players[1]}</div>
+			<div style={{color: 'red', textAlign: 'center', fontSize: '3em'}}>
+				▲ {this.data.players[0]}
+			</div>
+			<div style={{color: 'blue', textAlign: 'center', fontSize: '3em'}}>
+				▲ {this.data.players[1]}
+			</div>
 		</div>
-	)
+	);
 
 	render() {
 		return (
-			<div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+			<div
+				style={{
+					height: '100%',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+				}}
+			>
 				{this.state.isReady ? (
 					this.renderContent()
 				) : (
-					<h1>
-						Battle is Pending...
-					</h1>
+					<h1>Battle is Pending...</h1>
 				)}
 				{this.state.winner !== null && (
 					<div
@@ -131,12 +148,15 @@ class App extends React.Component {
 							color: ['gray', 'red', 'blue'][this.state.winner],
 							fontSize: '6em',
 							fontWeight: 'bold',
-							textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+							textShadow:
+								'-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
 							width: '100%',
 							textAlign: 'center',
 						}}
 					>
-						{this.state.winner === 0 ? 'Draw' : `Winner: ${this.data.players[this.state.winner - 1]}`}
+						{this.state.winner === 0
+							? 'Draw'
+							: `Winner: ${this.data.players[this.state.winner - 1]}`}
 					</div>
 				)}
 			</div>

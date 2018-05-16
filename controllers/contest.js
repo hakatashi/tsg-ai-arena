@@ -54,7 +54,11 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('language unknown');
 		}
 
-		const competitor = await Submission.findOne({contest: req.contest, isPreset: true, name: req.body.competitor});
+		const competitor = await Submission.findOne({
+			contest: req.contest,
+			isPreset: true,
+			name: req.body.competitor,
+		});
 
 		if (competitor === null) {
 			throw new Error('competitor unknown');
@@ -91,7 +95,9 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Submission interval is too short');
 		}
 
-		const latestIdSubmission = await Submission.findOne({contest: req.contest}).sort({id: -1}).exec();
+		const latestIdSubmission = await Submission.findOne({contest: req.contest})
+			.sort({id: -1})
+			.exec();
 
 		const submissionRecord = new Submission({
 			isPreset: false,
@@ -106,9 +112,11 @@ module.exports.postSubmission = async (req, res) => {
 
 		const submission = await submissionRecord.save();
 
-		runner.battle([submission, competitor], req.contest, req.user).catch((e) => {
-			console.error(e);
-		});
+		runner
+			.battle([submission, competitor], req.contest, req.user)
+			.catch((e) => {
+				console.error(e);
+			});
 
 		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {

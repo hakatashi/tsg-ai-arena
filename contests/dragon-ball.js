@@ -41,18 +41,18 @@ const getNewParams = ({x, y, sx, sy, ax, ay}, isBall) => {
 	return newParams;
 };
 
-const dist = ({x: Ax, y: Ay}, {x: Bx, y: By}) => (
-	Math.sqrt((Ax - Bx) ** 2 + (Ay - By) ** 2)
-);
+const dist = ({x: Ax, y: Ay}, {x: Bx, y: By}) => Math.sqrt((Ax - Bx) ** 2 + (Ay - By) ** 2);
 
-const serialize = (state) => (
-	[
-		state.frames,
-		...state.players.map(({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`),
-		state.balls.length,
-		...state.balls.map(({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`),
-	].join('\n')
-);
+const serialize = (state) => [
+	state.frames,
+	...state.players.map(
+		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`
+	),
+	state.balls.length,
+	...state.balls.map(
+		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`
+	),
+].join('\n');
 
 module.exports.serialize = serialize;
 
@@ -82,26 +82,36 @@ module.exports.presets = {
 			return '30 1';
 		}
 
-		return `${(180 - Math.atan2(state.players[0].sx, state.players[0].sy) / Math.PI * 180).toFixed(3)} 1`;
+		return `${(
+			180 -
+			Math.atan2(state.players[0].sx, state.players[0].sy) / Math.PI * 180
+		).toFixed(3)} 1`;
 	},
 	random: () => `${(Math.random() * 360).toFixed(3)} 1`,
 	nearest: (stdin) => {
 		const state = deserialize(stdin);
 
 		const target = minBy(state.balls, (ball) => dist(state.players[0], ball));
-		return `${(180 - Math.atan2(target.x - state.players[0].x, target.y - state.players[0].y) / Math.PI * 180).toFixed(3)} 1`;
+		return `${(
+			180 -
+			Math.atan2(target.x - state.players[0].x, target.y - state.players[0].y) /
+				Math.PI *
+				180
+		).toFixed(3)} 1`;
 	},
 };
 
 module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 	const initialState = initState || {
 		frames: 0,
-		balls: Array(7).fill().map(() => ({
-			x: Math.random() * 1024,
-			y: Math.random() * 1024,
-			sx: (Math.random() * 5 + 5) * (Math.random() < 0.5 ? 1 : -1),
-			sy: (Math.random() * 5 + 5) * (Math.random() < 0.5 ? 1 : -1),
-		})),
+		balls: Array(7)
+			.fill()
+			.map(() => ({
+				x: Math.random() * 1024,
+				y: Math.random() * 1024,
+				sx: (Math.random() * 5 + 5) * (Math.random() < 0.5 ? 1 : -1),
+				sy: (Math.random() * 5 + 5) * (Math.random() < 0.5 ? 1 : -1),
+			})),
 		players: [
 			{
 				x: 256,
@@ -130,13 +140,19 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 	while (state.frames < 1000 && state.balls.length > 0) {
 		if (state.frames % 10 === 0) {
 			const stdin1 = serialize(state);
-			const stdin2 = serialize({...state, players: state.players.slice().reverse()});
+			const stdin2 = serialize({
+				...state,
+				players: state.players.slice().reverse(),
+			});
 
 			const {stdout: stdout1} = await execute(stdin1, 0);
 			const {stdout: stdout2} = await execute(stdin2, 1);
 
 			for (const [playerIndex, stdout] of [stdout1, stdout2].entries()) {
-				const tokens = stdout.toString().trim().split(/\s+/);
+				const tokens = stdout
+					.toString()
+					.trim()
+					.split(/\s+/);
 
 				if (tokens.length !== 2) {
 					state.players[playerIndex].ax = 0;

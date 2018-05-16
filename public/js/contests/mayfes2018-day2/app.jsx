@@ -23,7 +23,9 @@ class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
 
-		this.data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
+		this.data = JSON.parse(
+			document.querySelector('meta[name="data"]').getAttribute('content')
+		);
 
 		this.state = {
 			isReady: false,
@@ -47,21 +49,24 @@ class App extends React.Component {
 		const frames = [];
 		let turnIndex = 0;
 
-		await contest.battler(() => {
-			if (this.data.turns[turnIndex] === undefined) {
-				return Promise.resolve({stdout: ''});
-			}
+		await contest.battler(
+			() => {
+				if (this.data.turns[turnIndex] === undefined) {
+					return Promise.resolve({stdout: ''});
+				}
 
-			const {stdout} = this.data.turns[turnIndex];
-			turnIndex++;
-			return Promise.resolve({stdout});
-		}, {
-			onFrame: (state) => frames.push(cloneDeep(state)),
-			initState: pick(this.state, ['turns', 'field']),
-		});
+				const {stdout} = this.data.turns[turnIndex];
+				turnIndex++;
+				return Promise.resolve({stdout});
+			},
+			{
+				onFrame: (state) => frames.push(cloneDeep(state)),
+				initState: pick(this.state, ['turns', 'field']),
+			}
+		);
 
 		this.frames = frames;
-	}
+	};
 
 	handleFrame = async () => {
 		if (this.frame >= this.frames.length) {
@@ -81,7 +86,10 @@ class App extends React.Component {
 			let longestPathLength = 0;
 			let longestPaths = [];
 
-			for (const [rowsIndex, rows] of [newState.field, transpose(newState.field)].entries()) {
+			for (const [rowsIndex, rows] of [
+				newState.field,
+				transpose(newState.field),
+			].entries()) {
 				for (const [rowIndex, values] of rows.entries()) {
 					const row = values.map((value) => {
 						if (playerIndex === 0) {
@@ -103,29 +111,38 @@ class App extends React.Component {
 
 						if (value === true && nextValue === false) {
 							chunks.push({
-
-								start: rowsIndex === 0 ? {
-									x: rowIndex,
-									y: start,
-								} : {
-									x: start,
-									y: rowIndex,
-								},
-								end: rowsIndex === 0 ? {
-									x: rowIndex,
-									y: index,
-								} : {
-									x: index,
-									y: rowIndex,
-								},
+								start:
+									rowsIndex === 0
+										? {
+											x: rowIndex,
+											y: start,
+										  }
+										: {
+											x: start,
+											y: rowIndex,
+										  },
+								end:
+									rowsIndex === 0
+										? {
+											x: rowIndex,
+											y: index,
+										  }
+										: {
+											x: index,
+											y: rowIndex,
+										  },
 								length: index - start + 1,
 							});
 						}
 					}
 
 					const longestRowPath = maxBy(chunks, 'length');
-					const longestRowPathLength = longestRowPath ? longestRowPath.length : 0;
-					const longestRowChunks = chunks.filter(({length}) => length === longestRowPathLength);
+					const longestRowPathLength = longestRowPath
+						? longestRowPath.length
+						: 0;
+					const longestRowChunks = chunks.filter(
+						({length}) => length === longestRowPathLength
+					);
 
 					if (longestRowPathLength === longestPathLength) {
 						longestPaths.push(...longestRowChunks);
@@ -140,12 +157,15 @@ class App extends React.Component {
 		});
 
 		await new Promise((resolve) => {
-			this.setState({
-				tempBlocks: [
-					{x: -2, y: 3, rot: 0, opacity: 0.3},
-					{x: 13, y: 3, rot: 0, opacity: 0.3},
-				],
-			}, resolve);
+			this.setState(
+				{
+					tempBlocks: [
+						{x: -2, y: 3, rot: 0, opacity: 0.3},
+						{x: 13, y: 3, rot: 0, opacity: 0.3},
+					],
+				},
+				resolve
+			);
 		});
 
 		await new Promise((resolve) => {
@@ -153,13 +173,16 @@ class App extends React.Component {
 		});
 
 		await new Promise((resolve) => {
-			this.setState({
-				tempBlocks: this.frames[this.frame].outputs.map((block) => ({
-					...block,
-					opacity: 1,
-				})),
-				turns: newState.turns,
-			}, resolve);
+			this.setState(
+				{
+					tempBlocks: this.frames[this.frame].outputs.map((block) => ({
+						...block,
+						opacity: 1,
+					})),
+					turns: newState.turns,
+				},
+				resolve
+			);
 		});
 
 		await new Promise((resolve) => {
@@ -167,16 +190,19 @@ class App extends React.Component {
 		});
 
 		await new Promise((resolve) => {
-			this.setState({
-				...newState,
-				longestPathsList,
-				tempBlocks: null,
-			}, resolve);
+			this.setState(
+				{
+					...newState,
+					longestPathsList,
+					tempBlocks: null,
+				},
+				resolve
+			);
 		});
 		this.frame++;
 
 		setTimeout(this.handleFrame, 2000);
-	}
+	};
 
 	renderContent = () => (
 		<div
@@ -201,9 +227,7 @@ class App extends React.Component {
 					alignItems: 'center',
 				}}
 			>
-				<div>
-					{this.data.players[0]}
-				</div>
+				<div>{this.data.players[0]}</div>
 				<div
 					style={{
 						fontSize: '5em',
@@ -212,17 +236,20 @@ class App extends React.Component {
 				>
 					{this.state.points[0]}
 				</div>
-				{Array(20).fill().map((_, index) => (
-					<div
-						key={index}
-						style={{
-							width: '45px',
-							height: '15px',
-							background: index < 19 - this.state.turns ? 'red' : 'transparent',
-							marginTop: '5px',
-						}}
-					/>
-				))}
+				{Array(20)
+					.fill()
+					.map((_, index) => (
+						<div
+							key={index}
+							style={{
+								width: '45px',
+								height: '15px',
+								background:
+									index < 19 - this.state.turns ? 'red' : 'transparent',
+								marginTop: '5px',
+							}}
+						/>
+					))}
 			</div>
 			<svg
 				style={{
@@ -237,9 +264,7 @@ class App extends React.Component {
 				viewBox="0 0 500 500"
 			>
 				{transpose(this.state.field).map((row, y) => (
-					<g
-						key={y}
-					>
+					<g key={y}>
 						{row.map((value, x) => (
 							<rect
 								key={x}
@@ -253,9 +278,7 @@ class App extends React.Component {
 					</g>
 				))}
 				{this.state.longestPathsList.map((longestPaths, playerIndex) => (
-					<g
-						key={playerIndex}
-					>
+					<g key={playerIndex}>
 						{longestPaths.map((path, pathIndex) => (
 							<line
 								key={pathIndex}
@@ -270,19 +293,23 @@ class App extends React.Component {
 						))}
 					</g>
 				))}
-				{this.state.tempBlocks && this.state.tempBlocks.map((block, playerIndex) => (
-					<rect
-						key={playerIndex}
-						width="150"
-						height="50"
-						transform={`translate(${block.x * 50 - 25}, ${block.y * 50 - 25}) ${block.rot === 1 ? 'rotate(90)' : ''} translate(-75, -25)`}
-						opacity={block.opacity}
-						fill={playerIndex === 0 ? 'red' : 'blue'}
-						style={{
-							transition: 'all 0.5s',
-						}}
-					/>
-				))}
+				{this.state.tempBlocks &&
+					this.state.tempBlocks.map((block, playerIndex) => (
+						<rect
+							key={playerIndex}
+							width="150"
+							height="50"
+							transform={`translate(${block.x * 50 - 25}, ${block.y * 50 -
+								25}) ${
+								block.rot === 1 ? 'rotate(90)' : ''
+							} translate(-75, -25)`}
+							opacity={block.opacity}
+							fill={playerIndex === 0 ? 'red' : 'blue'}
+							style={{
+								transition: 'all 0.5s',
+							}}
+						/>
+					))}
 			</svg>
 			<div
 				style={{
@@ -297,9 +324,7 @@ class App extends React.Component {
 					alignItems: 'center',
 				}}
 			>
-				<div>
-					{this.data.players[1]}
-				</div>
+				<div>{this.data.players[1]}</div>
 				<div
 					style={{
 						fontSize: '5em',
@@ -308,30 +333,38 @@ class App extends React.Component {
 				>
 					{this.state.points[1]}
 				</div>
-				{Array(20).fill().map((_, index) => (
-					<div
-						key={index}
-						style={{
-							width: '45px',
-							height: '15px',
-							background: index < 19 - this.state.turns ? 'blue' : 'transparent',
-							marginTop: '5px',
-						}}
-					/>
-				))}
+				{Array(20)
+					.fill()
+					.map((_, index) => (
+						<div
+							key={index}
+							style={{
+								width: '45px',
+								height: '15px',
+								background:
+									index < 19 - this.state.turns ? 'blue' : 'transparent',
+								marginTop: '5px',
+							}}
+						/>
+					))}
 			</div>
 		</div>
-	)
+	);
 
 	render() {
 		return (
-			<div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+			<div
+				style={{
+					height: '100%',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+				}}
+			>
 				{this.state.isReady ? (
 					this.renderContent()
 				) : (
-					<h1>
-						Battle is Pending...
-					</h1>
+					<h1>Battle is Pending...</h1>
 				)}
 				{this.state.winner !== null && (
 					<div
@@ -343,12 +376,15 @@ class App extends React.Component {
 							color: ['gray', 'red', 'blue'][this.state.winner],
 							fontSize: '6em',
 							fontWeight: 'bold',
-							textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+							textShadow:
+								'-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
 							width: '100%',
 							textAlign: 'center',
 						}}
 					>
-						{this.state.winner === 0 ? 'Draw' : `Winner: ${this.data.players[this.state.winner - 1]}`}
+						{this.state.winner === 0
+							? 'Draw'
+							: `Winner: ${this.data.players[this.state.winner - 1]}`}
 					</div>
 				)}
 			</div>

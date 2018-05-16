@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
-const User = require('../models/User');
 const Battle = require('../models/Battle');
 const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');

@@ -26,11 +26,11 @@ battleSchema.methods.getOpponents = function(submission) {
 	return this.players.filter(({_id}) => !_id.equals(submission._id));
 };
 
-battleSchema.methods.getWinner = function () {
+battleSchema.methods.getWinner = function() {
 	return this.players[this.winner];
 };
 
-battleSchema.methods.isViewableBy = function (user) {
+battleSchema.methods.isViewableBy = function(user) {
 	if (this.players.every((player) => player.isPreset)) {
 		return true;
 	}
@@ -39,7 +39,9 @@ battleSchema.methods.isViewableBy = function (user) {
 		return false;
 	}
 
-	return this.players.some((player) => !player.isPreset && player.user._id.equals(user._id));
+	return this.players.some(
+		(player) => !player.isPreset && player.user._id.equals(user._id)
+	);
 };
 
 module.exports = mongoose.model('Battle', battleSchema);

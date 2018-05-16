@@ -20,9 +20,7 @@ module.exports.getBattle = async (req, res) => {
 	}
 
 	if (battle.contest.id !== req.params.contest) {
-		res.redirect(
-			`/contests/${battle.contest.id}/battles/${battle._id}`
-		);
+		res.redirect(`/contests/${battle.contest.id}/battles/${battle._id}`);
 		return;
 	}
 
@@ -71,9 +69,11 @@ module.exports.postBattles = async (req, res) => {
 			return;
 		}
 
-		const battle = await runner.battle([player1, player2], req.contest, req.user).catch((e) => {
-			console.error(e);
-		});
+		const battle = await runner
+			.battle([player1, player2], req.contest, req.user)
+			.catch((e) => {
+				console.error(e);
+			});
 
 		res.redirect(`/contests/${req.contest.id}/battles/${battle._id}`);
 	} catch (error) {
@@ -152,23 +152,27 @@ module.exports.getBattles = async (req, res) => {
 		.limit(500)
 		.exec();
 
-	const presets = req.user && await Submission.find({
-		contest: req.contest,
-		isPreset: true,
-	})
-		.populate('user')
-		.sort({id: -1})
-		.exec();
+	const presets =
+		req.user &&
+		(await Submission.find({
+			contest: req.contest,
+			isPreset: true,
+		})
+			.populate('user')
+			.sort({id: -1})
+			.exec());
 
-	const mySubmissions = req.user && await Submission.find({
-		contest: req.contest,
-		user: req.user,
-		isPreset: false,
-	})
-		.populate('user')
-		.sort({id: -1})
-		.limit(15)
-		.exec();
+	const mySubmissions =
+		req.user &&
+		(await Submission.find({
+			contest: req.contest,
+			user: req.user,
+			isPreset: false,
+		})
+			.populate('user')
+			.sort({id: -1})
+			.limit(15)
+			.exec());
 
 	res.render('battles', {
 		contest: req.contest,

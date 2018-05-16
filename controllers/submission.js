@@ -104,4 +104,3 @@ module.exports.getOldSubmission = async (req, res) => {
 		`/contests/${submission.contest.id}/submissions/${submission._id}`
 	);
 };
-

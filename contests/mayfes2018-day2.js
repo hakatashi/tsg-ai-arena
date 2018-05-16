@@ -8,11 +8,8 @@ const clamp = require('lodash/clamp');
 
 const SIZE = 10;
 
-const serialize = (state) => (
-	[
-		state.turns,
-		...transpose(state.field).map((row) => row.join(' ')),
-	].join('\n')
+const serialize = (state) => [state.turns, ...transpose(state.field).map((row) => row.join(' '))].join(
+	'\n'
 );
 
 module.exports.serialize = serialize;
@@ -22,7 +19,11 @@ const deserialize = (stdin) => {
 
 	return {
 		turns: parseInt(lines[0]),
-		field: transpose(lines.slice(1).map((column) => column.split(' ').map((value) => parseInt(value)))),
+		field: transpose(
+			lines
+				.slice(1)
+				.map((column) => column.split(' ').map((value) => parseInt(value)))
+		),
 	};
 };
 
@@ -39,14 +40,18 @@ module.exports.presets = {
 
 		const index = state.turns % 10 - 1;
 
-		return `${index % 3 * 3 + 3} ${Math.floor(index / 3) + Math.floor(state.turns / 10) * 3 + 1} 0`;
+		return `${(index % 3) * 3 + 3} ${Math.floor(index / 3) +
+			Math.floor(state.turns / 10) * 3 +
+			1} 0`;
 	},
 };
 
 module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 	const initialState = initState || {
 		turns: 0,
-		field: Array(SIZE).fill().map(() => Array(SIZE).fill(0)),
+		field: Array(SIZE)
+			.fill()
+			.map(() => Array(SIZE).fill(0)),
 	};
 
 	const state = {
@@ -69,7 +74,10 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		const outputs = [];
 
 		for (const [playerIndex, stdout] of [stdout1, stdout2].entries()) {
-			const tokens = stdout.toString().trim().split(/\s+/);
+			const tokens = stdout
+				.toString()
+				.trim()
+				.split(/\s+/);
 
 			const {x, y, rot} = (() => {
 				if (tokens.length !== 3) {
@@ -78,7 +86,14 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 				const [nx, ny, nrot] = tokens.map((token) => parseInt(token));
 
-				if (nx < 1 || nx > SIZE || ny < 1 || ny > SIZE || nrot < 0 || nrot > 1) {
+				if (
+					nx < 1 ||
+					nx > SIZE ||
+					ny < 1 ||
+					ny > SIZE ||
+					nrot < 0 ||
+					nrot > 1
+				) {
 					return {x: 5, y: 5, rot: 0};
 				}
 
@@ -114,29 +129,39 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 			let longestPath = 0;
 
 			for (const y of Array(SIZE).keys()) {
-				const row = state.field[y].map((value) => {
-					if (playerIndex === 0) {
-						return value > 0 ? '1' : '0';
-					}
+				const row = state.field[y]
+					.map((value) => {
+						if (playerIndex === 0) {
+							return value > 0 ? '1' : '0';
+						}
 
-					return value < 0 ? '1' : '0';
-				}).join('');
+						return value < 0 ? '1' : '0';
+					})
+					.join('');
 
 				const longestRowPath = maxBy(row.split('0'), 'length');
-				longestPath = Math.max(longestPath, longestRowPath ? longestRowPath.length : 0);
+				longestPath = Math.max(
+					longestPath,
+					longestRowPath ? longestRowPath.length : 0
+				);
 			}
 
 			for (const x of Array(SIZE).keys()) {
-				const column = transpose(state.field)[x].map((value) => {
-					if (playerIndex === 0) {
-						return value > 0 ? '1' : '0';
-					}
+				const column = transpose(state.field)
+					[x].map((value) => {
+						if (playerIndex === 0) {
+							return value > 0 ? '1' : '0';
+						}
 
-					return value < 0 ? '1' : '0';
-				}).join('');
+						return value < 0 ? '1' : '0';
+					})
+					.join('');
 
 				const longestColumnPath = maxBy(column.split('0'), 'length');
-				longestPath = Math.max(longestPath, longestColumnPath ? longestColumnPath.length : 0);
+				longestPath = Math.max(
+					longestPath,
+					longestColumnPath ? longestColumnPath.length : 0
+				);
 			}
 
 			state.points[playerIndex] = longestPath;

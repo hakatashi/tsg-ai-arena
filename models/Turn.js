@@ -24,7 +24,7 @@ turnSchema.methods.timeText = function() {
 		.format('YYYY/MM/DD HH:mm:ss');
 };
 
-turnSchema.methods.getSubmission = function () {
+turnSchema.methods.getSubmission = function() {
 	return this.battle.players[this.player];
 };
 

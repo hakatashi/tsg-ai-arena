@@ -22,9 +22,7 @@ module.exports.getTurn = async (req, res) => {
 	}
 
 	if (turn.battle.contest.id !== req.params.contest) {
-		res.redirect(
-			`/contests/${turn.battle.contest.id}/turns/${turn._id}`
-		);
+		res.redirect(`/contests/${turn.battle.contest.id}/turns/${turn._id}`);
 		return;
 	}
 

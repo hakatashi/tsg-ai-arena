@@ -4,7 +4,9 @@ class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
 
-		this.data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
+		this.data = JSON.parse(
+			document.querySelector('meta[name="data"]').getAttribute('content')
+		);
 		this.state = {
 			stones: Array(24).fill(0),
 			turn: 0,
@@ -43,7 +45,7 @@ class App extends React.Component {
 				turn: prevState.turn + 1,
 			};
 		});
-	}
+	};
 
 	renderContent = () => (
 		<div style={{width: '480px'}}>
@@ -70,20 +72,29 @@ class App extends React.Component {
 					/>
 				))}
 			</div>
-			<div style={{color: 'red', textAlign: 'center', fontSize: '3em'}}>● {this.data.players[0]}</div>
-			<div style={{color: 'blue', textAlign: 'center', fontSize: '3em'}}>● {this.data.players[1]}</div>
+			<div style={{color: 'red', textAlign: 'center', fontSize: '3em'}}>
+				● {this.data.players[0]}
+			</div>
+			<div style={{color: 'blue', textAlign: 'center', fontSize: '3em'}}>
+				● {this.data.players[1]}
+			</div>
 		</div>
-	)
+	);
 
 	render() {
 		return (
-			<div style={{height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+			<div
+				style={{
+					height: '100%',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+				}}
+			>
 				{this.state.isReady ? (
 					this.renderContent()
 				) : (
-					<h1>
-						Battle is Pending...
-					</h1>
+					<h1>Battle is Pending...</h1>
 				)}
 				{this.state.winner !== null && (
 					<div
@@ -95,7 +106,8 @@ class App extends React.Component {
 							color: ['red', 'blue'][this.state.winner],
 							fontSize: '6em',
 							fontWeight: 'bold',
-							textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+							textShadow:
+								'-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
 							width: '100%',
 							textAlign: 'center',
 						}}
