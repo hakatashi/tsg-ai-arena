@@ -1,9 +1,50 @@
 /* eslint no-loop-func: "off" */
+const flatten = require('lodash/flatten');
+const minBy = require('lodash/minBy');
 
 const SIZE = 9;
 
 module.exports.presets = {
 	random: () => Math.floor(Math.random() * 4 + 1).toString(),
+	clever: (stdin) => {
+		const lines = stdin.split('\n').filter((line) => line.length > 0).map((line) => line.split(' '));
+		const state = {
+			turns: parseInt(lines[0]),
+			me: {
+				x: parseInt(lines[1][0]),
+				y: parseInt(lines[1][1]),
+			},
+			rival: {
+				x: parseInt(lines[2][0]),
+				y: parseInt(lines[2][1]),
+			},
+			cells: flatten(lines.slice(3, SIZE + 3).map((row, y) => row.map((cell, x) => ({
+				x, y, value: parseInt(cell),
+			})))),
+			soups: lines.slice(SIZE + 4).map(([x, y]) => ({x: parseInt(x), y: parseInt(y)})),
+		};
+
+		const targets = state.soups.length > 0 ? state.soups : state.cells.filter(({value}) => value === 0 || value === 2);
+		const target = minBy(targets, ({x, y}) => Math.abs(state.me.x - x) + Math.abs(state.me.y - y));
+
+		if (target.x > state.me.x) {
+			return '2';
+		}
+
+		if (target.x < state.me.x) {
+			return '4';
+		}
+
+		if (target.y > state.me.y) {
+			return '3';
+		}
+
+		if (target.y < state.me.y) {
+			return '1';
+		}
+
+		return '0';
+	},
 };
 
 module.exports.battler = async (execute) => {
@@ -47,16 +88,16 @@ module.exports.battler = async (execute) => {
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players : players.slice().reverse()).map((player) => (
-				`${player.x.toString()} ${player.y.toString()}`
-			)),
+			...(state.player === 0 ? players.map(({x, y}) => `${x} ${y}`) : players.slice().reverse().map(({x, y}) => (
+				`${SIZE - x - 1} ${SIZE - y - 1}`
+			))),
 			...Array(SIZE).fill().map((_, y) => (
 				normalizedField[y].join(' ')
 			)),
 			soups.length.toString(),
-			...soups.map(({x, y}) => (
-				`${x} ${y}`
-			)),
+			...(state.player === 0 ? soups.map(({x, y}) => `${x} ${y}`) : soups.slice().reverse().map(({x, y}) => (
+				`${SIZE - x - 1} ${SIZE - y - 1}`
+			))),
 		].join('\n')}\n`;
 
 		const {stdout} = await execute(input, state.player);

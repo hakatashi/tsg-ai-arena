@@ -127,4 +127,4 @@ setInterval(() => {
 	}
 
 	document.querySelector('#app').innerHTML = output;
-}, 100);
+}, 500);
