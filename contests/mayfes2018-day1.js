@@ -43,7 +43,7 @@ module.exports.presets = {
 			return '1';
 		}
 
-		return '0';
+		return Math.floor(Math.random() * 4 + 1).toString();
 	},
 };
 
