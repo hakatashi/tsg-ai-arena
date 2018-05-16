@@ -88,46 +88,12 @@ mongoose.Promise = global.Promise;
 		await preset.save();
 	}
 
-<<<<<<< Updated upstream
-	for (const username of ['kivantium', 'hakatashi', 'kurgm', 'kuromunori', 'progrunner17']) {
-		const user = await User.findOne({email: `${username}@twitter.com`});
-
-		if (user !== null) {
-			user.admin = true;
-			await user.save();
-		}
-	}
-
-	const contests = await Contest.find();
-
-	for (const contest of contests) {
-		const submissions = await Submission.find({contest}).sort({_id: 1}).exec();
-		let id = 1;
-		for (const submission of submissions) {
-			if (submission.isPreset) {
-				submission.id = 0;
-				await submission.save();
-				continue;
-			}
-			submission.id = id;
-			id++;
-			await submission.save();
-		}
-	}
-
-	const battles = await Battle.find();
-	const hakatashi = await User.findOne({email: 'hakatashi@twitter.com'});
-	for (const battle of battles) {
-		battle.user = hakatashi;
-	}
-=======
 	const contest2 = await Contest.findOne({id: 'mayfes2018-day2'});
 
 	contest2.start = new Date('2018-05-20T14:05:00+0900');
 	contest2.end = new Date('2018-05-20T15:05:00+0900');
 
 	await contest2.save();
->>>>>>> Stashed changes
 
 	mongoose.connection.close();
 })();
