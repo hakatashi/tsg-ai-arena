@@ -92,7 +92,7 @@ module.exports.battler = async (execute) => {
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players.map(({x, y, soup}) => `${x} ${y} ${soup}`) : players.slice().reverse().map(({x, y, soup}) => (
+			...(state.player === 0 ? players.map(({x, y, soups: soup}) => `${x} ${y} ${soup}`) : players.slice().reverse().map(({x, y, soups: soup}) => (
 				`${SIZE - x - 1} ${SIZE - y - 1} ${soup}`
 			))),
 			...Array(SIZE).fill().map((_, y) => (
