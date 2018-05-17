@@ -29,6 +29,22 @@ submissionSchema.methods.userText = function() {
 	return `${this.user.name()} (#${this.id})`;
 };
 
+submissionSchema.methods.isViewableBy = function(user) {
+	if (!user) {
+		return false;
+	}
+
+	if (user.admin) {
+		return true;
+	}
+
+	if (!this.user) {
+		return false;
+	}
+
+	return this.user._id.equals(user._id);
+};
+
 const Submission = mongoose.model('Submission', submissionSchema);
 
 module.exports = Submission;
