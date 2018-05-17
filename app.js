@@ -188,6 +188,11 @@ router.get(
 	battleController.getBattle
 );
 router.get(
+	'/contests/:contest/battles/latest/visualizer',
+	contestController.base,
+	battleController.getLatestVisualizer
+);
+router.get(
 	'/contests/:contest/battles/:battle/visualizer',
 	contestController.base,
 	battleController.getBattleVisualizer

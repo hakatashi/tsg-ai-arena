@@ -47,6 +47,9 @@ class App extends React.Component {
 				this.setState({
 					isCollated: true,
 				});
+				if (this.data.id === 'latest') {
+					this.handleClickStart();
+				}
 			});
 		}
 	}
@@ -87,6 +90,11 @@ class App extends React.Component {
 				this.setState(({points}) => ({
 					winner: points[0] > points[1] ? 1 : 2,
 				}));
+			}
+			if (this.data.id === 'latest') {
+				setTimeout(() => {
+					location.reload();
+				}, 10000);
 			}
 			return;
 		}

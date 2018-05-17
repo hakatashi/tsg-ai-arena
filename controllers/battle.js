@@ -82,30 +82,42 @@ module.exports.postBattles = async (req, res) => {
 	}
 };
 
-module.exports.getBattleVisualizer = async (req, res) => {
-	const _id = req.params.battle;
-
-	const battle = await Battle.findOne({_id})
-		.populate('contest')
-		.populate({
-			path: 'players',
-			populate: {path: 'user'},
+const getVisualizer = async (req, res, id) => {
+	const battle = id === 'latest' ? (
+		await Battle.findOne({
+			contest: req.contest,
+			status: {$ne: 'pending'},
 		})
-		.exec();
+			.sort({createdAt: -1})
+			.populate('contest')
+			.populate({
+				path: 'players',
+				populate: {path: 'user'},
+			})
+			.exec()
+	) : (
+		await Battle.findOne({_id: id})
+			.populate('contest')
+			.populate({
+				path: 'players',
+				populate: {path: 'user'},
+			})
+			.exec()
+	);
 
 	if (battle === null) {
 		res.sendStatus(404);
 		return;
 	}
 
-	if (!battle.isViewableBy(req.user)) {
+	if (id !== 'latest' && !req.contest.isEnded() && !battle.isViewableBy(req.user)) {
 		res.sendStatus(403);
 		return;
 	}
 
 	if (battle.contest.id !== req.params.contest) {
 		res.redirect(
-			`/contests/${battle.contest.id}/battles/${battle._id}/visualizer`
+			`/contests/${battle.contest.id}/battles/${id}/visualizer`
 		);
 		return;
 	}
@@ -122,6 +134,7 @@ module.exports.getBattleVisualizer = async (req, res) => {
 		.exec();
 
 	const data = {
+		id,
 		result: battle.result,
 		winner: battle.winner,
 		players: battle.players.map((player) => player.userText()),
@@ -139,6 +152,9 @@ module.exports.getBattleVisualizer = async (req, res) => {
 		hideFooter: true,
 	});
 };
+
+module.exports.getBattleVisualizer = (req, res) => getVisualizer(req, res, req.params.battle);
+module.exports.getLatestVisualizer = (req, res) => getVisualizer(req, res, 'latest');
 
 module.exports.getBattles = async (req, res) => {
 	const battles = await Battle.find({

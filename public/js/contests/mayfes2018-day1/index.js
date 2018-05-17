@@ -123,6 +123,12 @@ const handleTurn = () => {
 			textAlign: 'center',
 		});
 		output += resultEl.outerHTML;
+
+		if (data.id === 'latest') {
+			setTimeout(() => {
+				location.reload();
+			}, 10000);
+		}
 	}
 
 	document.querySelector('#app').innerHTML = output;
@@ -149,6 +155,8 @@ if (data.result === 'pending') {
 	setTimeout(() => {
 		location.reload();
 	}, 3000);
+} else if (data.id === 'latest') {
+	setInterval(handleTurn, 500);
 } else {
 	const buttonEl = document.createElement('button');
 	Object.assign(buttonEl, {
