@@ -16,7 +16,7 @@ const getColor = (value) => {
 		return `rgb(255, ${Math.floor(255 - value / 3 * 200)}, ${Math.floor(255 - value / 3 * 200)})`;
 	}
 
-	return `rgb(${Math.floor(255 - value / 3 * 200)}, ${Math.floor(255 - value / 3 * 200)}, 255)`;
+	return `rgb(${Math.floor(255 + value / 3 * 200)}, ${Math.floor(255 + value / 3 * 200)}, 255)`;
 };
 
 class App extends React.Component {
