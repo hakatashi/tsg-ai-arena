@@ -86,7 +86,7 @@ const getVisualizer = async (req, res, id) => {
 	const battle = id === 'latest' ? (
 		await Battle.findOne({
 			contest: req.contest,
-			status: {$ne: 'pending'},
+			result: {$ne: 'pending'},
 		})
 			.sort({createdAt: -1})
 			.populate('contest')
