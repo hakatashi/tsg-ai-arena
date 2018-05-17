@@ -49,18 +49,18 @@ const handleTurn = () => {
 			const isSoup = false;
 			for (var i = 0; i < soup.length; i++) {
 				if (soup[i].x == x && soup[i].y == y) {
-					text = '<span style="color: red; font-SIZE: 30px">★</span>';
+					text = '<span style="color: red; font-size: 42px; line-height: 42px">★</span>';
 				}
 			}
 
 			if (x1 == x && y1 == y) {
-				text = '<span style="color: royalblue; font-SIZE: 30px">●</span>';
+				text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
 			}
 			if (x2 == x && y2 == y) {
-				text = '<span style="color: darkorange; font-SIZE: 30px">●</span>';
+				text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
 			}
 			output +=
-				`<th style="text-align: center; border: 1px black solid; width: 40px; height: 40px; background-color:${
+				`<th style="text-align: center; border: 1px black solid; width: 50px; height: 50px; background-color:${
 					color
 				};">${
 					text
