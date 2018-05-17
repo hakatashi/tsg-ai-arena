@@ -31,6 +31,10 @@ battleSchema.methods.getWinner = function() {
 };
 
 battleSchema.methods.isViewableBy = function(user) {
+	if (user.admin) {
+		return true;
+	}
+
 	if (this.players.every((player) => player.isPreset)) {
 		return true;
 	}

@@ -174,9 +174,11 @@ module.exports.getBattles = async (req, res) => {
 			.limit(15)
 			.exec());
 
+	const allSubmissions = req.user && req.user.admin && (await Submission.find({contest: req.contest}).populate('user').sort({id: -1}).exec());
+
 	res.render('battles', {
 		contest: req.contest,
 		battles,
-		submissions: req.user && presets.concat(mySubmissions),
+		submissions: req.user && (req.user.admin ? allSubmissions : presets.concat(mySubmissions)),
 	});
 };
