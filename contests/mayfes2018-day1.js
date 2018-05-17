@@ -13,10 +13,12 @@ module.exports.presets = {
 			me: {
 				x: parseInt(lines[1][0]),
 				y: parseInt(lines[1][1]),
+				soups: parseInt(lines[1][2]),
 			},
 			rival: {
 				x: parseInt(lines[2][0]),
 				y: parseInt(lines[2][1]),
+				soups: parseInt(lines[2][2]),
 			},
 			cells: flatten(lines.slice(3, SIZE + 3).map((row, y) => row.map((cell, x) => ({
 				x, y, value: parseInt(cell),
@@ -88,8 +90,8 @@ module.exports.battler = async (execute) => {
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players.map(({x, y}) => `${x} ${y}`) : players.slice().reverse().map(({x, y}) => (
-				`${SIZE - x - 1} ${SIZE - y - 1}`
+			...(state.player === 0 ? players.map(({x, y, soups}) => `${x} ${y} ${soups}`) : players.slice().reverse().map(({x, y, soups}) => (
+				`${SIZE - x - 1} ${SIZE - y - 1} ${soups}`
 			))),
 			...Array(SIZE).fill().map((_, y) => (
 				normalizedField[y].join(' ')
