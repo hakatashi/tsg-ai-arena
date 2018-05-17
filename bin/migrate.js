@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
-const Battle = require('../models/Battle');
-const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
@@ -11,8 +9,6 @@ mongoose.Promise = global.Promise;
 
 	const contest1 = await Contest.findOne({id: 'mayfes2018-day1'});
 
-	contest1.start = new Date('2018-05-19T14:05:00+0900');
-	contest1.end = new Date('2018-05-19T15:05:00+0900');
 	contest1.description.ja = stripIndent`
 		# スープ屋とぅーん
 
@@ -67,7 +63,7 @@ mongoose.Promise = global.Promise;
 				* 下(+y方向)に移動 (3)
 				* 左(-x方向)に移動 (4)
 		* 場外に出る場合や不正な出力をした場合、\`0\`を出力したものとみなされる。
-        
+
 		## 入力例
 
 		\`\`\`
@@ -95,31 +91,6 @@ mongoose.Promise = global.Promise;
 	`;
 
 	await contest1.save();
-
-	await Submission.remove({contest: contest1});
-	await Battle.remove({contest: contest1});
-
-	for (const presetName of ['random', 'clever']) {
-		const preset = new Submission({
-			isPreset: true,
-			name: presetName,
-			user: null,
-			contest: contest1,
-			language: null,
-			code: null,
-			size: null,
-			id: 0,
-		});
-
-		await preset.save();
-	}
-
-	const contest2 = await Contest.findOne({id: 'mayfes2018-day2'});
-
-	contest2.start = new Date('2018-05-20T14:05:00+0900');
-	contest2.end = new Date('2018-05-20T15:05:00+0900');
-
-	await contest2.save();
 
 	mongoose.connection.close();
 })();
