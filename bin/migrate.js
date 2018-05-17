@@ -96,7 +96,7 @@ mongoose.Promise = global.Promise;
 	await contest1.save();
 
 	await Battle.remove({contest: contest1});
-	await Submission.find({contest: contest1});
+	await Submission.remove({contest: contest1});
 
 	for (const presetName of ['random', 'clever']) {
 		const preset = new Submission({
