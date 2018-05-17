@@ -1,5 +1,7 @@
-/* eslint no-loop-func: "off" */
+/* eslint no-loop-func: off, array-plural/array-plural: off */
+
 const flatten = require('lodash/flatten');
+const maxBy = require('lodash/maxBy');
 const minBy = require('lodash/minBy');
 
 const SIZE = 9;
@@ -90,8 +92,8 @@ module.exports.battler = async (execute) => {
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players.map(({x, y, soups}) => `${x} ${y} ${soups}`) : players.slice().reverse().map(({x, y, soups}) => (
-				`${SIZE - x - 1} ${SIZE - y - 1} ${soups}`
+			...(state.player === 0 ? players.map(({x, y, soup}) => `${x} ${y} ${soup}`) : players.slice().reverse().map(({x, y, soup}) => (
+				`${SIZE - x - 1} ${SIZE - y - 1} ${soup}`
 			))),
 			...Array(SIZE).fill().map((_, y) => (
 				normalizedField[y].join(' ')
@@ -176,7 +178,7 @@ module.exports.battler = async (execute) => {
 		// check if soups is picked
 		for (const soup of soups) {
 			if (players[state.player].x === soup.x && players[state.player].y === soup.y) {
-				players[state.player].soups += 10;
+				players[state.player].soups += 5;
 				// remove soups
 				soups = soups.filter(({x, y}) => x !== soup.x || y !== soup.y);
 			}
@@ -196,9 +198,24 @@ module.exports.battler = async (execute) => {
 
 		// add soups to somewhere
 		if ([10, 40, 70].includes(state.turn)) {
-			const sx = Math.floor(Math.random() * SIZE);
-			const sy = Math.floor(Math.random() * SIZE);
-			soups.push({x: sx, y: sy});
+			const soupCandidates = [
+				[1, 1], [1, 4], [1, 7],
+				[4, 1], [4, 4], [4, 7],
+				[7, 1], [7, 4], [7, 7],
+			];
+
+			const [soupX, soupY] = maxBy(soupCandidates, ([x, y]) => {
+				if (soups.some((soup) => soup.x === x && soup.y === y)) {
+					return -1;
+				}
+
+				return Math.min(...[
+					Math.abs(players[0].x - x) + Math.abs(players[0].y - y),
+					Math.abs(players[1].x - x) + Math.abs(players[1].y - y),
+				]);
+			});
+
+			soups.push({x: soupX, y: soupY});
 		}
 
 		// update turn and state.player

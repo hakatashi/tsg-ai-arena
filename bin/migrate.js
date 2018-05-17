@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
+const Battle = require('../models/Battle');
+const Submission = require('../models/Submission');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
@@ -22,8 +24,9 @@ mongoose.Promise = global.Promise;
 		* 2人のプレイヤーは各ターンに1回ずつ交互に、前後左右に移動することができる。
 		* 自プレイヤーが移動した先のタイルは現在の色に関わらず自プレイヤーの色(1)に塗られる。
 		* 他プレイヤーが移動した先のタイルは現在の色に関わらず他プレイヤーの色(2)に塗られる。
-		* 10ターン目・40ターン目・70ターン目の3回、ランダムに選ばれた1タイルに強化スープの素が出現する。
-		* 強化スープの素が落ちている場所に移動すると強化スープの素を拾うことができ、拾ったプレイヤーは10ターンの間塗る力が強化される。強化中は移動先のタイルとその周囲1マスの合計9マスが同時に塗られる。
+		* 10ターン目・40ターン目・70ターン目の3回、床の上の1タイルに強化スープの素が出現する。
+			* 強化スープが出現する位置は、(1, 1), (1, 4), (1, 7), (4, 1), (4, 4), (4, 7), (7, 1), (7, 4), (7, 7) の9ヶ所のうち、両プレイヤーから最も遠い位置である。
+		* 強化スープの素が落ちている場所に移動すると強化スープの素を拾うことができ、拾ったプレイヤーは自分が動くターン5回の間塗る力が強化される。強化中は移動先のタイルとその周囲1マスの合計9マスが同時に塗られる。
 		* 100ターンが経過するとゲーム終了となる。
 		* ゲーム終了時に塗った面積の広いプレイヤーの勝利となる。
 
@@ -91,6 +94,24 @@ mongoose.Promise = global.Promise;
 	`;
 
 	await contest1.save();
+
+	await Battle.remove({contest: contest1});
+	await Submission.find({contest: contest1});
+
+	for (const presetName of ['random', 'clever']) {
+		const preset = new Submission({
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contest1,
+			language: null,
+			code: null,
+			size: null,
+			id: 0,
+		});
+
+		await preset.save();
+	}
 
 	mongoose.connection.close();
 })();
