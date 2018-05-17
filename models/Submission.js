@@ -7,7 +7,7 @@ const submissionSchema = new mongoose.Schema(
 		name: String,
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		contest: {type: mongoose.Schema.Types.ObjectId, ref: 'Contest'},
-		language: {type: String, enum: [null, 'node', 'c-gcc', 'python3']},
+		language: {type: String, enum: [null, 'node', 'c-gcc', 'python3', 'cpp-clang', 'ruby']},
 		code: Buffer,
 		size: {type: Number, min: 0},
 		id: {type: Number, min: 0},

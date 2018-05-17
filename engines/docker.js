@@ -44,6 +44,8 @@ module.exports = async ({id, code, stdin}) => {
 		filename = 'CODE.d';
 	} else if (id === 'c-gcc') {
 		filename = 'CODE.c';
+	} else if (id === 'cpp-clang') {
+		filename = 'CODE.cpp';
 	} else if (id === 'concise-folders' || id === 'pure-folders') {
 		filename = 'CODE.tar';
 	} else if (id === 'cmd') {
@@ -138,7 +140,7 @@ module.exports = async ({id, code, stdin}) => {
 		]);
 
 		const executionStart = Date.now();
-		const [stdout, stderr, containerData] = await runner.timeout(10000);
+		const [stdout, stderr, containerData] = await runner.timeout(5000);
 		const executionEnd = Date.now();
 
 		cleanup();

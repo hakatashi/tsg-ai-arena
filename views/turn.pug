@@ -7,7 +7,13 @@ block content
     if (turn.getSubmission().user && turn.getSubmission().user._id.equals(user) )|| contest.isEnded()
       p
         pre= turn.getSubmission().code
-        
+
+    h4 duration
+    p
+      = turn.duration
+      = ' '
+      | ms
+
     h4 stdin
     p
       pre= turn.input

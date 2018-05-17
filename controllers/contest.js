@@ -50,7 +50,7 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Competition has closed');
 		}
 
-		if (!['node', 'c-gcc', 'python3'].includes(req.body.language)) {
+		if (!['node', 'c-gcc', 'python3', 'cpp-clang', 'ruby'].includes(req.body.language)) {
 			throw new Error('language unknown');
 		}
 
