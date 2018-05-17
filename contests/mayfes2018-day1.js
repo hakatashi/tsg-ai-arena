@@ -15,20 +15,19 @@ module.exports.presets = {
 			me: {
 				x: parseInt(lines[1][0]),
 				y: parseInt(lines[1][1]),
-				soups: parseInt(lines[1][2]),
+				flies: parseInt(lines[1][2]),
 			},
 			rival: {
 				x: parseInt(lines[2][0]),
 				y: parseInt(lines[2][1]),
-				soups: parseInt(lines[2][2]),
+				flies: parseInt(lines[2][2]),
 			},
 			cells: flatten(lines.slice(3, SIZE + 3).map((row, y) => row.map((cell, x) => ({
 				x, y, value: parseInt(cell),
 			})))),
-			soups: lines.slice(SIZE + 4).map(([x, y]) => ({x: parseInt(x), y: parseInt(y)})),
 		};
 
-		const targets = state.soups.length > 0 ? state.soups : state.cells.filter(({value}) => value === 0 || value === 2);
+		const targets = state.cells.filter(({value}) => value === 0 || value === 2);
 		const target = minBy(targets, ({x, y}) => Math.abs(state.me.x - x) + Math.abs(state.me.y - y));
 
 		if (target.x > state.me.x) {
@@ -65,20 +64,18 @@ module.exports.battler = async (execute) => {
 	const player1 = {
 		x: 1,
 		y: 4,
-		soups: 0, // remaining soups
+		fly: 0, // remaining flies
 	};
 	const player2 = {
 		x: 7,
 		y: 4,
-		soups: 0,
+		fly: 0,
 	};
 
 	const players = [player1, player2];
 
 	field[player1.y][player1.x] = 1;
 	field[player2.y][player2.x] = 2;
-
-	let soups = [];
 
 	while (state.turn <= 100) {
 		const normalizedField = state.player === 0 ? field : field.slice().reverse().map((row) => row.slice().reverse().map((cell) => {
@@ -92,16 +89,12 @@ module.exports.battler = async (execute) => {
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players.map(({x, y, soups: soup}) => `${x} ${y} ${soup}`) : players.slice().reverse().map(({x, y, soups: soup}) => (
-				`${SIZE - x - 1} ${SIZE - y - 1} ${soup}`
+			...(state.player === 0 ? players.map(({x, y, fly}) => `${x} ${y} ${fly}`) : players.slice().reverse().map(({x, y, fly}) => (
+				`${SIZE - x - 1} ${SIZE - y - 1} ${fly}`
 			))),
 			...Array(SIZE).fill().map((_, y) => (
 				normalizedField[y].join(' ')
 			)),
-			soups.length.toString(),
-			...(state.player === 0 ? soups.map(({x, y}) => `${x} ${y}`) : soups.slice().reverse().map(({x, y}) => (
-				`${SIZE - x - 1} ${SIZE - y - 1}`
-			))),
 		].join('\n')}\n`;
 
 		const {stdout} = await execute(input, state.player);
@@ -112,6 +105,7 @@ module.exports.battler = async (execute) => {
 			2: 4,
 			3: 1,
 			4: 2,
+			5: 5,
 		}[rawAnswer];
 
 		// move state.player
@@ -138,6 +132,16 @@ module.exports.battler = async (execute) => {
 					players[state.player].x -= 1;
 				}
 				break;
+			case 5:
+                const enemy = state.player === 0 ? 1 : 0;
+                const me = state.player;
+                console.log("action 5");
+                if (Math.abs(players[me].x - players[enemy].x) 
+                    + Math.abs(players[me].y - players[enemy].y) <= 2 
+                    && players[enemy].fly == 0) {
+                    players[enemy].fly = 5;
+                }
+                break;
 		}
 
 		// colorize the moved place
@@ -145,42 +149,10 @@ module.exports.battler = async (execute) => {
 
 		{
 			const {x, y} = players[state.player];
-			if (players[state.player].soups > 0) {
-				if (x - 1 >= 0) {
-					field[y][x - 1] = c;
-					if (y - 1 >= 0) {
-						field[y - 1][x - 1] = c;
-					}
-					if (y + 1 < SIZE) {
-						field[y + 1][x - 1] = c;
-					}
-				}
-				if (x + 1 < SIZE) {
-					field[y][x + 1] = c;
-					if (y - 1 >= 0) {
-						field[y - 1][x + 1] = c;
-					}
-					if (y + 1 < SIZE) {
-						field[y + 1][x + 1] = c;
-					}
-				}
-				if (y - 1 >= 0) {
-					field[y - 1][x] = c;
-				}
-				if (y + 1 < SIZE) {
-					field[y + 1][x] = c;
-				}
-				players[state.player].soups -= 1;
-			}
-			field[y][x] = c;
-		}
-
-		// check if soups is picked
-		for (const soup of soups) {
-			if (players[state.player].x === soup.x && players[state.player].y === soup.y) {
-				players[state.player].soups += 5;
-				// remove soups
-				soups = soups.filter(({x, y}) => x !== soup.x || y !== soup.y);
+			if (players[state.player].fly == 0) {
+                field[y][x] = c;
+            } else {
+				players[state.player].fly -= 1;
 			}
 		}
 
@@ -195,28 +167,6 @@ module.exports.battler = async (execute) => {
 		}
 		state.p1_area = p1_cnt;
 		state.p2_area = p2_cnt;
-
-		// add soups to somewhere
-		if ([10, 40, 70].includes(state.turn)) {
-			const soupCandidates = [
-				[1, 1], [1, 4], [1, 7],
-				[4, 1], [4, 4], [4, 7],
-				[7, 1], [7, 4], [7, 7],
-			];
-
-			const [soupX, soupY] = maxBy(soupCandidates, ([x, y]) => {
-				if (soups.some((soup) => soup.x === x && soup.y === y)) {
-					return -1;
-				}
-
-				return Math.min(...[
-					Math.abs(players[0].x - x) + Math.abs(players[0].y - y),
-					Math.abs(players[1].x - x) + Math.abs(players[1].y - y),
-				]);
-			});
-
-			soups.push({x: soupX, y: soupY});
-		}
 
 		// update turn and state.player
 		state.turn += 1;
