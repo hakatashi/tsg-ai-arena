@@ -40,12 +40,18 @@ const handleTurn = () => {
 			let text = '';
 
 			if (x1 == x && y1 == y) {
-				if(f1 == 0) text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
-                else text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">◎</span>';
+				if (f1 == 0) {
+					text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
+				} else {
+					text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">◎</span>';
+				}
 			}
 			if (x2 == x && y2 == y) {
-				if(f2 == 0) text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
-                else text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">◎</span>';
+				if (f2 == 0) {
+					text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
+				} else {
+					text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">◎</span>';
+				}
 			}
 			output +=
 				`<th style="text-align: center; border: 1px black solid; width: 50px; height: 50px; background-color:${
@@ -73,7 +79,7 @@ const handleTurn = () => {
 		points.push(point);
 
 		const playerEl = document.createElement('div');
-		playerEl.textContent = `Player${player}: ${point}`;
+		playerEl.textContent = `${data.players[player - 1]}: ${point}`;
 		Object.assign(playerEl.style, {
 			fontSize: '3em',
 			fontWeight: 'bold',
