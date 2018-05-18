@@ -135,7 +135,6 @@ module.exports.battler = async (execute) => {
 			case 5:
                 const enemy = state.player === 0 ? 1 : 0;
                 const me = state.player;
-                console.log("action 5");
                 if (Math.abs(players[me].x - players[enemy].x) 
                     + Math.abs(players[me].y - players[enemy].y) <= 2 
                     && players[enemy].fly == 0) {
