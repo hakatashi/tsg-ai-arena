@@ -19,19 +19,11 @@ let turn = 0;
 const handleTurn = () => {
 	const lines = data.turns[turn].input.split('\n');
 	const [T, P] = lines[0].split(' ').map((token) => parseInt(token));
-	const [x1, y1] = lines[1].split(' ').map((token) => parseInt(token));
-	const [x2, y2] = lines[2].split(' ').map((token) => parseInt(token));
+	const [x1, y1, f1] = lines[1].split(' ').map((token) => parseInt(token));
+	const [x2, y2, f2] = lines[2].split(' ').map((token) => parseInt(token));
 	const field = new Array(SIZE);
 	for (var y = 0; y < SIZE; y++) {
 		field[y] = lines[y + 3].split(' ').map((token) => parseInt(token));
-	}
-	const [N] = lines[SIZE + 3].split(' ').map((token) => parseInt(token));
-	const soup = new Array(N);
-	for (var i = 0; i < N; i++) {
-		const [x, y] = lines[SIZE + 4 + i]
-			.split(' ')
-			.map((token) => parseInt(token));
-		soup[i] = {x, y};
 	}
 	let output = '<table style="border-collapse: collapse">';
 	for (var y = 0; y < SIZE; y++) {
@@ -46,18 +38,14 @@ const handleTurn = () => {
 				color = 'gold';
 			}
 			let text = '';
-			const isSoup = false;
-			for (var i = 0; i < soup.length; i++) {
-				if (soup[i].x == x && soup[i].y == y) {
-					text = '<span style="color: red; font-size: 42px; line-height: 42px">★</span>';
-				}
-			}
 
 			if (x1 == x && y1 == y) {
-				text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
+				if(f1 == 0) text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
+                else text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">◎</span>';
 			}
 			if (x2 == x && y2 == y) {
-				text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
+				if(f2 == 0) text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
+                else text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">◎</span>';
 			}
 			output +=
 				`<th style="text-align: center; border: 1px black solid; width: 50px; height: 50px; background-color:${
