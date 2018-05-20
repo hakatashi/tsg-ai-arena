@@ -63,6 +63,8 @@ mongoose.Promise = global.Promise;
 
 	await contest.save();
 
+	await Submission.remove({contest});
+
 	for (const presetName of ['random', 'fill']) {
 		const preset = new Submission({
 			isPreset: true,
