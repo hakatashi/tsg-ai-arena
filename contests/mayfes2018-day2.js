@@ -128,13 +128,13 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 				if (state.field[x][y] >= 0) {
 					state.field[x][y]++;
 				} else {
-					state.field[x][y] = Math.max(0, state.field[x][y] + 2);
+					state.field[x][y] = Math.min(0, state.field[x][y] + 2);
 				}
 			} else {
 				if (state.field[x][y] <= 0) {
 					state.field[x][y]--;
 				} else {
-					state.field[x][y] = Math.min(0, state.field[x][y] - 2);
+					state.field[x][y] = Math.max(0, state.field[x][y] - 2);
 				}
 			}
 		}
