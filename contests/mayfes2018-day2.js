@@ -73,8 +73,6 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 		const outputs = [];
 
-		const changes = [];
-
 		for (const [playerIndex, stdout] of [stdout1, stdout2].entries()) {
 			const tokens = stdout
 				.toString()
@@ -104,37 +102,19 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 
 			outputs.push({x, y, rot});
 
+			const increment = playerIndex === 0 ? 1 : -1;
+
 			if (rot === 0) {
 				for (const dx of [-1, 0, 1]) {
 					if (x + dx >= 1 && x + dx <= SIZE) {
-						changes.push({x: x + dx - 1, y: y - 1, playerIndex});
+						state.field[x + dx - 1][y - 1] += increment;
 					}
 				}
 			} else {
 				for (const dy of [-1, 0, 1]) {
 					if (y + dy >= 1 && y + dy <= SIZE) {
-						changes.push({x: x - 1, y: y + dy - 1, playerIndex});
+						state.field[x - 1][y + dy - 1] += increment;
 					}
-				}
-			}
-		}
-
-		for (const {x, y, playerIndex} of changes) {
-			if (changes.filter((change) => change.x === x && change.y === y).length > 1) {
-				continue;
-			}
-
-			if (playerIndex === 0) {
-				if (state.field[x][y] >= 0) {
-					state.field[x][y]++;
-				} else {
-					state.field[x][y] = Math.min(0, state.field[x][y] + 2);
-				}
-			} else {
-				if (state.field[x][y] <= 0) {
-					state.field[x][y]--;
-				} else {
-					state.field[x][y] = Math.max(0, state.field[x][y] - 2);
 				}
 			}
 		}
