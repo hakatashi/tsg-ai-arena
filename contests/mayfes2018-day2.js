@@ -119,35 +119,23 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 			}
 		}
 
-		const dupCells = new Set();
-
 		for (const {x, y, playerIndex} of changes) {
 			if (changes.filter((change) => change.x === x && change.y === y).length > 1) {
-				dupCells.add(x * 3 + y);
+				continue;
 			}
 
 			if (playerIndex === 0) {
 				if (state.field[x][y] >= 0) {
 					state.field[x][y]++;
 				} else {
-					state.field[x][y] = Math.max(0, state.field[x][y] - 2);
+					state.field[x][y] = Math.max(0, state.field[x][y] + 2);
 				}
 			} else {
 				if (state.field[x][y] <= 0) {
 					state.field[x][y]--;
 				} else {
-					state.field[x][y] = Math.min(0, state.field[x][y] + 2);
+					state.field[x][y] = Math.min(0, state.field[x][y] - 2);
 				}
-			}
-		}
-
-		for (const cell of dupCells) {
-			const x = Math.floor(cell / 3);
-			const y = cell % 3;
-			if (state.field[x][y] > 0) {
-				state.field[x][y] = Math.max(0, state.field[x][y] - 1);
-			} else if (state.field[x][y] < 0) {
-				state.field[x][y] = Math.min(0, state.field[x][y] + 1);
 			}
 		}
 
