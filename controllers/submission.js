@@ -83,7 +83,6 @@ module.exports.getSubmission = async (req, res) => {
 		contest: req.contest,
 		title: `Submission by ${submission.user.name()}`,
 		submission,
-		code: submission.code.toString(),
 		battles,
 	});
 };

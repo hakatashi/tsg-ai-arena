@@ -6,7 +6,7 @@ block content
   .container.content
     if turn.getSubmission().isViewableBy(user) || contest.isEnded()
       p
-        pre= turn.getSubmission().code
+        pre!= turn.getSubmission().getHighlight()
 
     h4 duration
     p

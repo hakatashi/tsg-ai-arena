@@ -15,7 +15,7 @@ block content
 
     if submission.isViewableBy(user) || contest.isEnded()
       p
-        pre= code
+        pre!= submission.getHighlight()
 
     h2 Battle History
 
