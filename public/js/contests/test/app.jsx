@@ -1,4 +1,5 @@
 const React = require('react');
+const contest = require('../../../../contests/test.js');
 
 class App extends React.Component {
 	constructor(props, state) {
@@ -11,7 +12,8 @@ class App extends React.Component {
 			stones: Array(24).fill(0),
 			turn: 0,
 			winner: null,
-			isReady: this.data.result === 'settled' || this.data.result === 'draw',
+			isReady:
+				this.data.result === 'settled' || this.data.result === 'draw',
 		};
 		this.remainingStones = 24;
 
@@ -27,7 +29,7 @@ class App extends React.Component {
 			}
 
 			const turn = this.data.turns[prevState.turn];
-			const takenStones = parseInt(turn.stdout.trim()) || 3;
+			const takenStones = contest.normalize(turn.stdout);
 
 			this.remainingStones -= takenStones;
 

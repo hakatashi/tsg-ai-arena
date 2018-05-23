@@ -11,6 +11,14 @@ module.exports.presets = {
 	},
 };
 
+const normalize = (stdout) => {
+	const rawAnswer = parseInt(stdout.toString().trim());
+	const answer = [1, 2, 3].includes(rawAnswer) ? rawAnswer : 3;
+	return answer;
+};
+
+module.exports.normalize = normalize;
+
 module.exports.battler = async (execute) => {
 	const state = {
 		stones: 24,
@@ -23,8 +31,7 @@ module.exports.battler = async (execute) => {
 			state.turn
 		);
 
-		const rawAnswer = parseInt(stdout.toString().trim());
-		const answer = [1, 2, 3].includes(rawAnswer) ? rawAnswer : 3;
+		const answer = normalize(stdout);
 
 		state.stones -= answer;
 		if (state.stones >= 1) {
