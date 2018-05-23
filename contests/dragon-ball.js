@@ -12,8 +12,8 @@ const getNewParams = ({x, y, sx, sy, ax, ay}, isBall) => {
 	} else {
 		newParams.ax = ax;
 		newParams.ay = ay;
-		newParams.sx = (sx + ax) * 0.9;
-		newParams.sy = (sy + ay) * 0.9;
+		newParams.sx = (sx + ax) * 0.99;
+		newParams.sy = (sy + ay) * 0.99;
 		newParams.x = x + newParams.sx;
 		newParams.y = y + newParams.sy;
 	}
@@ -43,30 +43,38 @@ const getNewParams = ({x, y, sx, sy, ax, ay}, isBall) => {
 
 const dist = ({x: Ax, y: Ay}, {x: Bx, y: By}) => Math.sqrt((Ax - Bx) ** 2 + (Ay - By) ** 2);
 
-const serialize = (state) => [
+const serialize = (state) => `${[
 	state.frames,
 	...state.players.map(
-		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`
+		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(
+			3
+		)}`
 	),
 	state.balls.length,
 	...state.balls.map(
-		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(3)}`
+		({x, y, sx, sy}) => `${x.toFixed(3)} ${y.toFixed(3)} ${sx.toFixed(3)} ${sy.toFixed(
+			3
+		)}`
 	),
-].join('\n');
+].join('\n')}\n`;
 
 module.exports.serialize = serialize;
 
 const deserialize = (stdin) => {
-	const lines = stdin.split('\n');
+	const lines = stdin.split('\n').filter((line) => line.length > 0);
 
 	return {
 		frames: parseInt(lines[0]),
 		balls: lines.slice(4).map((line) => {
-			const [x, y, sx, sy] = line.split(' ').map((token) => parseFloat(token));
+			const [x, y, sx, sy] = line
+				.split(' ')
+				.map((token) => parseFloat(token));
 			return {x, y, sx, sy};
 		}),
 		players: lines.slice(1, 3).map((line) => {
-			const [x, y, sx, sy] = line.split(' ').map((token) => parseFloat(token));
+			const [x, y, sx, sy] = line
+				.split(' ')
+				.map((token) => parseFloat(token));
 			return {x, y, sx, sy, ax: 0, ay: 0};
 		}),
 	};
@@ -94,7 +102,10 @@ module.exports.presets = {
 		const target = minBy(state.balls, (ball) => dist(state.players[0], ball));
 		return `${(
 			180 -
-			Math.atan2(target.x - state.players[0].x, target.y - state.players[0].y) /
+			Math.atan2(
+				target.x - state.players[0].x,
+				target.y - state.players[0].y
+			) /
 				Math.PI *
 				180
 		).toFixed(3)} 1`;
@@ -168,8 +179,10 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 					continue;
 				}
 
-				state.players[playerIndex].ax = Math.sin(deg / 180 * Math.PI) * acc;
-				state.players[playerIndex].ay = -Math.cos(deg / 180 * Math.PI) * acc;
+				state.players[playerIndex].ax =
+					Math.sin(deg / 180 * Math.PI) * acc;
+				state.players[playerIndex].ay =
+					-Math.cos(deg / 180 * Math.PI) * acc;
 			}
 		}
 
@@ -182,7 +195,9 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		}
 
 		for (const [index, ball] of state.balls.entries()) {
-			const touches = state.players.map((player) => dist(player, ball) < 50);
+			const touches = state.players.map(
+				(player) => dist(player, ball) < 50
+			);
 
 			if (touches[0] && !touches[1]) {
 				state.points[0]++;

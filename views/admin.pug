@@ -6,6 +6,16 @@ block content
   .container.content
     .page-header
       h3 Admin
+      
+    form#checker(data-persist='garlic', method='POST', action=`/contests/${contest.id}`)
+      input(type='hidden', name='_csrf', value=_csrf)
+      .form-group
+        label Description (en)
+        textarea.form-control.code.checker-code(name='description_en', rows=30)= contest.description.en
+      .form-group
+        label Description (ja)
+        textarea.form-control.code.checker-code(name='description_ja', rows=30)= contest.description.ja
+      button.btn.btn-primary.checker-submit(type='submit') Submit
 
     .table-responsive
       table.table

@@ -13,7 +13,7 @@ block content
     .container.content
       != description.ja
       h1 Submit Code
-      form#checker(data-persist='garlic', method='POST')
+      form#checker(data-persist='garlic', method='POST', action=`/contests/${contest.id}/submissions`)
         input(type='hidden', name='_csrf', value=_csrf)
         .form-group
           label Language

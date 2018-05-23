@@ -88,7 +88,9 @@ app.use(
 	})
 );
 app.use(
-	webpackDevMiddleware(compiler, {publicPath: webpackConfig.output.publicPath})
+	webpackDevMiddleware(compiler, {
+		publicPath: webpackConfig.output.publicPath,
+	})
 );
 if (process.env.NODE_ENV === 'development') {
 	app.use(webpackHotMiddleware(compiler));
@@ -119,7 +121,9 @@ app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(async (req, res, next) => {
 	const hash = await util
-		.promisify(fs.readFile)(path.resolve(__dirname, '.git/refs/heads/master'))
+		.promisify(fs.readFile)(
+			path.resolve(__dirname, '.git/refs/heads/master')
+		)
 		.catch(() => Math.floor(Math.random() * 1e10));
 
 	res.locals.user = req.user;
@@ -209,10 +213,16 @@ router.get(
 	contestController.getAdmin
 );
 router.post(
-	'/contests/:contest/',
+	'/contests/:contest',
 	passportConfig.isAuthenticated,
 	contestController.base,
-	contestController.postSubmission
+	contestController.postContest
+);
+router.post(
+	'/contests/:contest/submissions',
+	passportConfig.isAuthenticated,
+	contestController.base,
+	submissionController.postSubmission
 );
 
 router.get('/submissions/:submission', submissionController.getOldSubmission);
