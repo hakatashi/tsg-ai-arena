@@ -1,13 +1,12 @@
 /* eslint-env browser */
 const Docker = require('dockerode');
 const assert = require('assert');
-const EventEmitter = require('events');
 const Promise = require('bluebird');
 const path = require('path');
 const tmp = require('tmp');
 const stream = require('stream');
 const {stripIndent} = require('common-tags');
-const {getCodeLimit, Deferred} = require('../controllers/utils.js');
+const {getCodeLimit, Deferred, createLineDrainer} = require('../lib/utils.js');
 const logger = require('../lib/logger.js');
 const fs = Promise.promisifyAll(require('fs'));
 
@@ -173,21 +172,6 @@ if (require.main === module) {
 
 	(async () => {
 		const stdinStream = new stream.PassThrough();
-		const outputStream = new stream.PassThrough();
-		let outputBuf = '';
-		const lines = [];
-		const lineEmitter = new EventEmitter();
-
-		outputStream.on('data', (data) => {
-			outputBuf += data;
-
-			while (outputBuf.includes('\n')) {
-				const line = outputBuf.slice(0, outputBuf.indexOf('\n') + 1);
-				outputBuf = outputBuf.slice(outputBuf.indexOf('\n') + 1);
-				lines.push(line);
-				lineEmitter.emit('line', line);
-			}
-		});
 
 		const {stdoutStream, stderrStream, deferred} = await runner({
 			id: 'cpp-clang',
@@ -208,22 +192,9 @@ if (require.main === module) {
 			stdinStream,
 		});
 
-		stdoutStream.pipe(outputStream);
 		stderrStream.pipe(process.stderr);
 
-		const drain = () => new Promise((resolve) => {
-			if (lines.length > 0) {
-				resolve(lines.shift());
-				return;
-			}
-
-			const lineCallback = () => {
-				resolve(lines.shift());
-				lineEmitter.removeListener('line', lineCallback);
-			};
-
-			lineEmitter.on('line', lineCallback);
-		});
+		const drain = createLineDrainer(stdoutStream);
 
 		let n = 1;
 
@@ -245,10 +216,6 @@ if (require.main === module) {
 				`(duration: ${inputEnd - inputStart}ms)`
 			);
 			n = parseInt(output);
-
-			await new Promise((resolve) => {
-				setTimeout(resolve, 1000);
-			});
 		}
 
 		deferred.promise.then(({duration}) => {

@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Submission = require('../models/Submission');
 const runner = require('../lib/runner');
 const contests = require('../contests');
-const {getCodeLimit} = require('../controllers/utils');
+const {getCodeLimit} = require('../lib/utils');
 const assert = require('assert');
 const concatStream = require('concat-stream');
 
@@ -31,7 +31,10 @@ module.exports.base = async (req, res, next) => {
 module.exports.index = async (req, res) => {
 	const markdown = new MarkdownIt();
 
-	const presets = await Submission.find({contest: req.contest, isPreset: true});
+	const presets = await Submission.find({
+		contest: req.contest,
+		isPreset: true,
+	});
 
 	res.render('contest', {
 		title: '',
@@ -50,7 +53,11 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Competition has closed');
 		}
 
-		if (!['node', 'c-gcc', 'python3', 'cpp-clang', 'ruby'].includes(req.body.language)) {
+		if (
+			!['node', 'c-gcc', 'python3', 'cpp-clang', 'ruby'].includes(
+				req.body.language
+			)
+		) {
 			throw new Error('language unknown');
 		}
 
@@ -95,7 +102,9 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Submission interval is too short');
 		}
 
-		const latestIdSubmission = await Submission.findOne({contest: req.contest})
+		const latestIdSubmission = await Submission.findOne({
+			contest: req.contest,
+		})
 			.sort({id: -1})
 			.exec();
 
@@ -107,7 +116,7 @@ module.exports.postSubmission = async (req, res) => {
 			language: req.body.language,
 			code,
 			size: code.length,
-			id: (latestIdSubmission.id || 0) + 1, // FIXME: Lock
+			id: (latestIdSubmission.id || 0) + 1, // FIXME: race condition
 		});
 
 		const submission = await submissionRecord.save();
@@ -118,7 +127,9 @@ module.exports.postSubmission = async (req, res) => {
 				console.error(e);
 			});
 
-		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
+		res.redirect(
+			`/contests/${req.contest.id}/submissions/${submission._id}`
+		);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});
