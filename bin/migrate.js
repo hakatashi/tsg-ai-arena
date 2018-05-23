@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submission');
+const Battle = require('../models/Battle');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
@@ -9,6 +10,8 @@ mongoose.Promise = global.Promise;
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
 	const contest = await Contest.findOne({id: 'mayfes2018-day2'});
+	contest.start = new Date('2018-05-20T14:20:00+0900');
+	contest.end = new Date('2018-05-20T15:20:00+0900');
 
 	contest.description.ja = stripIndent`
 		# ブロック並べ
@@ -64,6 +67,7 @@ mongoose.Promise = global.Promise;
 	await contest.save();
 
 	await Submission.remove({contest});
+	await Battle.remove({contest});
 
 	for (const presetName of ['random', 'fill']) {
 		const preset = new Submission({
