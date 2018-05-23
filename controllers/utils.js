@@ -7,7 +7,10 @@ const getPrecedingIndices = (contest, cellIndex) => {
 		return [];
 	}
 
-	const faces = [...snubDodecahedron.triangles, ...snubDodecahedron.pentagons];
+	const faces = [
+		...snubDodecahedron.triangles,
+		...snubDodecahedron.pentagons,
+	];
 	const face = faces[cellIndex];
 
 	return Array(92)
@@ -96,7 +99,8 @@ module.exports.getLanguageMap = async ({team = null, contest} = {}) => {
 						(c) => c.team === team ||
 							(c.record &&
 								c.record.solution &&
-								c.record.solution.user.getTeam(contest)) === team
+								c.record.solution.user.getTeam(contest)) ===
+								team
 					));
 
 			if (cell.record && cell.record.solution) {
@@ -167,4 +171,26 @@ module.exports.getCodeLimit = (languageId) => {
 	}
 
 	return 10 * 1024;
+};
+
+module.exports.Deferred = class Deferred {
+	constructor() {
+		this.promise = new Promise((resolve, reject) => {
+			this.nativeReject = reject;
+			this.nativeResolve = resolve;
+		});
+
+		this.isResolved = false;
+		this.isRejected = false;
+	}
+
+	resolve(...args) {
+		this.nativeResolve(...args);
+		this.isResolved = true;
+	}
+
+	reject(...args) {
+		this.nativeReject(...args);
+		this.isReject = true;
+	}
 };

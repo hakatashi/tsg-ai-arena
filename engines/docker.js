@@ -1,12 +1,14 @@
 /* eslint-env browser */
 const Docker = require('dockerode');
 const assert = require('assert');
-const concatStream = require('concat-stream');
+const EventEmitter = require('events');
 const Promise = require('bluebird');
 const path = require('path');
 const tmp = require('tmp');
-const shellescape = require('shell-escape');
-const {getCodeLimit} = require('../controllers/utils.js');
+const stream = require('stream');
+const {stripIndent} = require('common-tags');
+const {getCodeLimit, Deferred} = require('../controllers/utils.js');
+const logger = require('../lib/logger.js');
 const fs = Promise.promisifyAll(require('fs'));
 
 const docker = new Docker();
@@ -20,65 +22,41 @@ class MemoryLimitExceededError extends Error {
 	}
 }
 
-module.exports = async ({id, code, stdin}) => {
+module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 	assert(typeof id === 'string');
 	assert(Buffer.isBuffer(code));
-	assert(typeof stdin === 'string');
 	assert(code.length <= getCodeLimit(id));
-	assert(stdin.length < 10000);
 
-	const {tmpPath, cleanup} = await new Promise((resolve, reject) => {
-		tmp.dir({unsafeCleanup: true}, (error, dTmpPath, dCleanup) => {
-			if (error) {
-				reject(error);
-			} else {
-				resolve({tmpPath: dTmpPath, cleanup: dCleanup});
-			}
+	const stderrStream = new stream.PassThrough();
+	const stdoutStream = new stream.PassThrough();
+	const deferred = new Deferred();
+
+	(async () => {
+		const {tmpPath, cleanup} = await new Promise((resolve, reject) => {
+			tmp.dir(
+				{
+					unsafeCleanup: true,
+				},
+				(error, dTmpPath, dCleanup) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve({
+							tmpPath: dTmpPath,
+							cleanup: dCleanup,
+						});
+					}
+				}
+			);
 		});
-	});
 
-	const stdinPath = path.join(tmpPath, 'INPUT');
+		const codePath = path.join(tmpPath, 'CODE');
 
-	let filename = 'CODE';
-	if (id === 'd-dmd') {
-		filename = 'CODE.d';
-	} else if (id === 'c-gcc') {
-		filename = 'CODE.c';
-	} else if (id === 'cpp-clang') {
-		filename = 'CODE.cpp';
-	} else if (id === 'concise-folders' || id === 'pure-folders') {
-		filename = 'CODE.tar';
-	} else if (id === 'cmd') {
-		filename = 'CODE.bat';
-	} else if (id === 'nadesiko') {
-		filename = 'CODE.nako3';
-	}
+		await fs.writeFileAsync(codePath, code);
 
-	const codePath = path.join(tmpPath, filename);
+		let container = null;
 
-	await Promise.all([
-		fs.writeFileAsync(stdinPath, stdin),
-		fs.writeFileAsync(codePath, code),
-	]);
-
-	let container = null;
-
-	try {
 		// eslint-disable-next-line init-declarations
-		let stderrWriter, stdoutWriter;
-
-		const stdoutPromise = new Promise((resolve) => {
-			stdoutWriter = concatStream((stdout) => {
-				resolve(stdout);
-			});
-		});
-
-		const stderrPromise = new Promise((resolve) => {
-			stderrWriter = concatStream((stderr) => {
-				resolve(stderr);
-			});
-		});
-
 		const dockerVolumePath = (() => {
 			if (path.sep === '\\') {
 				return tmpPath.replace('C:\\', '/c/').replace(/\\/g, '/');
@@ -87,85 +65,196 @@ module.exports = async ({id, code, stdin}) => {
 			return tmpPath;
 		})();
 
-		const containerPromise = (async () => {
-			container = await docker.createContainer({
-				Hostname: '',
-				User: '',
-				AttachStdin: false,
-				AttachStdout: true,
-				AttachStderr: true,
-				Tty: false,
-				OpenStdin: false,
-				StdinOnce: false,
-				Env: null,
-				Cmd: [
-					'sh',
-					'-c',
-					`${shellescape(['script', `/volume/${filename}`])} < /volume/INPUT`,
-				],
-				Image: `esolang/${id}`,
-				Volumes: {
-					'/volume': {},
-				},
-				VolumesFrom: [],
-				HostConfig: {
-					Binds: [`${dockerVolumePath}:/volume:ro`],
-					Memory: memoryLimit,
-				},
+		try {
+			const runner = new Promise(async (resolve) => {
+				logger.info('creating container');
+				container = await docker.createContainer({
+					Hostname: '',
+					User: '',
+					Tty: true,
+					Env: null,
+					Image: `esolang/${id}`,
+					Volumes: {
+						'/volume': {},
+					},
+					VolumesFrom: [],
+					HostConfig: {
+						Binds: [`${dockerVolumePath}:/volume:ro`],
+						Memory: memoryLimit,
+					},
+				});
+
+				logger.info('container created');
+
+				await container.start();
+
+				logger.info('container started');
+
+				const execution = await container
+					.exec({
+						Cmd: ['script', '/volume/CODE'],
+						AttachStdin: true,
+						AttachStdout: true,
+						AttachStderr: true,
+					})
+					.catch((e) => {
+						console.error('execution creation error:', e);
+					});
+
+				logger.info('execution created');
+
+				const executionStream = await execution.start({
+					hijack: true,
+					stdin: true,
+				});
+
+				logger.info('execution started');
+				const executionStart = Date.now();
+
+				stdinStream.pipe(executionStream.output);
+				rootResolve({stdoutStream, stderrStream, deferred});
+
+				container.modem.demuxStream(
+					executionStream.output,
+					stdoutStream,
+					stderrStream
+				);
+
+				await new Promise((resolve) => {
+					executionStream.output.on('end', () => {
+						resolve();
+					});
+				});
+
+				logger.info('container ended');
+				stdoutStream.end();
+				stderrStream.end();
+				const executionEnd = Date.now();
+
+				const data = await container.inspect();
+				await container.stop();
+				logger.info('container stopped');
+				await container.remove();
+				logger.info('container removed');
+
+				deferred.resolve({
+					duration: executionEnd - executionStart,
+					...(data.State.OOMKilled
+						? {
+							error: new MemoryLimitExceededError(
+								`Memory limit of ${memoryLimit} bytes exceeded`
+							),
+							  }
+						: {}),
+				});
+
+				resolve();
 			});
 
-			const stream = await container.attach({
-				stream: true,
-				stdout: true,
-				stderr: true,
-			});
+			await runner.timeout(30000);
 
-			container.modem.demuxStream(stream, stdoutWriter, stderrWriter);
-			stream.on('end', () => {
-				stdoutWriter.end();
-				stderrWriter.end();
-			});
+			cleanup();
+		} catch (error) {
+			if (container) {
+				await container.kill().catch((e) => {
+					console.error('error:', e);
+				});
+				await container.remove().catch((e) => {
+					console.error('error:', e);
+				});
+			}
+			throw error;
+		}
+	})();
+});
 
-			await container.start();
-			await container.wait();
-			const data = await container.inspect();
-			await container.remove();
-			return data;
-		})();
+if (require.main === module) {
+	const runner = module.exports;
 
-		const runner = Promise.all([
-			stdoutPromise,
-			stderrPromise,
-			containerPromise,
-		]);
+	(async () => {
+		const stdinStream = new stream.PassThrough();
+		const outputStream = new stream.PassThrough();
+		let outputBuf = '';
+		const lines = [];
+		const lineEmitter = new EventEmitter();
 
-		const executionStart = Date.now();
-		const [stdout, stderr, containerData] = await runner.timeout(5000);
-		const executionEnd = Date.now();
+		outputStream.on('data', (data) => {
+			outputBuf += data;
 
-		cleanup();
+			while (outputBuf.includes('\n')) {
+				const line = outputBuf.slice(0, outputBuf.indexOf('\n') + 1);
+				outputBuf = outputBuf.slice(outputBuf.indexOf('\n') + 1);
+				lines.push(line);
+				lineEmitter.emit('line', line);
+			}
+		});
 
-		return {
-			stdout: Buffer.isBuffer(stdout) ? stdout : Buffer.alloc(0),
-			stderr: Buffer.isBuffer(stderr) ? stderr : Buffer.alloc(0),
-			duration: executionEnd - executionStart,
-			...(containerData.State.OOMKilled
-				? {
-					error: new MemoryLimitExceededError(
-						`Memory limit of ${memoryLimit} bytes exceeded`
-					),
-				  }
-				: {}),
-		};
-	} catch (error) {
-		if (container) {
-			await container.kill().catch((e) => {
-				console.error('error:', e);
-			});
-			await container.remove().catch((e) => {
-				console.error('error:', e);
+		const {stdoutStream, stderrStream, deferred} = await runner({
+			id: 'cpp-clang',
+			code: Buffer.from(stripIndent`
+				#include <stdio.h>
+
+				int main() {
+					int n;
+
+					while (scanf("%d", &n) != EOF) {
+						fprintf(stdout, "%d\\n", n * 2);
+						fflush(stdout);
+					}
+
+					return 0;
+				}
+			`),
+			stdinStream,
+		});
+
+		stdoutStream.pipe(outputStream);
+		stderrStream.pipe(process.stderr);
+
+		const drain = () => new Promise((resolve) => {
+			if (lines.length > 0) {
+				resolve(lines.shift());
+				return;
+			}
+
+			const lineCallback = () => {
+				resolve(lines.shift());
+				lineEmitter.removeListener('line', lineCallback);
+			};
+
+			lineEmitter.on('line', lineCallback);
+		});
+
+		let n = 1;
+
+		while (n < 1000) {
+			const input = `${(n * 2).toString()}\n`;
+
+			const inputStart = Date.now();
+
+			stdinStream.write(input);
+			console.log('input:', input.trim());
+
+			const output = await drain();
+
+			const inputEnd = Date.now();
+
+			console.log(
+				'output:',
+				output.trim(),
+				`(duration: ${inputEnd - inputStart}ms)`
+			);
+			n = parseInt(output);
+
+			await new Promise((resolve) => {
+				setTimeout(resolve, 1000);
 			});
 		}
-		throw error;
-	}
-};
+
+		deferred.promise.then(({duration}) => {
+			console.log(`total duration: ${duration}ms`);
+		});
+
+		stdinStream.end();
+	})();
+}
