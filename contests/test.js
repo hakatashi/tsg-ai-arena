@@ -18,7 +18,10 @@ module.exports.battler = async (execute) => {
 	};
 
 	while (state.stones >= 1) {
-		const {stdout} = await execute(state.stones.toString(), state.turn);
+		const {stdout} = await execute(
+			`${state.stones.toString()}\n`,
+			state.turn
+		);
 
 		const rawAnswer = parseInt(stdout.toString().trim());
 		const answer = [1, 2, 3].includes(rawAnswer) ? rawAnswer : 3;

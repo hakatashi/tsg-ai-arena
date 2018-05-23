@@ -42,6 +42,6 @@ block content
                     = turn.getSubmission().userText()
                   else
                     a(href=`/contests/${contest.id}/submissions/${turn.getSubmission()._id}`)= turn.getSubmission().userText()
-                td= turn.stdout.slice(0, 24)
+                td= (turn.stdout || '').slice(0, 24)
                 td
                   a(href=`/contests/${contest.id}/turns/${turn._id}`)= turn.timeText()

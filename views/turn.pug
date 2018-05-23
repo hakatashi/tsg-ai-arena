@@ -5,8 +5,15 @@ include mixins
 block content
   .container.content
     if turn.getSubmission().isViewableBy(user) || contest.isEnded()
-      p
-        pre!= turn.getSubmission().getHighlight()
+      if turn.getSubmission().code !== null
+        p
+          pre!= turn.getSubmission().getHighlight()
+
+    if user.admin && turn.error
+      h4 Error
+
+      p= turn.error.name
+      pre= turn.error.stack
 
     h4 duration
     p

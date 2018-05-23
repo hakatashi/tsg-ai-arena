@@ -89,16 +89,12 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 
 				logger.info('container started');
 
-				const execution = await container
-					.exec({
-						Cmd: ['script', '/volume/CODE'],
-						AttachStdin: true,
-						AttachStdout: true,
-						AttachStderr: true,
-					})
-					.catch((e) => {
-						console.error('execution creation error:', e);
-					});
+				const execution = await container.exec({
+					Cmd: ['script', '/volume/CODE'],
+					AttachStdin: true,
+					AttachStdout: true,
+					AttachStderr: true,
+				});
 
 				logger.info('execution created');
 
@@ -150,7 +146,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				resolve();
 			});
 
-			await runner.timeout(30000);
+			await runner.timeout(15000);
 
 			cleanup();
 		} catch (error) {
