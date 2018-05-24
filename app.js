@@ -24,6 +24,7 @@ const multer = require('multer');
 const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
+const Agenda = require('agenda');
 
 /*
  * Load environment variables from .env file, where API keys and passwords are configured.
@@ -72,6 +73,23 @@ mongoose.connection.on('error', () => {
 			'✗'
 		)} MongoDB connection error. Please make sure MongoDB is running.`
 	);
+});
+
+/*
+ * Initialize Agenda.
+ */
+const agenda = new Agenda({
+	db: {
+		address: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
+		collection: 'agenda',
+	},
+	processEvery: '10 seconds',
+});
+const jobs = require('./lib/jobs');
+agenda.define('dequeue-battles', jobs.dequeueBattles);
+agenda.on('ready', () => {
+	agenda.every('1 minute', 'dequeue-battles');
+	agenda.start();
 });
 
 /*

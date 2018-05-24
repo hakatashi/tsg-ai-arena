@@ -127,10 +127,6 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				const executionEnd = Date.now();
 
 				const data = await container.inspect();
-				await container.stop();
-				logger.info('container stopped');
-				await container.remove();
-				logger.info('container removed');
 
 				deferred.resolve({
 					duration: executionEnd - executionStart,
@@ -143,6 +139,12 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 						: {}),
 				});
 
+				await container.stop();
+				logger.info('container stopped');
+
+				await container.remove();
+				logger.info('container removed');
+
 				resolve();
 			});
 
@@ -152,10 +154,26 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 		} catch (error) {
 			if (container) {
 				await container.kill().catch((e) => {
-					console.error('error:', e);
+					if (e.statusCode === 409) {
+						logger.verbose(
+							`Killing of container conflicted: ${
+								container.id
+							}`
+						);
+					} else {
+						throw e;
+					}
 				});
 				await container.remove().catch((e) => {
-					console.error('error:', e);
+					if (e.statusCode === 409) {
+						logger.verbose(
+							`Removal of container conflicted: ${
+								container.id
+							}`
+						);
+					} else {
+						throw e;
+					}
 				});
 			}
 			throw error;

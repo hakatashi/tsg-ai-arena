@@ -165,11 +165,7 @@ module.exports.postSubmission = async (req, res) => {
 
 		const submission = await submissionRecord.save();
 
-		runner
-			.battle([submission, competitor], req.contest, req.user)
-			.catch((e) => {
-				console.error(e);
-			});
+		await runner.enqueue([submission, competitor], req.contest, req.user);
 
 		res.redirect(
 			`/contests/${req.contest.id}/submissions/${submission._id}`

@@ -5,9 +5,10 @@ const battleSchema = new mongoose.Schema(
 	{
 		contest: {type: mongoose.Schema.Types.ObjectId, ref: 'Contest'},
 		players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Submission'}],
-		result: {type: String, enum: ['pending', 'draw', 'settled']},
+		result: {type: String, enum: ['pending', 'running', 'draw', 'settled']},
 		winner: Number,
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+		executedAt: Date,
 	},
 	{timestamps: true}
 );

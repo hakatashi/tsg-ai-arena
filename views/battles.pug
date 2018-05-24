@@ -51,6 +51,8 @@ block content
                 td
                   if battle.result === 'pending'
                     | Pending
+                  else if battle.result === 'running'
+                    | Running
                   else if battle.result === 'draw'
                     | Draw
                   else if battle.result === 'settled'
