@@ -12,8 +12,8 @@ const getNewParams = ({x, y, sx, sy, ax, ay}, isBall) => {
 	} else {
 		newParams.ax = ax;
 		newParams.ay = ay;
-		newParams.sx = (sx + ax) * 0.99;
-		newParams.sy = (sy + ay) * 0.99;
+		newParams.sx = sx + ax;
+		newParams.sy = sy + ay;
 		newParams.x = x + newParams.sx;
 		newParams.y = y + newParams.sy;
 	}
@@ -129,16 +129,12 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 				y: 512,
 				sx: 0,
 				sy: 0,
-				ax: 0,
-				ay: 0,
 			},
 			{
 				x: 768,
 				y: 512,
 				sx: 0,
 				sy: 0,
-				ax: 0,
-				ay: 0,
 			},
 		],
 	};
@@ -166,23 +162,19 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 					.split(/\s+/);
 
 				if (tokens.length !== 2) {
-					state.players[playerIndex].ax = 0;
-					state.players[playerIndex].ay = 0;
 					continue;
 				}
 
 				const [deg, acc] = tokens.map((token) => parseFloat(token));
 
 				if (deg < 0 || deg > 360 || acc < 0 || acc > 1) {
-					state.players[playerIndex].ax = 0;
-					state.players[playerIndex].ay = 0;
 					continue;
 				}
 
-				state.players[playerIndex].ax =
-					Math.sin(deg / 180 * Math.PI) * acc;
-				state.players[playerIndex].ay =
-					-Math.cos(deg / 180 * Math.PI) * acc;
+				state.players[playerIndex].sx =
+					Math.sin(deg / 180 * Math.PI) * acc * 10;
+				state.players[playerIndex].sy =
+					-Math.cos(deg / 180 * Math.PI) * acc * 10;
 			}
 		}
 

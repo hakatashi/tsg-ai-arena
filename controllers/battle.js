@@ -69,13 +69,15 @@ module.exports.postBattles = async (req, res) => {
 			return;
 		}
 
-		const battle = await runner
-			.battle([player1, player2], req.contest, req.user)
-			.catch((e) => {
-				console.error(e);
-			});
+		const battle = await runner.enqueue(
+			[player1, player2],
+			req.contest,
+			req.user
+		);
 
-		res.redirect(`/contests/${req.contest.id}/battles/${battle._id}/visualizer`);
+		res.redirect(
+			`/contests/${req.contest.id}/battles/${battle._id}/visualizer`
+		);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});
@@ -83,42 +85,43 @@ module.exports.postBattles = async (req, res) => {
 };
 
 const getVisualizer = async (req, res, id) => {
-	const battle = id === 'latest' ? (
-		await Battle.findOne({
-			contest: req.contest,
-			result: {$ne: 'pending'},
-		})
-			.sort({createdAt: -1})
-			.populate('contest')
-			.populate({
-				path: 'players',
-				populate: {path: 'user'},
-			})
-			.exec()
-	) : (
-		await Battle.findOne({_id: id})
-			.populate('contest')
-			.populate({
-				path: 'players',
-				populate: {path: 'user'},
-			})
-			.exec()
-	);
+	const battle =
+		id === 'latest'
+			? await Battle.findOne({
+				contest: req.contest,
+				result: {$ne: 'pending'},
+			  })
+				.sort({createdAt: -1})
+				.populate('contest')
+				.populate({
+					path: 'players',
+					populate: {path: 'user'},
+				})
+				.exec()
+			: await Battle.findOne({_id: id})
+				.populate('contest')
+				.populate({
+					path: 'players',
+					populate: {path: 'user'},
+				})
+				.exec();
 
 	if (battle === null) {
 		res.sendStatus(404);
 		return;
 	}
 
-	if (id !== 'latest' && !req.contest.isEnded() && !battle.isViewableBy(req.user)) {
+	if (
+		id !== 'latest' &&
+		!req.contest.isEnded() &&
+		!battle.isViewableBy(req.user)
+	) {
 		res.sendStatus(403);
 		return;
 	}
 
 	if (battle.contest.id !== req.params.contest) {
-		res.redirect(
-			`/contests/${battle.contest.id}/battles/${id}/visualizer`
-		);
+		res.redirect(`/contests/${battle.contest.id}/battles/${id}/visualizer`);
 		return;
 	}
 
@@ -190,11 +193,19 @@ module.exports.getBattles = async (req, res) => {
 			.limit(15)
 			.exec());
 
-	const allSubmissions = req.user && req.user.admin && (await Submission.find({contest: req.contest}).populate('user').sort({id: -1}).exec());
+	const allSubmissions =
+		req.user &&
+		req.user.admin &&
+		(await Submission.find({contest: req.contest})
+			.populate('user')
+			.sort({id: -1})
+			.exec());
 
 	res.render('battles', {
 		contest: req.contest,
 		battles,
-		submissions: req.user && (req.user.admin ? allSubmissions : presets.concat(mySubmissions)),
+		submissions:
+			req.user &&
+			(req.user.admin ? allSubmissions : presets.concat(mySubmissions)),
 	});
 };
