@@ -167,9 +167,7 @@ module.exports.postSubmission = async (req, res) => {
 
 		await runner.enqueue([submission, competitor], req.contest, req.user);
 
-		res.redirect(
-			`/contests/${req.contest.id}/submissions/${submission._id}`
-		);
+		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});

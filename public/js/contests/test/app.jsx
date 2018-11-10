@@ -12,8 +12,7 @@ class App extends React.Component {
 			stones: Array(24).fill(0),
 			turn: 0,
 			winner: null,
-			isReady:
-				this.data.result === 'settled' || this.data.result === 'draw',
+			isReady: this.data.result === 'settled' || this.data.result === 'draw',
 		};
 		this.remainingStones = 24;
 

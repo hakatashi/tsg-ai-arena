@@ -35,10 +35,10 @@ module.exports.presets = {
 		const state = deserialize(input);
 
 		if (state.turns % 10 === 0) {
-			return `1 ${state.turns / 10 * 3 + 2} 1`;
+			return `1 ${(state.turns / 10) * 3 + 2} 1`;
 		}
 
-		const index = state.turns % 10 - 1;
+		const index = (state.turns % 10) - 1;
 
 		return `${(index % 3) * 3 + 3} ${Math.floor(index / 3) +
 			Math.floor(state.turns / 10) * 3 +
@@ -120,7 +120,9 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		}
 
 		for (const {x, y, playerIndex} of changes) {
-			if (changes.filter((change) => change.x === x && change.y === y).length > 1) {
+			if (
+				changes.filter((change) => change.x === x && change.y === y).length > 1
+			) {
 				continue;
 			}
 

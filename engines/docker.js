@@ -156,9 +156,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				await container.kill().catch((e) => {
 					if (e.statusCode === 409) {
 						logger.verbose(
-							`Killing of container conflicted: ${
-								container.id
-							}`
+							`Killing of container conflicted: ${container.id}`
 						);
 					} else {
 						throw e;
@@ -167,9 +165,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				await container.remove().catch((e) => {
 					if (e.statusCode === 409) {
 						logger.verbose(
-							`Removal of container conflicted: ${
-								container.id
-							}`
+							`Removal of container conflicted: ${container.id}`
 						);
 					} else {
 						throw e;

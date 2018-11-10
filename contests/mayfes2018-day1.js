@@ -9,7 +9,10 @@ const SIZE = 9;
 module.exports.presets = {
 	random: () => Math.floor(Math.random() * 4 + 1).toString(),
 	clever: (stdin) => {
-		const lines = stdin.split('\n').filter((line) => line.length > 0).map((line) => line.split(' '));
+		const lines = stdin
+			.split('\n')
+			.filter((line) => line.length > 0)
+			.map((line) => line.split(' '));
 		const state = {
 			turns: parseInt(lines[0]),
 			me: {
@@ -22,13 +25,20 @@ module.exports.presets = {
 				y: parseInt(lines[2][1]),
 				flies: parseInt(lines[2][2]),
 			},
-			cells: flatten(lines.slice(3, SIZE + 3).map((row, y) => row.map((cell, x) => ({
-				x, y, value: parseInt(cell),
-			})))),
+			cells: flatten(
+				lines.slice(3, SIZE + 3).map((row, y) => row.map((cell, x) => ({
+					x,
+					y,
+					value: parseInt(cell),
+				})))
+			),
 		};
 
 		const targets = state.cells.filter(({value}) => value === 0 || value === 2);
-		const target = minBy(targets, ({x, y}) => Math.abs(state.me.x - x) + Math.abs(state.me.y - y));
+		const target = minBy(
+			targets,
+			({x, y}) => Math.abs(state.me.x - x) + Math.abs(state.me.y - y)
+		);
 
 		if (target.x > state.me.x) {
 			return '2';
@@ -51,9 +61,7 @@ module.exports.presets = {
 };
 
 module.exports.battler = async (execute) => {
-	const field = new Array(SIZE).fill().map(() => (
-		new Array(SIZE).fill(0)
-	));
+	const field = new Array(SIZE).fill().map(() => new Array(SIZE).fill(0));
 
 	const state = {
 		turn: 1,
@@ -78,35 +86,50 @@ module.exports.battler = async (execute) => {
 	field[player2.y][player2.x] = 2;
 
 	while (state.turn <= 100) {
-		const normalizedField = state.player === 0 ? field : field.slice().reverse().map((row) => row.slice().reverse().map((cell) => {
-			if (cell === 0) {
-				return 0;
-			}
+		const normalizedField =
+			state.player === 0
+				? field
+				: field
+					.slice()
+					.reverse()
+					.map((row) => row
+						.slice()
+						.reverse()
+						.map((cell) => {
+							if (cell === 0) {
+								return 0;
+							}
 
-			return cell === 1 ? 2 : 1;
-		}));
+							return cell === 1 ? 2 : 1;
+						}));
 
 		// generate input
 		const input = `${[
 			state.turn.toString(),
-			...(state.player === 0 ? players.map(({x, y, fly}) => `${x} ${y} ${fly}`) : players.slice().reverse().map(({x, y, fly}) => (
-				`${SIZE - x - 1} ${SIZE - y - 1} ${fly}`
-			))),
-			...Array(SIZE).fill().map((_, y) => (
-				normalizedField[y].join(' ')
-			)),
+			...(state.player === 0
+				? players.map(({x, y, fly}) => `${x} ${y} ${fly}`)
+				: players
+					.slice()
+					.reverse()
+					.map(({x, y, fly}) => `${SIZE - x - 1} ${SIZE - y - 1} ${fly}`)),
+			...Array(SIZE)
+				.fill()
+				.map((_, y) => normalizedField[y].join(' ')),
 		].join('\n')}\n`;
 
 		const {stdout} = await execute(input, state.player);
 		const rawAnswer = parseInt(stdout.toString().trim());
-		const normalizedAnswer = state.player === 0 ? rawAnswer : {
-			0: 0,
-			1: 3,
-			2: 4,
-			3: 1,
-			4: 2,
-			5: 5,
-		}[rawAnswer];
+		const normalizedAnswer =
+			state.player === 0
+				? rawAnswer
+				: {
+					0: 0,
+					1: 3,
+					2: 4,
+					3: 1,
+					4: 2,
+					5: 5,
+				  }[rawAnswer];
 
 		// move state.player
 		switch (normalizedAnswer) {
@@ -133,14 +156,17 @@ module.exports.battler = async (execute) => {
 				}
 				break;
 			case 5:
-                const enemy = state.player === 0 ? 1 : 0;
-                const me = state.player;
-                if (Math.abs(players[me].x - players[enemy].x) 
-                    + Math.abs(players[me].y - players[enemy].y) <= 2 
-                    && players[enemy].fly == 0) {
-                    players[enemy].fly = 5;
-                }
-                break;
+				const enemy = state.player === 0 ? 1 : 0;
+				const me = state.player;
+				if (
+					Math.abs(players[me].x - players[enemy].x) +
+						Math.abs(players[me].y - players[enemy].y) <=
+						2 &&
+					players[enemy].fly == 0
+				) {
+					players[enemy].fly = 5;
+				}
+				break;
 		}
 
 		// colorize the moved place
@@ -149,8 +175,8 @@ module.exports.battler = async (execute) => {
 		{
 			const {x, y} = players[state.player];
 			if (players[state.player].fly == 0) {
-                field[y][x] = c;
-            } else {
+				field[y][x] = c;
+			} else {
 				players[state.player].fly -= 1;
 			}
 		}

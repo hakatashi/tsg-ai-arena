@@ -16,9 +16,7 @@ module.exports.contest = async (req, res, next) => {
 	const contest = await Contest.findOne({id: req.params.contest});
 
 	if (!contest) {
-		res
-			.status(404)
-			.json({error: `Contest ${req.params.contest} not found`});
+		res.status(404).json({error: `Contest ${req.params.contest} not found`});
 		return;
 	}
 
@@ -100,10 +98,7 @@ module.exports.postExecution = async (req, res) => {
 
 		const input = req.body.input.replace(/\r\n/g, '\n') || '';
 
-		assert(
-			input.length <= 10000,
-			'Input cannot be longer than 10,000 bytes'
-		);
+		assert(input.length <= 10000, 'Input cannot be longer than 10,000 bytes');
 
 		const languageData = languages[req.contest.id].find(
 			(l) => l && l.slug === req.body.language

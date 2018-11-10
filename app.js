@@ -139,9 +139,7 @@ app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(async (req, res, next) => {
 	const hash = await util
-		.promisify(fs.readFile)(
-			path.resolve(__dirname, '.git/refs/heads/master')
-		)
+		.promisify(fs.readFile)(path.resolve(__dirname, '.git/refs/heads/master'))
 		.catch(() => Math.floor(Math.random() * 1e10));
 
 	res.locals.user = req.user;

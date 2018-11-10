@@ -13,10 +13,14 @@ const getColor = (value) => {
 	}
 
 	if (value > 0) {
-		return `rgb(255, ${Math.floor(255 - value / 3 * 200)}, ${Math.floor(255 - value / 3 * 200)})`;
+		return `rgb(255, ${Math.floor(255 - (value / 3) * 200)}, ${Math.floor(
+			255 - (value / 3) * 200
+		)})`;
 	}
 
-	return `rgb(${Math.floor(255 + value / 3 * 200)}, ${Math.floor(255 + value / 3 * 200)}, 255)`;
+	return `rgb(${Math.floor(255 + (value / 3) * 200)}, ${Math.floor(
+		255 + (value / 3) * 200
+	)}, 255)`;
 };
 
 class App extends React.Component {
@@ -320,9 +324,9 @@ class App extends React.Component {
 							width="150"
 							height="50"
 							transform={`translate(${block.x * 50 - 25}, ${block.y * 50 -
-								25}) ${
-								block.rot === 1 ? 'rotate(90)' : ''
-							} scale(${block.scale}) translate(-75, -25)`}
+								25}) ${block.rot === 1 ? 'rotate(90)' : ''} scale(${
+								block.scale
+							}) translate(-75, -25)`}
 							opacity={block.opacity}
 							fill={playerIndex === 0 ? 'red' : 'blue'}
 							style={{
@@ -383,29 +387,27 @@ class App extends React.Component {
 			>
 				{this.state.isReady ? (
 					this.renderContent()
+				) : this.data.result === 'pending' ? (
+					<h1>Battle is Pending...</h1>
 				) : (
-					this.data.result === 'pending' ? (
-						<h1>Battle is Pending...</h1>
-					) : (
-						this.state.isCollated && (
-							<button
-								type="button"
-								onClick={this.handleClickStart}
-								style={{
-									backgroundColor: '#2196f3',
-									fontSize: '6em',
-									fontWeight: 'bold',
-									width: '50%',
-									textAlign: 'center',
-									border: 'none',
-									color: 'white',
-									borderRadius: '10px',
-									cursor: 'pointer',
-								}}
-							>
+					this.state.isCollated && (
+						<button
+							type="button"
+							onClick={this.handleClickStart}
+							style={{
+								backgroundColor: '#2196f3',
+								fontSize: '6em',
+								fontWeight: 'bold',
+								width: '50%',
+								textAlign: 'center',
+								border: 'none',
+								color: 'white',
+								borderRadius: '10px',
+								cursor: 'pointer',
+							}}
+						>
 							Start
-							</button>
-						)
+						</button>
 					)
 				)}
 				{this.state.winner !== null && (

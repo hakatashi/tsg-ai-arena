@@ -41,24 +41,23 @@ const handleTurn = () => {
 
 			if (x1 == x && y1 == y) {
 				if (f1 == 0) {
-					text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
+					text =
+						'<span style="color: royalblue; font-size: 42px; line-height: 42px">●</span>';
 				} else {
-					text = '<span style="color: royalblue; font-size: 42px; line-height: 42px">◎</span>';
+					text =
+						'<span style="color: royalblue; font-size: 42px; line-height: 42px">◎</span>';
 				}
 			}
 			if (x2 == x && y2 == y) {
 				if (f2 == 0) {
-					text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
+					text =
+						'<span style="color: darkorange; font-size: 42px; line-height: 42px">●</span>';
 				} else {
-					text = '<span style="color: darkorange; font-size: 42px; line-height: 42px">◎</span>';
+					text =
+						'<span style="color: darkorange; font-size: 42px; line-height: 42px">◎</span>';
 				}
 			}
-			output +=
-				`<th style="text-align: center; border: 1px black solid; width: 50px; height: 50px; background-color:${
-					color
-				};">${
-					text
-				}</th>`;
+			output += `<th style="text-align: center; border: 1px black solid; width: 50px; height: 50px; background-color:${color};">${text}</th>`;
 		}
 		output += '</tr>';
 	}
@@ -100,9 +99,8 @@ const handleTurn = () => {
 		})();
 
 		const resultEl = document.createElement('div');
-		resultEl.textContent = winner === 0
-			? 'Draw'
-			: `Winner: ${data.players[winner - 1]}`;
+		resultEl.textContent =
+			winner === 0 ? 'Draw' : `Winner: ${data.players[winner - 1]}`;
 		Object.assign(resultEl.style, {
 			position: 'absolute',
 			top: '50%',

@@ -107,7 +107,7 @@ class App extends React.Component {
 							borderRight: '10px solid transparent',
 							borderBottom: `20px solid ${index === 0 ? 'red' : 'blue'}`,
 							transform: `translate(-50%, -50%) rotate(${180 -
-								Math.atan2(player.sx, player.sy) / Math.PI * 180}deg)`,
+								(Math.atan2(player.sx, player.sy) / Math.PI) * 180}deg)`,
 							top: `${player.y / 2}px`,
 							left: `${player.x / 2}px`,
 						}}

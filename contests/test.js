@@ -26,10 +26,7 @@ module.exports.battler = async (execute) => {
 	};
 
 	while (state.stones >= 1) {
-		const {stdout} = await execute(
-			`${state.stones.toString()}\n`,
-			state.turn
-		);
+		const {stdout} = await execute(`${state.stones.toString()}\n`, state.turn);
 
 		const answer = normalize(stdout);
 
