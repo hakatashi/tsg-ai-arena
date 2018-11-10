@@ -37,7 +37,6 @@ dotenv.load({path: '.env'});
 const homeController = require('./controllers/home');
 const userController = require('./controllers/user');
 const submissionController = require('./controllers/submission');
-const apiController = require('./controllers/api');
 const contestController = require('./controllers/contest');
 const battleController = require('./controllers/battle');
 const turnController = require('./controllers/turn');
@@ -242,30 +241,6 @@ router.post(
 );
 
 router.get('/submissions/:submission', submissionController.getOldSubmission);
-
-router.get(
-	'/api/contests/:contest/submission',
-	passportConfig.isAuthenticated,
-	apiController.contest,
-	apiController.getSubmission
-);
-router.post(
-	'/api/contests/:contest/submission',
-	passportConfig.isAuthenticated,
-	apiController.contest,
-	apiController.postSubmission
-);
-router.post(
-	'/api/contests/:contest/execution',
-	passportConfig.isAuthenticated,
-	apiController.contest,
-	apiController.postExecution
-);
-router.get(
-	'/api/contests/:contest/languages',
-	apiController.contest,
-	apiController.getLanguages
-);
 
 /*
  * OAuth authentication routes. (Sign in)
