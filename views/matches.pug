@@ -1,0 +1,63 @@
+extends layout
+
+include mixins
+
+block content
+  .container.content
+    if !contest.isStarted() && (!user || !user.admin)
+      include partials/countdown.pug
+    else
+      .page-header
+        h3 Matches
+      
+      if user
+        form(action='./matches', method='POST')
+          .form-row.align-items-center
+            input(type='hidden', name='_csrf', value=_csrf)
+            .form-group.col-md-5.mb-2
+              label Player1
+              select.form-control(name='player1')
+                each submission in submissions
+                  option(value=submission._id)= submission.userText()
+            .form-group.col-md-5.mb-2
+              label Player2
+              select.form-control(name='player2')
+                each submission in submissions
+                  option(value=submission._id)= submission.userText()
+            .col-md-2
+              button.btn.btn-primary.mb-2(type='submit') Start New Battle
+
+      .table-responsive
+        table.table
+          thead
+            tr
+              th Player1
+              th Player2
+              th Result
+              th Date
+          tbody
+            each match in matches
+              tr
+                td
+                  if match.players[0].isPreset
+                    = match.players[0].userText()
+                  else
+                    a(href=`./submissions/${match.players[0]._id}`)= match.players[0].userText()
+                td
+                  if match.players[1].isPreset
+                    = match.players[1].userText()
+                  else
+                    a(href=`./submissions/${match.players[1]._id}`)= match.players[1].userText()
+                td
+                  if match.result === 'pending'
+                    | Pending
+                  else if match.result === 'running'
+                    | Running
+                  else if match.result === 'draw'
+                    | Draw
+                  else if match.result === 'settled'
+                    = match.getWinner().userText()
+                    = ' '
+                    | Won
+                td
+                  a(href=`./matches/${match._id}`)= match.timeText()

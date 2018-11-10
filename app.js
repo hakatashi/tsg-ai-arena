@@ -39,6 +39,7 @@ const userController = require('./controllers/user');
 const submissionController = require('./controllers/submission');
 const contestController = require('./controllers/contest');
 const battleController = require('./controllers/battle');
+const matchController = require('./controllers/match');
 const turnController = require('./controllers/turn');
 
 /*
@@ -215,6 +216,11 @@ router.get(
 	'/contests/:contest/battles/:battle/visualizer',
 	contestController.base,
 	battleController.getBattleVisualizer
+);
+router.get(
+	'/contests/:contest/matches',
+	contestController.base,
+	matchController.getMatches
 );
 router.get(
 	'/contests/:contest/turns/:turn',

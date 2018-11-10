@@ -16,6 +16,8 @@ const submissionSchema = new mongoose.Schema(
 		code: Buffer,
 		size: {type: Number, min: 0},
 		id: {type: Number, min: 0},
+		config: String,
+		match: {type: mongoose.Schema.Types.ObjectId, ref: 'Match'},
 	},
 	{timestamps: true}
 );
