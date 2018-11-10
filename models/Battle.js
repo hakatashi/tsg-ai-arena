@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
+const contests = require('../contests');
 
 const battleSchema = new mongoose.Schema(
 	{
@@ -9,6 +10,8 @@ const battleSchema = new mongoose.Schema(
 		winner: Number,
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		executedAt: Date,
+		config: String,
+		match: {type: mongoose.Schema.Types.ObjectId, ref: 'Match'},
 	},
 	{timestamps: true}
 );
@@ -21,6 +24,11 @@ battleSchema.methods.timeText = function() {
 	return moment(this.createdAt)
 		.utcOffset(9)
 		.format('YYYY/MM/DD HH:mm:ss');
+};
+
+battleSchema.methods.configText = function(contest) {
+	const config = contests[contest.id].configs.find(({id}) => this.config === id);
+	return config === undefined ? '' : config.name;
 };
 
 battleSchema.methods.getOpponents = function(submission) {

@@ -19,9 +19,9 @@ const normalize = (stdout) => {
 
 module.exports.normalize = normalize;
 
-module.exports.battler = async (execute) => {
+module.exports.battler = async (execute, params) => {
 	const state = {
-		stones: 24,
+		stones: params.stones,
 		turn: 0,
 	};
 
@@ -41,3 +41,21 @@ module.exports.battler = async (execute) => {
 		winner: state.turn === 0 ? 1 : 0,
 	};
 };
+
+module.exports.configs = [
+	{
+		default: true,
+		id: 'default',
+		name: 'Default',
+		params: {
+			stones: 24,
+		},
+	},
+	{
+		id: 'big',
+		name: '100 stones',
+		params: {
+			stones: 100,
+		},
+	},
+];

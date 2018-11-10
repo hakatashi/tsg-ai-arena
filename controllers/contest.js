@@ -40,6 +40,7 @@ module.exports.index = async (req, res) => {
 			en: markdown.render(req.contest.description.en),
 		},
 		presets,
+		configs: req.contestData.configs,
 	});
 };
 

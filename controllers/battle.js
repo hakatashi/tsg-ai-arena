@@ -41,10 +41,14 @@ module.exports.getBattle = async (req, res) => {
 	});
 };
 
-module.exports.postBattles = async (req, res) => {
+module.exports.postBattle = async (req, res) => {
 	try {
 		if (!req.contest.isOpen() && !req.user.admin) {
 			throw new Error('Competition has closed');
+		}
+
+		if (!req.contestData.configs.some(({id}) => id === req.body.config)) {
+			throw new Error('Invalid config');
 		}
 
 		const latestBattle = await Battle.findOne({user: req.user})
@@ -69,11 +73,12 @@ module.exports.postBattles = async (req, res) => {
 			return;
 		}
 
-		const battle = await runner.enqueue(
-			[player1, player2],
-			req.contest,
-			req.user
-		);
+		const battle = await runner.enqueue({
+			players: [player1, player2],
+			contest: req.contest,
+			user: req.user,
+			config: req.body.config,
+		});
 
 		res.redirect(
 			`/contests/${req.contest.id}/battles/${battle._id}/visualizer`
@@ -111,6 +116,11 @@ const getVisualizer = async (req, res, id) => {
 		return;
 	}
 
+	console.log(battle);
+	const config = battle.config === undefined ?
+	req.contestData.configs.find((c) => c.default === true) :
+	req.contestData.configs.find((c) => battle.config === c.id)
+
 	if (
 		id !== 'latest' &&
 		!req.contest.isEnded() &&
@@ -147,6 +157,7 @@ const getVisualizer = async (req, res, id) => {
 			input: turn.input,
 			stdout: turn.stdout,
 		})),
+		config,
 	};
 
 	res.render('battle-visualizer', {
@@ -207,5 +218,6 @@ module.exports.getBattles = async (req, res) => {
 		submissions:
 			req.user &&
 			(req.user.admin ? allSubmissions : presets.concat(mySubmissions)),
+		configs: req.contestData.configs,
 	});
 };

@@ -14,16 +14,21 @@ block content
         form(action='./battles', method='POST')
           .form-row.align-items-center
             input(type='hidden', name='_csrf', value=_csrf)
-            .form-group.col-md-5.mb-2
+            .form-group.col-md-4.mb-2
               label Player1
               select.form-control(name='player1')
                 each submission in submissions
                   option(value=submission._id)= submission.userText()
-            .form-group.col-md-5.mb-2
+            .form-group.col-md-4.mb-2
               label Player2
               select.form-control(name='player2')
                 each submission in submissions
                   option(value=submission._id)= submission.userText()
+            .form-group.col-md-2.mb-2
+              label Config
+              select.form-control(name='config')
+                each config in configs
+                  option(value=config.id)= config.name
             .col-md-2
               button.btn.btn-primary.mb-2(type='submit') Start New Battle
 
@@ -33,6 +38,7 @@ block content
             tr
               th Player1
               th Player2
+              th Config
               th Result
               th Date
           tbody
@@ -48,6 +54,7 @@ block content
                     = battle.players[1].userText()
                   else
                     a(href=`./submissions/${battle.players[1]._id}`)= battle.players[1].userText()
+                td= battle.configText(contest)
                 td
                   if battle.result === 'pending'
                     | Pending

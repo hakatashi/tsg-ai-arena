@@ -105,6 +105,10 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('language unknown');
 		}
 
+		if (!req.contestData.configs.some(({id}) => id === req.body.config)) {
+			throw new Error('Invalid config');
+		}
+
 		const competitor = await Submission.findOne({
 			contest: req.contest,
 			isPreset: true,
@@ -165,7 +169,12 @@ module.exports.postSubmission = async (req, res) => {
 
 		const submission = await submissionRecord.save();
 
-		await runner.enqueue([submission, competitor], req.contest, req.user);
+		await runner.enqueue({
+			players: [submission, competitor],
+			contest: req.contest,
+			user: req.user,
+			config: req.body.config,
+		});
 
 		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
 	} catch (error) {

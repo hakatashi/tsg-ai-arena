@@ -8,13 +8,14 @@ class App extends React.Component {
 		this.data = JSON.parse(
 			document.querySelector('meta[name="data"]').getAttribute('content')
 		);
+
 		this.state = {
-			stones: Array(24).fill(0),
+			stones: Array(this.data.config.params.stones).fill(0),
 			turn: 0,
 			winner: null,
 			isReady: this.data.result === 'settled' || this.data.result === 'draw',
 		};
-		this.remainingStones = 24;
+		this.remainingStones = this.data.config.params.stones;
 
 		setTimeout(this.turn, 1000);
 	}
@@ -49,7 +50,7 @@ class App extends React.Component {
 	};
 
 	renderContent = () => (
-		<div style={{width: '480px'}}>
+		<div style={{width: `${Math.sqrt(this.data.config.params.stones) * 100}px`}}>
 			{this.state.turn !== 0 && (
 				<div style={{textAlign: 'center'}}>Turn: {this.state.turn}</div>
 			)}

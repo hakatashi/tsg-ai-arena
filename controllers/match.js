@@ -69,11 +69,11 @@ module.exports.postMatches = async (req, res) => {
 			return;
 		}
 
-		const match = await runner.enqueue(
-			[player1, player2],
-			req.contest,
-			req.user
-		);
+		const match = await runner.enqueue({
+			players: [player1, player2],
+			contest: req.contest,
+			contest: req.user,
+		});
 
 		res.redirect(
 			`/contests/${req.contest.id}/matches/${match._id}/visualizer`

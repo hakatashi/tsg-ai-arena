@@ -210,3 +210,12 @@ module.exports.battler = async (execute) => {
 		winner: state.p1_area > state.p2_area ? 0 : 1,
 	};
 };
+
+module.exports.configs = [
+	{
+		default: true,
+		id: 'default',
+		name: 'Default',
+		params: {},
+	},
+];

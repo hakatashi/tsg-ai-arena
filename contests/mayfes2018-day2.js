@@ -204,3 +204,12 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		winner: state.points[0] > state.points[1] ? 0 : 1,
 	};
 };
+
+module.exports.configs = [
+	{
+		default: true,
+		id: 'default',
+		name: 'Default',
+		params: {},
+	},
+];

@@ -200,7 +200,7 @@ router.get(
 router.post(
 	'/contests/:contest/battles',
 	contestController.base,
-	battleController.postBattles
+	battleController.postBattle
 );
 router.get(
 	'/contests/:contest/battles/:battle',
