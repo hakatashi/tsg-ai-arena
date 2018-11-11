@@ -223,6 +223,16 @@ router.get(
 	matchController.getMatches
 );
 router.get(
+	'/contests/:contest/matches/:match',
+	contestController.base,
+	matchController.getMatch
+);
+router.post(
+	'/contests/:contest/matches',
+	contestController.base,
+	matchController.postMatch
+);
+router.get(
 	'/contests/:contest/turns/:turn',
 	contestController.base,
 	turnController.getTurn

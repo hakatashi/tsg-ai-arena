@@ -45,10 +45,17 @@ module.exports.battler = async (execute, params) => {
 module.exports.configs = [
 	{
 		default: true,
-		id: 'default',
-		name: 'Default',
+		id: 'small',
+		name: '24 Stones',
 		params: {
 			stones: 24,
+		},
+	},
+	{
+		id: 'medium',
+		name: '50 stones',
+		params: {
+			stones: 50,
 		},
 	},
 	{
@@ -57,5 +64,20 @@ module.exports.configs = [
 		params: {
 			stones: 100,
 		},
+	},
+];
+
+module.exports.matchConfigs = [
+	{
+		config: 'small',
+		players: [0, 1],
+	},
+	{
+		config: 'medium',
+		players: [0, 1],
+	},
+	{
+		config: 'big',
+		players: [0, 1],
 	},
 ];

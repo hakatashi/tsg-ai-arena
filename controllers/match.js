@@ -1,4 +1,4 @@
-const Turn = require('../models/Turn');
+const Battle = require('../models/Battle');
 const Match = require('../models/Match');
 const Submission = require('../models/Submission');
 const runner = require('../lib/runner');
@@ -24,24 +24,22 @@ module.exports.getMatch = async (req, res) => {
 		return;
 	}
 
-	const turns = await Turn.find({match})
+	const battles = await Battle.find({match})
+		.sort({_id: 1})
 		.populate({
-			path: 'match',
-			populate: {
-				path: 'players',
-				populate: {path: 'user'},
-			},
+			path: 'players',
+			populate: {path: 'user'},
 		})
 		.exec();
 
 	res.render('match', {
 		contest: req.contest,
 		match,
-		turns,
+		battles,
 	});
 };
 
-module.exports.postMatches = async (req, res) => {
+module.exports.postMatch = async (req, res) => {
 	try {
 		if (!req.contest.isOpen() && !req.user.admin) {
 			throw new Error('Competition has closed');
@@ -69,95 +67,33 @@ module.exports.postMatches = async (req, res) => {
 			return;
 		}
 
-		const match = await runner.enqueue({
-			players: [player1, player2],
+		const match = new Match({
 			contest: req.contest,
-			contest: req.user,
+			players: [player1, player2],
+			result: 'pending',
+			winner: null,
+			user: req.user,
 		});
+		await match.save();
 
-		res.redirect(
-			`/contests/${req.contest.id}/matches/${match._id}/visualizer`
-		);
+		for (const matchConfig of req.contestData.matchConfigs) {
+			const config = req.contestData.configs.find(({id}) => matchConfig.config === id);
+
+			await runner.enqueue({
+				players: matchConfig.players.map((index) => [player1, player2][index]),
+				contest: req.contest,
+				user: req.user,
+				config: config.id,
+				match,
+			});
+		}
+
+		res.redirect(`/contests/${req.contest.id}/matches/${match._id}`);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});
 	}
 };
-
-const getVisualizer = async (req, res, id) => {
-	const match =
-		id === 'latest'
-			? await Match.findOne({
-				contest: req.contest,
-				result: {$ne: 'pending'},
-			  })
-				.sort({createdAt: -1})
-				.populate('contest')
-				.populate({
-					path: 'players',
-					populate: {path: 'user'},
-				})
-				.exec()
-			: await Match.findOne({_id: id})
-				.populate('contest')
-				.populate({
-					path: 'players',
-					populate: {path: 'user'},
-				})
-				.exec();
-
-	if (match === null) {
-		res.sendStatus(404);
-		return;
-	}
-
-	if (
-		id !== 'latest' &&
-		!req.contest.isEnded() &&
-		!match.isViewableBy(req.user)
-	) {
-		res.sendStatus(403);
-		return;
-	}
-
-	if (match.contest.id !== req.params.contest) {
-		res.redirect(`/contests/${match.contest.id}/matches/${id}/visualizer`);
-		return;
-	}
-
-	const turns = await Turn.find({match})
-		.populate({
-			path: 'match',
-			populate: {
-				path: 'players',
-				populate: {path: 'user'},
-			},
-		})
-		.sort({index: 1})
-		.exec();
-
-	const data = {
-		id,
-		result: match.result,
-		winner: match.winner,
-		players: match.players.map((player) => player.userText()),
-		turns: turns.map((turn) => ({
-			player: turn.player,
-			index: turn.index,
-			input: turn.input,
-			stdout: turn.stdout,
-		})),
-	};
-
-	res.render('match-visualizer', {
-		contest: req.contest,
-		data,
-		hideFooter: true,
-	});
-};
-
-module.exports.getMatchVisualizer = (req, res) => getVisualizer(req, res, req.params.match);
-module.exports.getLatestVisualizer = (req, res) => getVisualizer(req, res, 'latest');
 
 module.exports.getMatches = async (req, res) => {
 	const matches = await Match.find({
