@@ -213,3 +213,12 @@ module.exports.configs = [
 		params: {},
 	},
 ];
+
+module.exports.matchConfigs = [
+	{
+		config: 'default',
+		players: [0, 1],
+	},
+];
+
+module.exports.judgeMatch = (results) => results[0];
