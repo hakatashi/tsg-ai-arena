@@ -1,3 +1,6 @@
+const assert = require('assert');
+const countBy = require('lodash/countBy');
+
 module.exports.presets = {
 	random: () => (Math.floor(Math.random() * 3) + 1).toString(),
 	clever: (stdin) => {
@@ -81,3 +84,13 @@ module.exports.matchConfigs = [
 		players: [0, 1],
 	},
 ];
+
+module.exports.judgeMatch = (results) => {
+	const wins = [0, 1].map((player) => countBy(results, (result) => result.winner === player));
+	assert(wins[0] !== wins[1]);
+
+	return {
+		result: 'settled',
+		winner: wins[0] > wins[1] ? 0 : 1,
+	};
+};
