@@ -19,11 +19,12 @@ block content
               select.form-control(name='player1')
                 each submission in submissions
                   option(value=submission._id)= submission.userText()
-            .form-group.col-md-4.mb-2
-              label Player2
-              select.form-control(name='player2')
-                each submission in submissions
-                  option(value=submission._id)= submission.userText()
+            if contest.type === 'battle'
+              .form-group.col-md-4.mb-2
+                label Player2
+                select.form-control(name='player2')
+                  each submission in submissions
+                    option(value=submission._id)= submission.userText()
             .form-group.col-md-2.mb-2
               label Config
               select.form-control(name='config')
@@ -37,7 +38,8 @@ block content
           thead
             tr
               th Player1
-              th Player2
+              if contest.type === 'battle'
+                th Player2
               th Config
               th Result
               th Date
@@ -49,11 +51,12 @@ block content
                     = battle.players[0].userText()
                   else
                     a(href=`./submissions/${battle.players[0]._id}`)= battle.players[0].userText()
-                td
-                  if battle.players[1].isPreset
-                    = battle.players[1].userText()
-                  else
-                    a(href=`./submissions/${battle.players[1]._id}`)= battle.players[1].userText()
+                if contest.type === 'battle'
+                  td
+                    if battle.players[1].isPreset
+                      = battle.players[1].userText()
+                    else
+                      a(href=`./submissions/${battle.players[1]._id}`)= battle.players[1].userText()
                 td= battle.configText(contest)
                 td
                   if battle.result === 'pending'

@@ -72,6 +72,7 @@ class App extends React.Component {
 				turnIndex++;
 				return Promise.resolve({stdout});
 			},
+			{},
 			{
 				onFrame: (state) => frames.push(cloneDeep(state)),
 				initState: pick(this.state, ['turns', 'field']),

@@ -10,19 +10,25 @@ block content
     if contest.isEnded() || battle.isViewableBy(user)
       a.btn.btn-primary.btn-lg(href=`/contests/${contest.id}/battles/${battle._id}/visualizer`, style={margin: '1em 0'}) Launch Visualizer
 
-    h3 Result
+    if contest.type === 'battle'
+      h3 Result
 
-    p
-      if battle.result === 'pending'
-        | Pending
-      else if battle.result === 'running'
-        | Running
-      else if battle.result === 'draw'
-        | Draw
-      else if battle.result === 'settled'
-        = battle.getWinner().userText()
-        = ' '
-        | Won
+      p
+        if battle.result === 'pending'
+          | Pending
+        else if battle.result === 'running'
+          | Running
+        else if battle.result === 'draw'
+          | Draw
+        else if battle.result === 'settled'
+          = battle.getWinner().userText()
+          = ' '
+          | Won
+        
+    if contest.type === 'score'
+      h3 Score
+      
+      p= battle.scores[0]
 
     if contest.isEnded() || battle.isViewableBy(user)
       h3 Turns

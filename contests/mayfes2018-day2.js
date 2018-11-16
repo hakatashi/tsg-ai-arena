@@ -46,7 +46,7 @@ module.exports.presets = {
 	},
 };
 
-module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
+module.exports.battler = async (execute, params, {onFrame = noop, initState} = {}) => {
 	const initialState = initState || {
 		turns: 0,
 		field: Array(SIZE)
