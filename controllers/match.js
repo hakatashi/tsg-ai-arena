@@ -72,11 +72,12 @@ module.exports.postMatch = async (req, res) => {
 			players: [player1, player2],
 			result: 'pending',
 			winner: null,
+			scores: [0, 0],
 			user: req.user,
 		});
 		await match.save();
 
-		for (const matchConfig of req.contestData.matchConfigs) {
+		for (const [index, matchConfig] of req.contestData.matchConfigs.entries()) {
 			const config = req.contestData.configs.find(({id}) => matchConfig.config === id);
 
 			await runner.enqueue({
@@ -84,6 +85,7 @@ module.exports.postMatch = async (req, res) => {
 				contest: req.contest,
 				user: req.user,
 				config: config.id,
+				configIndex: index,
 				match,
 			});
 		}

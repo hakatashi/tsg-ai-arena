@@ -9,6 +9,10 @@ block content
     else
       .page-header
         h1= match.versusText()
+        
+      h3 Score
+      
+      p= match.scoreText()
       
       .page-header
         h3 Battles
@@ -17,35 +21,43 @@ block content
         table.table
           thead
             tr
-              th Player1
-              th Player2
+              if contest.type === 'battle'
+                th Player1
+                th Player2
               th Config
-              th Result
+              if contest.type === 'battle'
+                th Result
+              else if contest.type === 'score'
+                th Score
               th Date
           tbody
             each battle in battles
               tr
-                td
-                  if battle.players[0].isPreset
-                    = battle.players[0].userText()
-                  else
-                    a(href=`../submissions/${battle.players[0]._id}`)= battle.players[0].userText()
-                td
-                  if battle.players[1].isPreset
-                    = battle.players[1].userText()
-                  else
-                    a(href=`../submissions/${battle.players[1]._id}`)= battle.players[1].userText()
+                if contest.type === 'battle'
+                  td
+                    if battle.players[0].isPreset
+                      = battle.players[0].userText()
+                    else
+                      a(href=`../submissions/${battle.players[0]._id}`)= battle.players[0].userText()
+                  td
+                    if battle.players[1].isPreset
+                      = battle.players[1].userText()
+                    else
+                      a(href=`../submissions/${battle.players[1]._id}`)= battle.players[1].userText()
                 td= battle.configText(contest)
-                td
-                  if battle.result === 'pending'
-                    | Pending
-                  else if battle.result === 'running'
-                    | Running
-                  else if battle.result === 'draw'
-                    | Draw
-                  else if battle.result === 'settled'
-                    = battle.getWinner().userText()
-                    = ' '
-                    | Won
+                if contest.type === 'battle'
+                  td
+                    if battle.result === 'pending'
+                      | Pending
+                    else if battle.result === 'running'
+                      | Running
+                    else if battle.result === 'draw'
+                      | Draw
+                    else if battle.result === 'settled'
+                      = battle.getWinner().userText()
+                      = ' '
+                      | Won
+                else if contest.type === 'score'
+                  td= battle.scoreText()
                 td
                   a(href=`../battles/${battle._id}`)= battle.timeText()

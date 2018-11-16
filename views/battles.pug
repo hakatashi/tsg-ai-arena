@@ -10,7 +10,7 @@ block content
       .page-header
         h3 Battles
       
-      if user
+      if user && contest.type === 'battle'
         form(action='./battles', method='POST')
           .form-row.align-items-center
             input(type='hidden', name='_csrf', value=_csrf)
@@ -41,7 +41,10 @@ block content
               if contest.type === 'battle'
                 th Player2
               th Config
-              th Result
+              if contest.type === 'battle'
+                th Result
+              else if contest.type === 'score'
+                th Score
               th Date
           tbody
             each battle in battles
@@ -58,16 +61,19 @@ block content
                     else
                       a(href=`./submissions/${battle.players[1]._id}`)= battle.players[1].userText()
                 td= battle.configText(contest)
-                td
-                  if battle.result === 'pending'
-                    | Pending
-                  else if battle.result === 'running'
-                    | Running
-                  else if battle.result === 'draw'
-                    | Draw
-                  else if battle.result === 'settled'
-                    = battle.getWinner().userText()
-                    = ' '
-                    | Won
+                if contest.type === 'battle'
+                  td
+                    if battle.result === 'pending'
+                      | Pending
+                    else if battle.result === 'running'
+                      | Running
+                    else if battle.result === 'draw'
+                      | Draw
+                    else if battle.result === 'settled'
+                      = battle.getWinner().userText()
+                      = ' '
+                      | Won
+                else if contest.type === 'score'
+                  td= battle.scoreText()
                 td
                   a(href=`./battles/${battle._id}`)= battle.timeText()

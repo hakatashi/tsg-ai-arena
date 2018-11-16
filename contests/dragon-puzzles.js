@@ -1,11 +1,10 @@
-const assert = require('assert');
-const countBy = require('lodash/countBy');
 const clamp = require('lodash/clamp');
 const shuffle = require('lodash/shuffle');
 const chunk = require('lodash/chunk');
 const meanBy = require('lodash/meanBy');
 const noop = require('lodash/noop');
 const flatten = require('lodash/flatten');
+const sumBy = require('lodash/sumBy');
 
 module.exports.presets = {};
 
@@ -183,21 +182,45 @@ module.exports.configs = [
 			moves: 5,
 		},
 	},
-];
-
-module.exports.matchConfigs = [
 	{
-		config: 'small',
-		players: [0],
+		id: 'medium',
+		name: '10 x 10',
+		params: {
+			height: 10,
+			width: 10,
+			turns: 10,
+			moves: 10,
+		},
+	},
+	{
+		id: 'large',
+		name: '20 x 20',
+		params: {
+			height: 20,
+			width: 20,
+			turns: 30,
+			moves: 15,
+		},
 	},
 ];
 
-module.exports.judgeMatch = (results) => {
-	const wins = [0, 1].map((player) => countBy(results, (result) => result.winner === player));
-	assert(wins[0] !== wins[1]);
+module.exports.matchConfigs = [
+	...Array(5).fill().map(() => ({
+		config: 'small',
+		players: [0],
+	})),
+	...Array(5).fill().map(() => ({
+		config: 'medium',
+		players: [0],
+	})),
+	...Array(5).fill().map(() => ({
+		config: 'large',
+		players: [0],
+	})),
+];
 
-	return {
-		result: 'settled',
-		winner: wins[0] > wins[1] ? 0 : 1,
-	};
-};
+module.exports.judgeMatch = (results) => ({
+	result: results[0].result,
+	winner: results[0].winner,
+	scores: [sumBy(results, ({scores}) => scores[0])],
+});

@@ -1,6 +1,7 @@
 const Submission = require('../models/Submission');
 const User = require('../models/User');
 const Battle = require('../models/Battle');
+const Match = require('../models/Match');
 const runner = require('../lib/runner');
 const {getCodeLimit, transaction} = require('../lib/utils');
 const assert = require('assert');
@@ -105,7 +106,7 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('language unknown');
 		}
 
-		if (!req.contestData.configs.some(({id}) => id === req.body.config)) {
+		if (req.contest.type === 'battle' && !req.contestData.configs.some(({id}) => id === req.body.config)) {
 			throw new Error('Invalid config');
 		}
 
@@ -171,14 +172,42 @@ module.exports.postSubmission = async (req, res) => {
 			return submissionRecord.save();
 		});
 
-		await runner.enqueue({
-			players: req.contest.type === 'battle' ? [submission, competitor] : [submission],
-			contest: req.contest,
-			user: req.user,
-			config: req.body.config,
-		});
+		if (req.contest.type === 'battle') {
+			await runner.enqueue({
+				players: req.contest.type === 'battle' ? [submission, competitor] : [submission],
+				contest: req.contest,
+				user: req.user,
+				config: req.body.config,
+			});
 
-		res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
+			res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
+			return;
+		}
+
+		const match = new Match({
+			contest: req.contest,
+			players: [submission],
+			result: 'pending',
+			winner: null,
+			scores: [null],
+			user: req.user,
+		});
+		await match.save();
+
+		for (const [index, matchConfig] of req.contestData.matchConfigs.entries()) {
+			const config = req.contestData.configs.find(({id}) => matchConfig.config === id);
+
+			await runner.enqueue({
+				players: [submission],
+				contest: req.contest,
+				user: req.user,
+				config: config.id,
+				configIndex: index,
+				match,
+			});
+		}
+
+		res.redirect(`/contests/${req.contest.id}/matches/${match._id}`);
 	} catch (error) {
 		// eslint-disable-next-line callback-return
 		res.status(400).json({error: error.message});

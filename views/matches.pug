@@ -10,7 +10,7 @@ block content
       .page-header
         h3 Matches
       
-      if user
+      if user && contest.type === 'battle'
         form(action='./matches', method='POST')
           .form-row.align-items-center
             input(type='hidden', name='_csrf', value=_csrf)
@@ -31,9 +31,13 @@ block content
         table.table
           thead
             tr
-              th Player1
-              th Player2
-              th Result
+              if contest.type === 'battle'
+                th Player1
+                th Player2
+                th Result
+              else if contest.type === 'score'
+                th Player
+                th Score
               th Date
           tbody
             each match in matches
@@ -43,21 +47,24 @@ block content
                     = match.players[0].userText()
                   else
                     a(href=`./submissions/${match.players[0]._id}`)= match.players[0].userText()
-                td
-                  if match.players[1].isPreset
-                    = match.players[1].userText()
-                  else
-                    a(href=`./submissions/${match.players[1]._id}`)= match.players[1].userText()
-                td
-                  if match.result === 'pending'
-                    | Pending
-                  else if match.result === 'running'
-                    | Running
-                  else if match.result === 'draw'
-                    | Draw
-                  else if match.result === 'settled'
-                    = match.getWinner().userText()
-                    = ' '
-                    | Won
+                if contest.type === 'battle'
+                  td
+                    if match.players[1].isPreset
+                      = match.players[1].userText()
+                    else
+                      a(href=`./submissions/${match.players[1]._id}`)= match.players[1].userText()
+                  td
+                    if match.result === 'pending'
+                      | Pending
+                    else if match.result === 'running'
+                      | Running
+                    else if match.result === 'draw'
+                      | Draw
+                    else if match.result === 'settled'
+                      = match.getWinner().userText()
+                      = ' '
+                      | Won
+                else if contest.type === 'score'
+                  td= match.scoreText()
                 td
                   a(href=`./matches/${match._id}`)= match.timeText()

@@ -7,6 +7,7 @@ const matchSchema = new mongoose.Schema(
 		players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Submission'}],
 		result: {type: String, enum: ['pending', 'draw', 'settled']},
 		winner: Number,
+		scores: [Number],
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		executedAt: Date,
 	},
@@ -21,6 +22,10 @@ matchSchema.methods.timeText = function() {
 	return moment(this.createdAt)
 		.utcOffset(9)
 		.format('YYYY/MM/DD HH:mm:ss');
+};
+
+matchSchema.methods.scoreText = function() {
+	return this.scores[0] === null ? 'Pending' : this.scores[0];
 };
 
 matchSchema.methods.getOpponents = function(submission) {

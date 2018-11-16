@@ -12,6 +12,7 @@ const battleSchema = new mongoose.Schema(
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		executedAt: Date,
 		config: String,
+		configIndex: Number,
 		match: {type: mongoose.Schema.Types.ObjectId, ref: 'Match'},
 	},
 	{timestamps: true}
@@ -30,6 +31,10 @@ battleSchema.methods.timeText = function() {
 battleSchema.methods.configText = function(contest) {
 	const config = contests[contest.id].configs.find(({id}) => this.config === id);
 	return config === undefined ? '' : config.name;
+};
+
+battleSchema.methods.scoreText = function() {
+	return this.scores[0] === null ? 'Pending' : this.scores[0];
 };
 
 battleSchema.methods.getOpponents = function(submission) {
