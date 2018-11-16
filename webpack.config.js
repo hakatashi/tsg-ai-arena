@@ -22,18 +22,16 @@ module.exports = (env, argv = {}) => {
 	return {
 		entry: Object.assign(
 			...[
-				['contest-test', 'js/contests/test/index.babel.js'],
-				['contest-dragon-ball', 'js/contests/dragon-ball/index.babel.js'],
-				[
-					'contest-mayfes2018-day2',
-					'js/contests/mayfes2018-day2/index.babel.js',
-				],
-			].map(([name, entry]) => ({
-				[name]: [
+				'test',
+				'dragon-ball',
+				'mayfes2018-day2',
+				'rotating-drops',
+			].map((name) => ({
+				[`contest-${name}`]: [
 					...(argv.mode === 'development'
 						? ['webpack-hot-middleware/client?reload=true']
 						: []),
-					path.join(__dirname, 'public', entry),
+					path.join(__dirname, 'public', `js/contests/${name}/index.babel.js`),
 				],
 			}))
 		),
