@@ -28,11 +28,12 @@ block content
             = ' '
             | bytes
           textarea.form-control.code.checker-code(name='code')
-        .form-group
-          label Compete with
-          select.form-control.checker-language(name='competitor')
-            each preset in presets
-              option(value=preset.name)= preset.userText()
+        if contest.type === 'battle'
+          .form-group
+            label Compete with
+            select.form-control.checker-language(name='competitor')
+              each preset in presets
+                option(value=preset.name)= preset.userText()
         .form-group
           label Config
           select.form-control(name='config')
