@@ -10,6 +10,10 @@ const contestSchema = new mongoose.Schema({
 		ja: {type: String},
 		en: {type: String},
 	},
+	type: {
+		type: String,
+		enum: ['battle', 'score'],
+	},
 });
 
 contestSchema.methods.isOpen = function() {

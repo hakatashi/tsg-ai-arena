@@ -9,79 +9,112 @@ mongoose.Promise = global.Promise;
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
-	const contest = await Contest.findOne({id: 'mayfes2018-day2'});
-	contest.start = new Date('2018-05-20T14:20:00+0900');
-	contest.end = new Date('2018-05-20T15:20:00+0900');
+	const battles = await Battle.find({});
 
-	contest.description.ja = stripIndent`
-		# ブロック並べ
-
-		フィールド上に3x1のブロックを配置して、自分の陣地に最長の直線を作ろう。
-
-		## 説明
-
-		* 正方形のブロックが10x10個並んだフィールド上で競技を行う。
-			* フィールド上のブロックは値を持っており、初期値はすべて0である。
-			* 座標系は一番左上のブロックが (0, 0) である。
-		* それぞれのプレイヤーは1回のターンで1回ずつ同時に行動することができる。
-		* プレイヤーは1回のターンにつき3x1のブロック塊を1個配置することができる。
-		* プレイヤーが3x1のブロック塊を配置すると、フィールド上のブロックの値が変化する。
-			* 自プレイヤーが3x1のブロック塊を配置した位置のブロックは、値が1増加する。
-			* 他プレイヤーが3x1のブロック塊を配置した位置のブロックは、値が1減少する。
-			* **敵プレイヤーの陣地にブロックを置いた場合、値が変化する大きさが1ではなく2になる。ただし0を超えて変化することはない。**
-			* 両プレイヤーが同じ場所に同時にブロックを置いた場合、ブロックが持つ値が0方向に1変化する。
-			* **ブロックが3より大きい値、もしくは-3より小さい値を持つことはない。**
-		* 正の値を持つブロックが自プレイヤーの陣地、負の値を持つブロックが他プレイヤーの陣地となる。
-		* それぞれのプレイヤーの得点は**自分の陣地に含まれる最も長い直線の長さ**となる。
-		* 20ターンが経過した時点で得点が大きいプレイヤーの勝利となる。
-
-		## 入力
-
-		\`\`\`
-		T
-		V11 V21 V31 ...
-		V12 V22 V32 ...
-		...
-		\`\`\`
-
-		* 1行目に、ゲーム開始から経過したターン数Fが与えられる。
-		* 2～11行目に、フィールド上のそれぞれのブロックの値が与えられる。
-			* Vxy: 座標 (x, y) のブロックの値
-
-		## 出力
-
-		\`\`\`
-		x y rot
-		\`\`\`
-
-		* 3x1のブロック塊を配置する位置を出力せよ。
-			* x: 3x1のブロック塊の中心のブロックのx座標
-				* 1 <= x <= 10, x ∈ ℕ
-			* y: 3x1のブロック塊の中心のブロックのy座標
-				* 1 <= y <= 10, y ∈ ℕ
-			* rot: 配置するブロック塊の向き
-				* 0ならば横向き、1ならば縦向きに配置する。
-		* 不正な出力をした場合、\`5 5 0\`を出力したものとみなされる。
-	`;
-
-	await contest.save();
-
-	await Submission.remove({contest});
-	await Battle.remove({contest});
-
-	for (const presetName of ['random', 'fill']) {
-		const preset = new Submission({
-			isPreset: true,
-			name: presetName,
-			user: null,
-			contest,
-			language: null,
-			code: null,
-			size: null,
-		});
-
-		await preset.save();
+	for (const battle of battles) {
+		battle.scores = Array(battle.players.length).fill(0);
+		await battle.save();
 	}
+
+	const contests = await Contest.find({});
+
+	for (const contest of contests) {
+		contest.type = 'battle';
+		await contest.save();
+	}
+
+	const contest1 = new Contest({
+		name: 'Rotating Drops',
+		id: 'rotating-drops',
+		start: new Date('1970-01-01T00:00:00.000Z'),
+		end: new Date('2038-01-19T12:14:07.000+0900'),
+		description: {
+			ja: stripIndent`
+				# 回転するドロップ
+
+				* H×Wマスのフィールド上に、1マスにつき1個のドロップが配置されています。
+				  * 座標は左上が (1, 1)、右下が (H, W) です。
+				* ドロップの色は5種類あり、それぞれ1から5までの番号がついています。
+				* プレイヤーは以下の回転操作をN回行うことができます。
+				  * 隣接する2x2マスを選び、その上の4つのドロップを時計回りに1つ回転させる。
+					* すなわち、2x2マスの中の左上のドロップは右上に、右上のドロップは右下に移動する。
+				* 最終的になるべく同じ色のドロップが隣り合うように並び替えてください。
+
+				## 入力
+
+				\`\`\`
+				H W N
+				d11 d12 d13 ...
+				d21 d22 d23 ...
+				d31 d32 d33 ...
+				...
+				\`\`\`
+
+				* 1行目に、H, W, N が空白区切りで与えられる。
+				* i + 1 (1 <= i <= H) 行目に、マス (x, i) 上のドロップの色 dix (1 <= dix <= 5) が与えられる。
+
+				## 出力
+
+				\`\`\`
+				x1 y1
+				x2 y2
+				x3 y3
+				...
+				\`\`\`
+
+				* i (1 <= i <= N) 行目に、i回目の回転操作を行う2x2マスの左上の座標 (xi, yi) を空白区切りで出力してください。
+
+				## スコア
+
+				* **最終的なフィールド上の、同じ色のドロップが隣接する領域の大きさの二乗平均平方根 (RMS) がスコアとなる。**
+
+				## テストケース
+
+				* H = 5, W = 5, N = 20 5ケース
+				* H = 10, W = 10, N = 50 5ケース
+				* H = 20, W = 20, N = 200 5ケース
+
+
+				## サンプルコード
+
+				以下は、この問題に対して不正でない出力を行うC++のサンプルコードです。
+			`,
+			en: stripIndent`
+			`,
+		},
+	});
+
+	await contest1.save();
+
+	const contest2 = new Contest({
+		name: '駒場祭2018 Live Programming Contest',
+		id: 'komabasai2018-procon',
+		start: new Date('2018-11-24T16:10:00+0900'),
+		end: new Date('2018-11-24T17:10:00+0900'),
+		description: {
+			ja: stripIndent`
+			`,
+			en: stripIndent`
+			`,
+		},
+	});
+
+	await contest2.save();
+
+	const contest3 = new Contest({
+		name: '駒場祭2018 Live AI Contest',
+		id: 'komabasai2018-ai',
+		start: new Date('2018-11-25T16:10:00+0900'),
+		end: new Date('2018-11-25T17:10:00+0900'),
+		description: {
+			ja: stripIndent`
+			`,
+			en: stripIndent`
+			`,
+		},
+	});
+
+	await contest3.save();
 
 	mongoose.connection.close();
 })();
