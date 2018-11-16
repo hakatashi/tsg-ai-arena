@@ -196,12 +196,14 @@ module.exports.battler = async (execute, {onFrame = noop, initState} = {}) => {
 		return {
 			result: 'draw',
 			winner: null,
+			scores: [0, 0],
 		};
 	}
 
 	return {
 		result: 'settled',
 		winner: state.points[0] > state.points[1] ? 0 : 1,
+		scores: [0, 0],
 	};
 };
 

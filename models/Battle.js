@@ -33,7 +33,7 @@ battleSchema.methods.configText = function(contest) {
 };
 
 battleSchema.methods.getOpponents = function(submission) {
-	return this.players.filter(({_id}) => !_id.equals(submission._id));
+	return this.players.length === 1 ? null : this.players.filter(({_id}) => !_id.equals(submission._id));
 };
 
 battleSchema.methods.getWinner = function() {

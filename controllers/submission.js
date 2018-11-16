@@ -2,7 +2,7 @@ const Submission = require('../models/Submission');
 const User = require('../models/User');
 const Battle = require('../models/Battle');
 const runner = require('../lib/runner');
-const {getCodeLimit} = require('../lib/utils');
+const {getCodeLimit, transaction} = require('../lib/utils');
 const assert = require('assert');
 const concatStream = require('concat-stream');
 const qs = require('querystring');
@@ -109,13 +109,13 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Invalid config');
 		}
 
-		const competitor = await Submission.findOne({
+		const competitor = req.contest.type === 'battle' && await Submission.findOne({
 			contest: req.contest,
 			isPreset: true,
 			name: req.body.competitor,
 		});
 
-		if (competitor === null) {
+		if (req.contest.type === 'battle' && !competitor) {
 			throw new Error('competitor unknown');
 		}
 
@@ -150,27 +150,29 @@ module.exports.postSubmission = async (req, res) => {
 			throw new Error('Submission interval is too short');
 		}
 
-		const latestIdSubmission = await Submission.findOne({
-			contest: req.contest,
-		})
-			.sort({id: -1})
-			.exec();
+		const submission = await transaction(async () => {
+			const latestIdSubmission = await Submission.findOne({
+				contest: req.contest,
+			})
+				.sort({id: -1})
+				.exec();
 
-		const submissionRecord = new Submission({
-			isPreset: false,
-			name: null,
-			user: req.user._id,
-			contest: req.contest,
-			language: req.body.language,
-			code,
-			size: code.length,
-			id: (latestIdSubmission.id || 0) + 1, // FIXME: race condition
+			const submissionRecord = new Submission({
+				isPreset: false,
+				name: null,
+				user: req.user._id,
+				contest: req.contest,
+				language: req.body.language,
+				code,
+				size: code.length,
+				id: (latestIdSubmission ? latestIdSubmission.id || 0 : 0) + 1,
+			});
+
+			return submissionRecord.save();
 		});
 
-		const submission = await submissionRecord.save();
-
 		await runner.enqueue({
-			players: [submission, competitor],
+			players: req.contest.type === 'battle' ? [submission, competitor] : [submission],
 			contest: req.contest,
 			user: req.user,
 			config: req.body.config,

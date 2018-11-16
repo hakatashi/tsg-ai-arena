@@ -202,12 +202,14 @@ module.exports.battler = async (execute) => {
 		return {
 			result: 'draw',
 			winner: null,
+			scores: [0, 0],
 		};
 	}
 
 	return {
 		result: 'settled',
 		winner: state.p1_area > state.p2_area ? 0 : 1,
+		scores: [0, 0],
 	};
 };
 

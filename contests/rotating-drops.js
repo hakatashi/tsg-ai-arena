@@ -3,6 +3,7 @@ const countBy = require('lodash/countBy');
 const clamp = require('lodash/clamp');
 const shuffle = require('lodash/shuffle');
 const chunk = require('lodash/chunk');
+const meanBy = require('lodash/meanBy');
 
 module.exports.presets = {
 };
@@ -76,7 +77,7 @@ const calculateStore = (rawDrops, {width, height}) => {
 		chunkSizes.push(size);
 	}
 
-	return chunkSizes.reduce((a, b) => a + b, 0);
+	return Math.sqrt(meanBy(chunkSizes, (n) => n * n));
 };
 
 module.exports.battler = async (execute, params) => {
@@ -103,7 +104,7 @@ module.exports.battler = async (execute, params) => {
 	return {
 		result: 'settled',
 		winner: 0,
-		score,
+		scores: [score],
 	};
 };
 

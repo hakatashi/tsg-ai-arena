@@ -42,6 +42,7 @@ module.exports.battler = async (execute, params) => {
 	return {
 		result: 'settled',
 		winner: state.turn === 0 ? 1 : 0,
+		scores: [0, 0],
 	};
 };
 
