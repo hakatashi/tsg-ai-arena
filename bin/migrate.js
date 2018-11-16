@@ -89,6 +89,44 @@ mongoose.Promise = global.Promise;
 
 				以下は、この問題に対して不正でない出力を行うC++のサンプルコードである。
 
+				\`\`\`
+				#include <bits/stdc++.h>
+				using namespace std;
+
+				int **drops;
+
+				int main() {
+				    cin.tie(0);
+				    ios::sync_with_stdio(false);
+
+				    int H, W, N, M;
+				    cin >> H >> W >> N >> M;
+
+				    drops = (int **)malloc(sizeof(int *) * H);
+				    for (int y = 0; y < H; y++) {
+				        drops[y] = (int *)malloc(sizeof(int) * W);
+				        for (int x = 0; x < W; x++) {
+				            cin >> drops[y][x];
+				        }
+				    }
+
+				    for (int i = 0; i < N; i++) {
+				        cout << 2 << " " << 2 << endl;
+
+				        for (int j = 0; j < M; j++) {
+				            cout << (j % 4) + 1;
+				            if (j == M - 1) {
+				                cout << endl;
+				            } else {
+				                cout << " ";
+				            }
+				        }
+				    }
+
+				    return 0;
+				}
+				\`\`\`
+
 				## 入力例
 
 				\`\`\`
