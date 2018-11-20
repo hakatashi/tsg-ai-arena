@@ -1,3 +1,5 @@
+/* eslint array-plural/array-plural: off, no-nested-ternary: off */
+
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
 	const beams = [];
@@ -6,19 +8,19 @@ const deserialize = (stdin) => {
 	const board = [];
 
 	lines.slice(2).forEach((l, y) => {
-		cells = l.split(' ');
-		row = [];
+		const cells = l.split(' ');
+		const row = [];
 		cells.forEach((cell, x) => {
-			if (cell[0] == 'b') {
-				beam = {pos: {x, y}, type: 'b', id: parseInt(cell.slice(1))};
+			if (cell[0] === 'b') {
+				const beam = {pos: {x, y}, type: 'b', id: parseInt(cell.slice(1))};
 				beams.push(beam);
 				row.push(beam); // copy pointers
-			} else if (cell[0] == 'p') {
-				pawn = {pos: {x, y}, type: 'p', id: parseInt(cell.slice(1))};
+			} else if (cell[0] === 'p') {
+				const pawn = {pos: {x, y}, type: 'p', id: parseInt(cell.slice(1))};
 				pawns.push(pawn);
 				row.push(pawn);
-			} else if (cell[0] == 't') {
-				target = {pos: {x, y}, type: 't', id: parseInt(cell.slice(1))};
+			} else if (cell[0] === 't') {
+				const target = {pos: {x, y}, type: 't', id: parseInt(cell.slice(1))};
 				targets.push(target);
 				row.push(target);
 			} else {
@@ -47,7 +49,7 @@ module.exports.presets = {
 			: r === 1 ? 'l'
 				: r === 2 ? 'd'
 					: 'r';
-		if (state.turn == 'A') {
+		if (state.turn === 'A') {
 			const size = state.beams.length + state.pawns.length;
 			const r = Math.floor(Math.random() * size);
 			if (r < state.beams.length) {
