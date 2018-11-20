@@ -1,41 +1,53 @@
 /* eslint array-plural/array-plural: off, no-nested-ternary: off */
 
+const seedrandom = require('seedrandom');
+const assert = require('assert');
+const range = require('lodash/range');
+const noop = require('lodash/noop');
+
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
 	const beams = [];
 	const pawns = [];
 	const targets = [];
-	const board = [];
+	const field = [];
 
 	lines.slice(2).forEach((l, y) => {
 		const cells = l.split(' ');
-		const row = [];
 		cells.forEach((cell, x) => {
-			if (cell[0] === 'b') {
-				const beam = {pos: {x, y}, type: 'b', id: parseInt(cell.slice(1))};
+			if (cell[0] === 'beam') {
+				const beam = {position: {x, y}, type: 'beam', id: parseInt(cell.slice(1))};
 				beams.push(beam);
-				row.push(beam); // copy pointers
-			} else if (cell[0] === 'p') {
-				const pawn = {pos: {x, y}, type: 'p', id: parseInt(cell.slice(1))};
+				field.push('beam');
+			} else if (cell[0] === 'pawn') {
+				const pawn = {position: {x, y}, type: 'pawn', id: parseInt(cell.slice(1))};
 				pawns.push(pawn);
-				row.push(pawn);
-			} else if (cell[0] === 't') {
-				const target = {pos: {x, y}, type: 't', id: parseInt(cell.slice(1))};
+				field.push('space');
+			} else if (cell[0] === 'target') {
+				const target = {position: {x, y}, type: 'target', id: parseInt(cell.slice(1))};
 				targets.push(target);
-				row.push(target);
+				field.push('space');
+			} else if (cell[0] === '#') {
+				field.push('block');
+			} else if (cell[0] === '*') {
+				field.push('beam');
 			} else {
-				row.push({type: cell[0]});
+				assert(cell[0] === '.');
+				field.push('space');
 			}
 		});
-		board.push(row);
 	});
+
+	const [width, height] = lines[0].split(' ');
 
 	return {
 		turn: lines[1][0],
+		width: parseInt(width),
+		height: parseInt(height),
 		beams,
 		pawns,
 		targets,
-		board,
+		field,
 	};
 };
 
@@ -62,12 +74,85 @@ module.exports.presets = {
 	},
 };
 
+module.exports.battler = async (execute, params, {onFrame = noop, initState} = {}) => {
+	const random = seedrandom(params.seed || 'hoge');
+	const getXY = (index) => ({
+		x: index % params.width,
+		y: Math.floor(index / params.width),
+	});
+	const sampleSize = (items, size) => {
+		const clones = items.slice();
+		for (const index of Array(size).keys()) {
+			const target = Math.floor(random() * (clones.length - index)) + index;
+			const temp = clones[target];
+			clones[target] = clones[index];
+			clones[index] = temp;
+		}
+		return clones.slice(0, size);
+	};
+
+	const initialState = initState || (() => {
+		const field = Array(params.width * params.height).fill().map(() => (
+			random() < 0.1 ? 'block' : 'space'
+		));
+		const targets = sampleSize(range(params.width * params.height).filter((position) => (
+			field[position] === 'space'
+		)), params.targets).map((position, index) => ({
+			position,
+			id: index,
+		}));
+		const pawns = sampleSize(range(params.width * params.height).filter((position) => (
+			field[position] === 'space' &&
+			targets.every((target) => target.position !== position)
+		)), params.pawns).map((position, index) => ({
+			position,
+			id: index,
+		}));
+		const beams = sampleSize(range(params.width * params.height).filter((position) => (
+			field[position] === 'space' &&
+			targets.every((target) => target.position !== position) &&
+			pawns.every((target) => target.position !== position)
+		)), params.pawns).map((position, index) => ({
+			position,
+			id: index,
+		}));
+
+		for (const beam of beams) {
+			field[beam.position] = 'beam';
+		}
+
+		return {
+			turn: 'D',
+			field,
+			targets,
+			pawns,
+			beams,
+			width: params.width,
+			height: params.height,
+		};
+	})();
+	console.log(initialState);
+};
+module.exports.battler(noop, {
+	width: 10,
+	height: 10,
+	beams: 1,
+	targets: 1,
+	pawns: 1,
+});
+
 module.exports.configs = [
 	{
 		default: true,
 		id: 'default',
 		name: 'Default',
-		params: {},
+		params: {
+			width: 10,
+			height: 10,
+			beams: 1,
+			targets: 1,
+			pawns: 1,
+		},
 	},
 ];
 
