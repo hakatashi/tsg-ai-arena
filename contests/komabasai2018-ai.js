@@ -4,7 +4,7 @@ const seedrandom = require('seedrandom');
 const assert = require('assert');
 const range = require('lodash/range');
 const noop = require('lodash/noop');
-const sumBy = require('lodash/sumBy');
+const sum = require('lodash/sum');
 
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
@@ -134,6 +134,7 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
+	console.log(params);
 	const random = seedrandom(params.seed || 'hoga');
 	const getXY = (index) => ({
 		x: index % params.width,
@@ -316,7 +317,7 @@ module.exports.configs = [
 	},
 ];
 
-module.exports.matchConfigs = [
+const matchConfigs = [
 	{
 		config: 'default',
 		players: [0, 1],
@@ -327,9 +328,11 @@ module.exports.matchConfigs = [
 	},
 ];
 
+module.exports.matchConfigs = matchConfigs;
+
 module.exports.judgeMatch = (results) => {
-	const score1 = sumBy(results, (result) => result.scores[0]);
-	const score2 = sumBy(results, (result) => result.scores[1]);
+	const score1 = sum(results.map((result, index) => result.scores[matchConfigs[index].players[0]]));
+	const score2 = sum(results.map((result, index) => result.scores[matchConfigs[index].players[1]]));
 
 	if (score1 === score2) {
 		return {
