@@ -117,7 +117,7 @@ const deltas = new Map([
 
 module.exports.presets = {
 	random: (stdin) => {
-		const state = deserialize(stdin);
+		const {state} = deserialize(stdin);
 		let r = Math.floor(Math.random() * 4);
 		const direction = r === 0 ? 'u' : r === 1 ? 'l' : r === 2 ? 'd' : 'r';
 		if (state.turn === 'A') {
