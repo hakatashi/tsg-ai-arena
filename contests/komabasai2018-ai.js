@@ -4,7 +4,6 @@ const seedrandom = require('seedrandom');
 const assert = require('assert');
 const range = require('lodash/range');
 const noop = require('lodash/noop');
-const flatten = require('lodash/flatten');
 
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
@@ -134,11 +133,17 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
-	const random = seedrandom(params.seed || 'hoge');
+	const random = seedrandom(params.seed || 'hoga');
 	const getXY = (index) => ({
 		x: index % params.width,
 		y: Math.floor(index / params.width),
 	});
+	const inField = ({x, y}) => (
+		x >= 0 &&
+		x < params.width &&
+		y >= 0 &&
+		y < params.height
+	);
 	const sampleSize = (items, size) => {
 		const clones = items.slice();
 		for (const index of Array(size).keys()) {
@@ -155,7 +160,7 @@ module.exports.battler = async (
 		(() => {
 			const field = Array(params.width * params.height)
 				.fill()
-				.map(() => (random() < 0.1 ? 'block' : 'empty'));
+				.map(() => (random() < 0.2 ? 'block' : 'empty'));
 			const beams = sampleSize(
 				range(params.width * params.height).filter(
 					(position) => field[position] === 'empty'
@@ -217,6 +222,8 @@ module.exports.battler = async (
 			serialize(state),
 			state.turn === 'A' ? 0 : 1
 		);
+		console.log(serialize(state));
+		console.log(stdout.toString());
 		const tokens = stdout
 			.toString()
 			.trim()
@@ -224,7 +231,7 @@ module.exports.battler = async (
 		const id = parseInt(tokens[0]) || 0;
 		const direction = deltas.has(tokens[1]) ? tokens[1] : 'u';
 
-		let object = flatten([state.beams, state.pawns, state.targets]).find(
+		let object = ([...state.beams, ...state.pawns, ...state.targets]).find(
 			(obj) => obj.id === id
 		);
 
@@ -236,11 +243,48 @@ module.exports.battler = async (
 			object = state.targets[0];
 		}
 
-		console.log(object);
+		const delta = deltas.get(direction);
+		const position = getXY(object.position);
+
+		while (1) {
+			const newX = position.x + delta.x;
+			const newY = position.y + delta.y;
+
+			if (!inField({x: newX, y: newY})) {
+				break;
+			}
+
+			const newIndex = newY * params.width + newX;
+			if (state.field[newIndex] === 'block') {
+				break;
+			}
+			if (object.type === 'target' && state.field[newIndex] === 'beam') {
+				break;
+			}
+			if (([...state.beams, ...state.pawns, ...(object.type === 'beam' ? [] : state.targets)]).some((o) => o.position === newIndex)) {
+				break;
+			}
+
+			position.x = newX;
+			position.y = newY;
+
+			if (object.type === 'beam') {
+				state.field[newIndex] = 'beam';
+				state.targets = state.targets.filter((target) => target.position !== newIndex);
+			}
+		}
+
+		object.position = position.y * params.width + position.x;
+
+		if (state.targets.length === 0) {
+			break;
+		}
 
 		state.turn = state.turn === 'D' ? 'A' : 'D';
 		state.turns++;
 	}
+
+	console.log('Final turns:', state.turns);
 };
 
 module.exports.battler(
