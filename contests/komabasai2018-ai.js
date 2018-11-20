@@ -54,24 +54,28 @@ const deserialize = (stdin) => {
 	});
 
 	return {
-		turn: lines[1][0],
-		width,
-		height,
-		beams,
-		pawns,
-		targets,
-		field,
+		state: {
+			turn: lines[1][0],
+			beams,
+			pawns,
+			targets,
+			field,
+		},
+		params: {
+			width,
+			height,
+		},
 	};
 };
 
 module.exports.deserialize = deserialize;
 
-const serialize = (state) => `${[
-	`${state.width} ${state.height}`,
+const serialize = ({state, params}) => `${[
+	`${params.width} ${params.height}`,
 	state.turn,
-	...range(state.height).map((y) => range(state.width)
+	...range(params.height).map((y) => range(params.width)
 		.map((x) => {
-			const position = y * state.width + x;
+			const position = y * params.width + x;
 
 			const target = state.targets.find((t) => t.position === position);
 			if (target) {
@@ -134,7 +138,6 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
-	console.log(params);
 	const random = seedrandom(params.seed || 'hoga');
 	const getXY = (index) => ({
 		x: index % params.width,
@@ -204,19 +207,17 @@ module.exports.battler = async (
 				targets,
 				pawns,
 				beams,
-				width: params.width,
-				height: params.height,
 			};
 		})();
 
 	const state = {
-		...deserialize(serialize(initialState)),
+		...deserialize(serialize({state: initialState, params})).state,
 		turns: 0,
 	};
 
 	while (state.turns < 300) {
 		const {stdout} = await execute(
-			serialize(state),
+			serialize({state, params}),
 			state.turn === 'A' ? 0 : 1
 		);
 		const tokens = stdout
@@ -331,8 +332,16 @@ const matchConfigs = [
 module.exports.matchConfigs = matchConfigs;
 
 module.exports.judgeMatch = (results) => {
-	const score1 = sum(results.map((result, index) => result.scores[matchConfigs[index].players[0]]));
-	const score2 = sum(results.map((result, index) => result.scores[matchConfigs[index].players[1]]));
+	const score1 = sum(
+		results.map(
+			(result, index) => result.scores[matchConfigs[index].players[0]]
+		)
+	);
+	const score2 = sum(
+		results.map(
+			(result, index) => result.scores[matchConfigs[index].players[1]]
+		)
+	);
 
 	if (score1 === score2) {
 		return {

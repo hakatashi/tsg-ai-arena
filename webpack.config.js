@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const path = require('path');
-const url = require('url');
 
 module.exports = (env, argv = {}) => {
 	const browsers = [
@@ -26,6 +25,7 @@ module.exports = (env, argv = {}) => {
 				'dragon-ball',
 				'mayfes2018-day2',
 				'dragon-puzzles',
+				'komabasai2018-ai',
 			].map((name) => ({
 				[`contest-${name}`]: [
 					...(argv.mode === 'development'
