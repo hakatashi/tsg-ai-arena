@@ -4,6 +4,7 @@ const seedrandom = require('seedrandom');
 const assert = require('assert');
 const range = require('lodash/range');
 const noop = require('lodash/noop');
+const sumBy = require('lodash/sumBy');
 
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
@@ -212,7 +213,7 @@ module.exports.battler = async (
 		turns: 0,
 	};
 
-	while (state.turns <= 300) {
+	while (state.turns < 300) {
 		const {stdout} = await execute(
 			serialize(state),
 			state.turn === 'A' ? 0 : 1
@@ -283,29 +284,22 @@ module.exports.battler = async (
 
 		robot.position = position.y * params.width + position.x;
 
-		if (state.targets.length === 0) {
-			break;
-		}
+		onFrame({state});
 
 		state.turn = state.turn === 'D' ? 'A' : 'D';
 		state.turns++;
+
+		if (state.targets.length === 0) {
+			break;
+		}
 	}
 
-	console.log('Final turns:', state.turns);
+	return {
+		result: 'draw',
+		winner: null,
+		scores: [state.turns, 0],
+	};
 };
-
-module.exports.battler(
-	(stdin) => ({
-		stdout: Buffer.from(module.exports.presets.random(stdin)),
-	}),
-	{
-		width: 10,
-		height: 10,
-		beams: 1,
-		targets: 1,
-		pawns: 1,
-	}
-);
 
 module.exports.configs = [
 	{
@@ -333,4 +327,21 @@ module.exports.matchConfigs = [
 	},
 ];
 
-module.exports.judgeMatch = (results) => results[0];
+module.exports.judgeMatch = (results) => {
+	const score1 = sumBy(results, (result) => result.scores[0]);
+	const score2 = sumBy(results, (result) => result.scores[1]);
+
+	if (score1 === score2) {
+		return {
+			result: 'draw',
+			winner: null,
+			scores: [score1, score2],
+		};
+	}
+
+	return {
+		result: 'settled',
+		winner: score1 > score2 ? 1 : 0,
+		scores: [score1, score2],
+	};
+};
