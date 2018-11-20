@@ -12,38 +12,39 @@ const deserialize = (stdin) => {
 	const targets = [];
 	const field = [];
 
+	const [width, height] = lines[0].split(' ').map((token) => parseInt(token));
+
 	lines.slice(2).forEach((l, y) => {
 		const cells = l.split(' ');
+		console.log(l);
 		cells.forEach((cell, x) => {
-			if (cell[0] === 'beam') {
-				const beam = {position: {x, y}, type: 'beam', id: parseInt(cell.slice(1))};
+			if (cell[0] === 'b') {
+				const beam = {position: y * width + x, type: 'beam', id: parseInt(cell.slice(1))};
 				beams.push(beam);
 				field.push('beam');
-			} else if (cell[0] === 'pawn') {
-				const pawn = {position: {x, y}, type: 'pawn', id: parseInt(cell.slice(1))};
+			} else if (cell[0] === 'p') {
+				const pawn = {position: y * width + x, type: 'pawn', id: parseInt(cell.slice(1))};
 				pawns.push(pawn);
-				field.push('space');
-			} else if (cell[0] === 'target') {
-				const target = {position: {x, y}, type: 'target', id: parseInt(cell.slice(1))};
+				field.push('empty');
+			} else if (cell[0] === 't') {
+				const target = {position: y * width + x, type: 'target', id: parseInt(cell.slice(1))};
 				targets.push(target);
-				field.push('space');
-			} else if (cell[0] === '#') {
+				field.push('empty');
+			} else if (cell === '#') {
 				field.push('block');
-			} else if (cell[0] === '*') {
+			} else if (cell === '*') {
 				field.push('beam');
 			} else {
-				assert(cell[0] === '.');
-				field.push('space');
+				assert(cell === '.');
+				field.push('empty');
 			}
 		});
 	});
 
-	const [width, height] = lines[0].split(' ');
-
 	return {
 		turn: lines[1][0],
-		width: parseInt(width),
-		height: parseInt(height),
+		width,
+		height,
 		beams,
 		pawns,
 		targets,
@@ -52,6 +53,44 @@ const deserialize = (stdin) => {
 };
 
 module.exports.deserialize = deserialize;
+
+const serialize = (state) => `${[
+	`${state.width} ${state.height}`,
+	state.turn,
+	...range(state.height).map((y) => (
+		range(state.width).map((x) => {
+			const position = y * state.width + x;
+
+			const target = state.targets.find((t) => t.position === position);
+			if (target) {
+				return `t${target.id}`;
+			}
+
+			const pawn = state.pawns.find((p) => p.position === position);
+			if (pawn) {
+				return `p${pawn.id}`;
+			}
+
+			const beam = state.beams.find((b) => b.position === position);
+			if (beam) {
+				return `b${beam.id}`;
+			}
+
+			if (state.field[position] === 'block') {
+				return '#';
+			}
+
+			if (state.field[position] === 'beam') {
+				return '*';
+			}
+
+			assert(state.field[position] === 'empty');
+			return '.';
+		}).join(' ')
+	)),
+].join('\n')}\n`;
+
+module.exports.serialize = serialize;
 
 module.exports.presets = {
 	random: (stdin) => {
@@ -93,23 +132,23 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 
 	const initialState = initState || (() => {
 		const field = Array(params.width * params.height).fill().map(() => (
-			random() < 0.1 ? 'block' : 'space'
+			random() < 0.1 ? 'block' : 'empty'
 		));
 		const targets = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'space'
+			field[position] === 'empty'
 		)), params.targets).map((position, index) => ({
 			position,
 			id: index,
 		}));
 		const pawns = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'space' &&
+			field[position] === 'empty' &&
 			targets.every((target) => target.position !== position)
 		)), params.pawns).map((position, index) => ({
 			position,
 			id: index,
 		}));
 		const beams = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'space' &&
+			field[position] === 'empty' &&
 			targets.every((target) => target.position !== position) &&
 			pawns.every((target) => target.position !== position)
 		)), params.pawns).map((position, index) => ({
@@ -131,7 +170,8 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 			height: params.height,
 		};
 	})();
-	console.log(initialState);
+
+	console.log(deserialize(serialize(initialState)));
 };
 module.exports.battler(noop, {
 	width: 10,
@@ -160,6 +200,10 @@ module.exports.matchConfigs = [
 	{
 		config: 'default',
 		players: [0, 1],
+	},
+	{
+		config: 'default',
+		players: [1, 0],
 	},
 ];
 
