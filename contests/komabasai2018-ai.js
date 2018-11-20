@@ -4,6 +4,7 @@ const seedrandom = require('seedrandom');
 const assert = require('assert');
 const range = require('lodash/range');
 const noop = require('lodash/noop');
+const flatten = require('lodash/flatten');
 
 const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
@@ -16,23 +17,34 @@ const deserialize = (stdin) => {
 
 	lines.slice(2).forEach((l, y) => {
 		const cells = l.split(' ');
-		console.log(l);
 		cells.forEach((cell, x) => {
 			if (cell[0] === 'b') {
-				const beam = {position: y * width + x, type: 'beam', id: parseInt(cell.slice(1))};
+				const beam = {
+					position: y * width + x,
+					type: 'beam',
+					id: parseInt(cell.slice(1)),
+				};
 				beams.push(beam);
 				field.push('beam');
 			} else if (cell[0] === 'p') {
-				const pawn = {position: y * width + x, type: 'pawn', id: parseInt(cell.slice(1))};
+				const pawn = {
+					position: y * width + x,
+					type: 'pawn',
+					id: parseInt(cell.slice(1)),
+				};
 				pawns.push(pawn);
 				field.push('empty');
 			} else if (cell[0] === 't') {
-				const target = {position: y * width + x, type: 'target', id: parseInt(cell.slice(1))};
+				const target = {
+					position: y * width + x,
+					type: 'target',
+					id: parseInt(cell.slice(1)),
+				};
 				targets.push(target);
 				field.push('empty');
-			} else if (cell === '#') {
-				field.push('block');
 			} else if (cell === '*') {
+				field.push('block');
+			} else if (cell === 'x') {
 				field.push('beam');
 			} else {
 				assert(cell === '.');
@@ -57,8 +69,8 @@ module.exports.deserialize = deserialize;
 const serialize = (state) => `${[
 	`${state.width} ${state.height}`,
 	state.turn,
-	...range(state.height).map((y) => (
-		range(state.width).map((x) => {
+	...range(state.height).map((y) => range(state.width)
+		.map((x) => {
 			const position = y * state.width + x;
 
 			const target = state.targets.find((t) => t.position === position);
@@ -77,29 +89,33 @@ const serialize = (state) => `${[
 			}
 
 			if (state.field[position] === 'block') {
-				return '#';
+				return '*';
 			}
 
 			if (state.field[position] === 'beam') {
-				return '*';
+				return 'x';
 			}
 
 			assert(state.field[position] === 'empty');
 			return '.';
-		}).join(' ')
-	)),
+		})
+		.join(' ')),
 ].join('\n')}\n`;
 
 module.exports.serialize = serialize;
+
+const deltas = new Map([
+	['u', {x: 0, y: -1}],
+	['l', {x: -1, y: 0}],
+	['d', {x: 0, y: 1}],
+	['r', {x: 1, y: 0}],
+]);
 
 module.exports.presets = {
 	random: (stdin) => {
 		const state = deserialize(stdin);
 		let r = Math.floor(Math.random() * 4);
-		const direction = r === 0 ? 'u'
-			: r === 1 ? 'l'
-				: r === 2 ? 'd'
-					: 'r';
+		const direction = r === 0 ? 'u' : r === 1 ? 'l' : r === 2 ? 'd' : 'r';
 		if (state.turn === 'A') {
 			const size = state.beams.length + state.pawns.length;
 			const r = Math.floor(Math.random() * size);
@@ -113,7 +129,11 @@ module.exports.presets = {
 	},
 };
 
-module.exports.battler = async (execute, params, {onFrame = noop, initState} = {}) => {
+module.exports.battler = async (
+	execute,
+	params,
+	{onFrame = noop, initState} = {}
+) => {
 	const random = seedrandom(params.seed || 'hoge');
 	const getXY = (index) => ({
 		x: index % params.width,
@@ -130,56 +150,111 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 		return clones.slice(0, size);
 	};
 
-	const initialState = initState || (() => {
-		const field = Array(params.width * params.height).fill().map(() => (
-			random() < 0.1 ? 'block' : 'empty'
-		));
-		const targets = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'empty'
-		)), params.targets).map((position, index) => ({
-			position,
-			id: index,
-		}));
-		const pawns = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'empty' &&
-			targets.every((target) => target.position !== position)
-		)), params.pawns).map((position, index) => ({
-			position,
-			id: index,
-		}));
-		const beams = sampleSize(range(params.width * params.height).filter((position) => (
-			field[position] === 'empty' &&
-			targets.every((target) => target.position !== position) &&
-			pawns.every((target) => target.position !== position)
-		)), params.pawns).map((position, index) => ({
-			position,
-			id: index,
-		}));
+	const initialState =
+		initState ||
+		(() => {
+			const field = Array(params.width * params.height)
+				.fill()
+				.map(() => (random() < 0.1 ? 'block' : 'empty'));
+			const beams = sampleSize(
+				range(params.width * params.height).filter(
+					(position) => field[position] === 'empty'
+				),
+				params.beams
+			).map((position, index) => ({
+				position,
+				type: 'beam',
+				id: index,
+			}));
 
-		for (const beam of beams) {
-			field[beam.position] = 'beam';
+			const pawns = sampleSize(
+				range(params.width * params.height).filter(
+					(position) => field[position] === 'empty' &&
+						beams.every((beam) => beam.position !== position)
+				),
+				params.pawns
+			).map((position, index) => ({
+				position,
+				type: 'pawn',
+				id: index + params.beams,
+			}));
+
+			const targets = sampleSize(
+				range(params.width * params.height).filter(
+					(position) => field[position] === 'empty' &&
+						beams.every((beam) => beam.position !== position) &&
+						pawns.every((pawn) => pawn.position !== position)
+				),
+				params.targets
+			).map((position, index) => ({
+				position,
+				type: 'taget',
+				id: index + params.beams + params.pawns,
+			}));
+
+			for (const beam of beams) {
+				field[beam.position] = 'beam';
+			}
+
+			return {
+				turn: 'D',
+				field,
+				targets,
+				pawns,
+				beams,
+				width: params.width,
+				height: params.height,
+			};
+		})();
+
+	const state = {
+		...deserialize(serialize(initialState)),
+		turns: 0,
+	};
+
+	while (state.turns <= 300) {
+		const {stdout} = await execute(
+			serialize(state),
+			state.turn === 'A' ? 0 : 1
+		);
+		const tokens = stdout
+			.toString()
+			.trim()
+			.split(/\s+/);
+		const id = parseInt(tokens[0]) || 0;
+		const direction = deltas.has(tokens[1]) ? tokens[1] : 'u';
+
+		let object = flatten([state.beams, state.pawns, state.targets]).find(
+			(obj) => obj.id === id
+		);
+
+		if (state.turn === 'A' && (object === undefined || !['beam', 'pawn'].includes(object.type))) {
+			object = state.beams[0];
 		}
 
-		return {
-			turn: 'D',
-			field,
-			targets,
-			pawns,
-			beams,
-			width: params.width,
-			height: params.height,
-		};
-	})();
+		if (state.turn === 'D' && (object === undefined || object.type !== 'target')) {
+			object = state.targets[0];
+		}
 
-	console.log(deserialize(serialize(initialState)));
+		console.log(object);
+
+		state.turn = state.turn === 'D' ? 'A' : 'D';
+		state.turns++;
+	}
 };
-module.exports.battler(noop, {
-	width: 10,
-	height: 10,
-	beams: 1,
-	targets: 1,
-	pawns: 1,
-});
+
+module.exports.battler(
+	(stdin) => ({
+		stdout: Buffer.from(module.exports.presets.random(stdin)),
+	}),
+	{
+		width: 10,
+		height: 10,
+		beams: 1,
+		targets: 1,
+		pawns: 1,
+	}
+);
 
 module.exports.configs = [
 	{
