@@ -33,31 +33,29 @@ const deserialize = (stdin) => {
 		beams,
 		pawns,
 		targets,
-		board
+		board,
 	};
 };
 
 module.exports.deserialize = deserialize;
 
 module.exports.presets = {
-	random: (stdin)  => {
+	random: (stdin) => {
 		const state = deserialize(stdin);
-		const r = Math.floor(Math.random() * 4);
+		let r = Math.floor(Math.random() * 4);
 		const direction = r === 0 ? 'u'
-						: r === 1 ? 'l'
-						: r === 2 ? 'd'
-						: 'r';
+			: r === 1 ? 'l'
+				: r === 2 ? 'd'
+					: 'r';
 		if (state.turn == 'A') {
 			const size = state.beams.length + state.pawns.length;
 			const r = Math.floor(Math.random() * size);
 			if (r < state.beams.length) {
 				return `${state.beams[r].id} ${direction}`;
-			} else {
-				return `${state.pawns[r - state.beams.length].id} ${direction}`;
 			}
-		} else {
-			const r = Math.floor(Math.random() * state.targets.length);
-			return `${state.targets[r].id} ${direction}`;
+			return `${state.pawns[r - state.beams.length].id} ${direction}`;
 		}
-	}
+		r = Math.floor(Math.random() * state.targets.length);
+		return `${state.targets[r].id} ${direction}`;
+	},
 };
