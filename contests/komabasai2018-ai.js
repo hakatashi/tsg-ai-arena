@@ -138,12 +138,7 @@ module.exports.battler = async (
 		x: index % params.width,
 		y: Math.floor(index / params.width),
 	});
-	const inField = ({x, y}) => (
-		x >= 0 &&
-		x < params.width &&
-		y >= 0 &&
-		y < params.height
-	);
+	const inField = ({x, y}) => x >= 0 && x < params.width && y >= 0 && y < params.height;
 	const sampleSize = (items, size) => {
 		const clones = items.slice();
 		for (const index of Array(size).keys()) {
@@ -222,8 +217,6 @@ module.exports.battler = async (
 			serialize(state),
 			state.turn === 'A' ? 0 : 1
 		);
-		console.log(serialize(state));
-		console.log(stdout.toString());
 		const tokens = stdout
 			.toString()
 			.trim()
@@ -231,20 +224,26 @@ module.exports.battler = async (
 		const id = parseInt(tokens[0]) || 0;
 		const direction = deltas.has(tokens[1]) ? tokens[1] : 'u';
 
-		let object = ([...state.beams, ...state.pawns, ...state.targets]).find(
+		let robot = [...state.beams, ...state.pawns, ...state.targets].find(
 			(obj) => obj.id === id
 		);
 
-		if (state.turn === 'A' && (object === undefined || !['beam', 'pawn'].includes(object.type))) {
-			object = state.beams[0];
+		if (
+			state.turn === 'A' &&
+			(robot === undefined || !['beam', 'pawn'].includes(robot.type))
+		) {
+			robot = state.beams[0];
 		}
 
-		if (state.turn === 'D' && (object === undefined || object.type !== 'target')) {
-			object = state.targets[0];
+		if (
+			state.turn === 'D' &&
+			(robot === undefined || robot.type !== 'target')
+		) {
+			robot = state.targets[0];
 		}
 
 		const delta = deltas.get(direction);
-		const position = getXY(object.position);
+		const position = getXY(robot.position);
 
 		while (1) {
 			const newX = position.x + delta.x;
@@ -258,23 +257,31 @@ module.exports.battler = async (
 			if (state.field[newIndex] === 'block') {
 				break;
 			}
-			if (object.type === 'target' && state.field[newIndex] === 'beam') {
+			if (robot.type === 'target' && state.field[newIndex] === 'beam') {
 				break;
 			}
-			if (([...state.beams, ...state.pawns, ...(object.type === 'beam' ? [] : state.targets)]).some((o) => o.position === newIndex)) {
+			if (
+				[
+					...state.beams,
+					...state.pawns,
+					...(robot.type === 'beam' ? [] : state.targets),
+				].some((o) => o.position === newIndex)
+			) {
 				break;
 			}
 
 			position.x = newX;
 			position.y = newY;
 
-			if (object.type === 'beam') {
+			if (robot.type === 'beam') {
 				state.field[newIndex] = 'beam';
-				state.targets = state.targets.filter((target) => target.position !== newIndex);
+				state.targets = state.targets.filter(
+					(target) => target.position !== newIndex
+				);
 			}
 		}
 
-		object.position = position.y * params.width + position.x;
+		robot.position = position.y * params.width + position.x;
 
 		if (state.targets.length === 0) {
 			break;
