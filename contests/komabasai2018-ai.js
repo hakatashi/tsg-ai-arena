@@ -59,3 +59,21 @@ module.exports.presets = {
 		return `${state.targets[r].id} ${direction}`;
 	},
 };
+
+module.exports.configs = [
+	{
+		default: true,
+		id: 'default',
+		name: 'Default',
+		params: {},
+	},
+];
+
+module.exports.matchConfigs = [
+	{
+		config: 'default',
+		players: [0, 1],
+	},
+];
+
+module.exports.judgeMatch = (results) => results[0];

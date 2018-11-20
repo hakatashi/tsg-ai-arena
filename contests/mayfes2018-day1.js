@@ -1,7 +1,6 @@
 /* eslint no-loop-func: off, array-plural/array-plural: off */
 
 const flatten = require('lodash/flatten');
-const maxBy = require('lodash/maxBy');
 const minBy = require('lodash/minBy');
 
 const SIZE = 9;

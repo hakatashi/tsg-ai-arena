@@ -179,7 +179,7 @@ mongoose.Promise = global.Promise;
 				## ゲームの概要
 
 				* ゲームは、ターン制かつ攻撃側と防御側が存在する。
-				* 各プレイヤーは同じ盤面から初めてそれぞれ攻撃側と防御側を一度ずつ行う。
+				* 各プレイヤーは同じ盤面から始めてそれぞれ攻撃側と防御側を一度ずつ行う。
 				* 盤面の外周は壁で囲われているものとする。
 				* 初期盤面では、大きさW x Hの盤面の上にはロボットといくつかの壁が配置されている。
 				  * ロボットの種類は、Beam, Pawn, Targetであり、BeamとPawnが攻撃側、Targetが防御側に属する。
@@ -229,6 +229,23 @@ mongoose.Promise = global.Promise;
 			`,
 		},
 	}, {upsert: true});
+
+	const contestAi = await Contest.findOne({id: 'komabasai2018-ai'});
+
+	for (const presetName of ['random']) {
+		await Submission.updateOne({
+			name: presetName,
+			contest: contestAi,
+		}, {
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contestAi,
+			language: null,
+			code: null,
+			size: null,
+		}, {upsert: true});
+	}
 
 	mongoose.connection.close();
 })();
