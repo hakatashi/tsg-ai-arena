@@ -14,9 +14,9 @@ class App extends React.Component {
 		);
 
 		const input = contest.deserialize(this.data.turns[0].input);
-		const iwashiMap = Array(input.params.height).fill.map(
+		const iwashiMap = Array(input.params.height).fill().map(() => (
 			Array(input.params.width).fill(0)
-		);
+		));
 		for (const i of input.state.iwashi) {
 			if (i.t === 0) {
 				iwashiMap[i.y][i.x]++;
@@ -27,8 +27,10 @@ class App extends React.Component {
 			isCollated: false,
 			player: input.state.player,
 			iwashi: input.state.iwashi,
+			maps: input.state.maps,
 			iwashiMap,
 			score: 0,
+			frame: 0,
 		};
 
 		this.frame = 0;
@@ -67,7 +69,7 @@ class App extends React.Component {
 			this.params,
 			{
 				onFrame: (state) => frames.push(cloneDeep(state)),
-				initState: pick(this.state, ['iwashiMaps', 'player']),
+				initState: pick(this.state, ['iwashi', 'player', 'maps']),
 			}
 		);
 
@@ -80,10 +82,7 @@ class App extends React.Component {
 	};
 
 	handleFrame = async () => {
-		if (this.frame >= this.frame.length) {
-			this.setState({
-				activeIwashi: null,
-			});
+		if (this.frame >= this.frames.length) {
 			if (this.data.id === 'latest') {
 				setTimeout(() => {
 					location.reload();
@@ -96,75 +95,88 @@ class App extends React.Component {
 		await new Promise((resolve) => {
 			this.setState(
 				{
-					player: frame.player,
-					iwashiMap: frame.iwashiMap,
-					iwashi: frame.iwashi,
-					score: frame.score,
+					player: frame.state.player,
+					iwashiMap: frame.state.iwashiMap,
+					iwashi: frame.state.iwashi,
+					score: frame.state.score,
+					turns: this.frame + 1,
 				},
 				resolve
 			);
 		});
 
 		this.frame++;
-		setTimeout(this.handleFrame, 300);
+		setTimeout(this.handleFrame, Math.min(15000 / this.frames.length, 500));
 	};
 
 	renderContent = () => {
-		<div
-			style={{
-				width: '100%',
-				height: '100%',
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'center',
-				flexDirection: 'column',
-			}}
-		>
-			<svg
-				style={{
-					width: '500px',
-					height: '500px',
-					margin: '0 50px',
-					border: '1px solid #555',
-					boxSizing: 'content-box',
-					position: 'relative',
-					overflow: 'visible',
-				}}
-				viewBox="0 0 500 500"
-			>
-				{this.props.maps.map((str, i) => {
-					const arr = str.split('');
-					const size = 500 / Math.max(this.params.width, this.params.height);
-					return (
-						<g key={`g_${String(i)}`}>
-							{arr.map((c, j) => (
-								<rect
-									key={`rect_${String(i)} ${String(j)}`}
-									width={size / 2}
-									height={size / 2}
-									opacity={0.3}
-									fill={c === '#' ? 'black' : 'white'}
-									style={{
-										transition: 'all 0.5s',
-									}}
-								/>
-							))}
-						</g>
-					);
-				})}
-			</svg>
+		const size = 500 / Math.max(this.params.width, this.params.height);
+		return (
 			<div
 				style={{
-					color: 'red',
-					fontSize: '3em',
-					fontWeight: 'bold',
 					width: '100%',
-					textAlign: 'center',
+					height: '100%',
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					flexDirection: 'column',
 				}}
 			>
-				{`Score: ${this.state.score}`}
+				<div
+					style={{
+						color: 'grey',
+						fontWeight: 'bold',
+						width: '100%',
+						textAlign: 'center',
+					}}
+				>
+					{`Turns: ${this.state.turns}`}
+				</div>
+				<svg
+					style={{
+						width: '500px',
+						height: '500px',
+						margin: '0 50px',
+						border: '1px solid #555',
+						boxSizing: 'content-box',
+						position: 'relative',
+						overflow: 'visible',
+					}}
+					viewBox="0 0 500 500"
+				>
+					{this.state.maps.map((row, y) => (
+						row.map((cell, x) => (
+							<rect
+								key={y * this.params.width + x}
+								x={x * size}
+								y={y * size}
+								width={size}
+								height={size}
+								opacity={0.3}
+								fill={cell === '#' ? 'black' : 'white'}
+							/>
+						))
+					))}
+					<circle
+						cx={this.state.player.x * size + size / 2}
+						cy={this.state.player.y * size + size / 2}
+						r={size / 2 - 5}
+						fill="red"
+					/>
+				</svg>
+				<div
+					style={{
+						color: this.state.turns === this.frames.length ? 'red' : 'dimgrey',
+						fontSize: '3em',
+						fontWeight: 'bold',
+						width: '100%',
+						textAlign: 'center',
+					}}
+				>
+					{`Score: ${this.state.score}`}
+				</div>
 			</div>
-		</div>;
+		);
 	};
 
 	render() {

@@ -10,7 +10,7 @@ module.exports.presets = {};
 // convert player's output from str to obj
 // arg: player's output
 // return: array of objects which showes how player to move.
-const normalize = (stdout) => {
+const normalize = (stdout, params) => {
 	const dx = [0, 1, 0, -1];
 	const dy = [1, 0, -1, 0];
 	const dir = 'SENW'.split('');
@@ -19,10 +19,10 @@ const normalize = (stdout) => {
 		.trim()
 		.split('\n')[0]
 		.split('');
-	const moves = line.map((c) => {
+	const moves = Array(params.turns).fill().map((_, index) => {
 		let move = {x: 0, y: 0};
 		dir.forEach((str, i) => {
-			if (c === str) {
+			if (line[index] === str) {
 				move = {
 					x: dx[i],
 					y: dy[i],
@@ -69,7 +69,7 @@ const initMaps = (height, width, mode, wallRatio) => {
 			}
 			maps[y][x] = '#';
 		}
-		return maps.map((v) => v.join(''));
+		return maps;
 	} else if (mode === 'challenge') {
 		// looks like this!
 		/*
@@ -92,7 +92,7 @@ const initMaps = (height, width, mode, wallRatio) => {
 					return `${'#'.repeat(width - 2)}.#`;
 				}
 				return `#.${'#'.repeat(width - 2)}`;
-			});
+			}).map((line) => line.split(''));
 	}
 };
 
@@ -268,7 +268,7 @@ const serialize = ({params, state}) => {
 		`${state.player.x + 1} ${state.player.y + 1}`,
 	];
 	const end = state.iwashi.map((dat) => `${dat.x + 1} ${dat.y + 1} ${dat.t}`);
-	return `${head.concat(state.maps, end).join('\n')}\n`;
+	return `${head.concat(state.maps.map((line) => line.join('')), end).join('\n')}\n`;
 };
 
 const deserialize = (stdin) => {
@@ -276,12 +276,12 @@ const deserialize = (stdin) => {
 		.trim()
 		.split('\n')
 		.map((line) => line.split(' '));
-	const [height, width, turn, n] = lines[0].map((n) => parseInt(n));
+	const [height, width, turns, n] = lines[0].map((n) => parseInt(n));
 	return {
 		params: {
 			height,
 			width,
-			turn,
+			turns,
 			n,
 		},
 		state: {
@@ -307,36 +307,42 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
-	const maps = initMaps(params.height, params.width, params.mode, params.wallRatio);
-	const iwashi = initIwashi(
-		maps,
-		params.height,
-		params.width,
-		params.turns,
-		params.n
-	);
-	iwashi.iwashi.sort((a, b) => a.t - b.t);
-	const initialState = initState || {
-		maps,
-		iwashiMap: iwashi.iwashiMap,
-		iwashi: iwashi.iwashi,
-		player: {
-			x: 0,
-			y: 0,
+	const initialState = initState || (() => {
+		const maps = initMaps(params.height, params.width, params.mode, params.wallRatio);
+		const iwashi = initIwashi(
+			maps,
+			params.height,
+			params.width,
+			params.turns,
+			params.n
+		);
+		iwashi.iwashi.sort((a, b) => a.t - b.t);
+		const playerIndex = sample(maps.join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
+		const player = {
+			x: playerIndex % params.width,
+			y: Math.floor(playerIndex / params.width),
 			paralyzed: 0,
-		},
-	};
-	const playerIndex = sample(maps.join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
-	const player = {
-		x: playerIndex % params.width,
-		y: Math.floor(playerIndex / params.width),
-		paralyzed: 0,
-	};
-	const {state} = deserialize(serialize({params, state: {...initialState, player}}));
-	state.iwashiMap = iwashi.iwashiMap;
+		};
+		return {
+			maps,
+			iwashiMap: iwashi.iwashiMap,
+			iwashi: iwashi.iwashi,
+			player,
+		};
+	})();
+	const {state} = deserialize(serialize({params, state: initialState}));
+	const iwashiMap = Array(params.height)
+		.fill()
+		.map(() => Array(params.width).fill(0));
+	for (const dat of state.iwashi) {
+		if (dat.t === 0) {
+			iwashiMap[dat.y][dat.x]++;
+		}
+	}
+	state.iwashiMap = iwashiMap;
 	state.score = 0;
-	const {stdout} = await execute(serialize({params, state: {...initialState, player}}), 0);
-	const turns = normalize(stdout);
+	const {stdout} = await execute(serialize({params, state: initialState}), 0);
+	const turns = normalize(stdout, params);
 
 	// doing hogehoge
 	let turnCnt = 1;
