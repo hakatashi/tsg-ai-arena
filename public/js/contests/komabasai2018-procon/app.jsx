@@ -14,7 +14,9 @@ class App extends React.Component {
 		);
 
 		const input = contest.deserialize(this.data.turns[0].input);
-		let iwashiMap = Array(input.params.height).fill.map(Array(input.params.width).fill(0));
+		const iwashiMap = Array(input.params.height).fill.map(
+			Array(input.params.width).fill(0)
+		);
 		for (const i of input.state.iwashi) {
 			if (i.t === 0) {
 				iwashiMap[i.y][i.x]++;
@@ -41,7 +43,7 @@ class App extends React.Component {
 				this.setState({
 					isCollated: true,
 				});
-				if(this.data.id === 'latest') {
+				if (this.data.id === 'latest') {
 					this.handleClickStart();
 				}
 			});
@@ -134,21 +136,19 @@ class App extends React.Component {
 					const arr = str.split('');
 					const size = 500 / Math.max(this.params.width, this.params.height);
 					return (
-						<g key={'g_'+String(i)}>
-							{arr.map((c, j) => {
-								return (
-									<rect
-										key={'rect_'+String(i)+' '+String(j)}
-										width={size / 2}
-										height={size / 2}
-										opacity={0.3}
-										fill={c === '#' ? 'black' : 'white'}
-										style={{
-											transition: 'all 0.5s',
-										}}
-									/>
-								);
-							})}
+						<g key={`g_${String(i)}`}>
+							{arr.map((c, j) => (
+								<rect
+									key={`rect_${String(i)} ${String(j)}`}
+									width={size / 2}
+									height={size / 2}
+									opacity={0.3}
+									fill={c === '#' ? 'black' : 'white'}
+									style={{
+										transition: 'all 0.5s',
+									}}
+								/>
+							))}
 						</g>
 					);
 				})}
@@ -164,7 +164,7 @@ class App extends React.Component {
 			>
 				{`Score: ${this.state.score}`}
 			</div>
-		</div>
+		</div>;
 	};
 
 	render() {

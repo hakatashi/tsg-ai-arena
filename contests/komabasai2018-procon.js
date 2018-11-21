@@ -1,3 +1,5 @@
+/* eslint array-plural/array-plural: off, no-nested-ternary: off */
+
 // title: iwashi harvest(iwashi収穫祭)
 const clamp = require('lodash/clamp');
 const shuffle = require('lodash/shuffle');
@@ -15,7 +17,11 @@ const normalize = (stdout) => {
 	const dx = [0, 1, 0, -1];
 	const dy = [1, 0, -1, 0];
 	const dir = 'SENW'.split('');
-	const line = stdout.toString().trim().split('\n')[0].split('');
+	const line = stdout
+		.toString()
+		.trim()
+		.split('\n')[0]
+		.split('');
 	const moves = line.map((c) => {
 		let move = {x: 0, y: 0};
 		dir.forEach((str, i) => {
@@ -39,20 +45,35 @@ module.exports.normalize = normalize;
 const initMaps = (height, width, mode) => {
 	if (mode === 'random') {
 		// rate: 25%
-		let maps = Array(height).fill().map((_, i) => (i == 0 || i == height - 1 ? Array(width).fill('#') : ['#'].concat(Array(width - 2).fill('.'), ['#'])));
-		let count = Math.max(Math.floor(height * width / 4), 0);
+		const maps = Array(height)
+			.fill()
+			.map((_, i) => i == 0 || i == height - 1
+				? Array(width).fill('#')
+				: ['#'].concat(Array(width - 2).fill('.'), ['#']));
+		let count = Math.max(Math.floor((height * width) / 4), 0);
 		while (count--) {
-			let x = Math.max(0, Math.min(width - 1, Math.floor(Math.random() * (width - 2)) + 1));
-			let y = Math.max(0, Math.min(height - 1, Math.floor(Math.random() * (height - 2)) + 1));
+			let x = Math.max(
+				0,
+				Math.min(width - 1, Math.floor(Math.random() * (width - 2)) + 1)
+			);
+			let y = Math.max(
+				0,
+				Math.min(height - 1, Math.floor(Math.random() * (height - 2)) + 1)
+			);
 			while (maps[y][x] === '#') {
-				x = Math.max(0, Math.min(width - 1, Math.floor(Math.random() * (width - 2)) + 1));
-				y = Math.max(0, Math.min(height - 1, Math.floor(Math.random() * (height - 2)) + 1));
+				x = Math.max(
+					0,
+					Math.min(width - 1, Math.floor(Math.random() * (width - 2)) + 1)
+				);
+				y = Math.max(
+					0,
+					Math.min(height - 1, Math.floor(Math.random() * (height - 2)) + 1)
+				);
 			}
 			mapx[y][x] = '#';
 		}
 		return maps.map((v) => v.join(''));
-	}
-	else if (mode === 'challenge') {
+	} else if (mode === 'challenge') {
 		// looks like this!
 		/*
 		#######
@@ -63,16 +84,18 @@ const initMaps = (height, width, mode) => {
 		#.....#
 		#######
 		*/
-	   return Array(height).fill().map((v, i) => {
-		   if (i === 0 || i === height - 1) {
-			   return '#'.repeat(width);
-		   } else if (i % 2 === 1) {
-			   return '#'.repeat(width);
-		   } else if (i % 4 === 0) {
-			   return '#'.repeat(width - 2) + '.#';
-		   }
-			return '#.' + '#'.repeat(width - 2);
-	   });
+		return Array(height)
+			.fill()
+			.map((v, i) => {
+				if (i === 0 || i === height - 1) {
+					return '#'.repeat(width);
+				} else if (i % 2 === 1) {
+					return '#'.repeat(width);
+				} else if (i % 4 === 0) {
+					return `${'#'.repeat(width - 2)}.#`;
+				}
+				return `#.${'#'.repeat(width - 2)}`;
+			});
 	}
 };
 
@@ -82,16 +105,26 @@ module.exports.initMaps = initMaps;
 // arg: maps, height, width, turns, and number of iwashi
 // ret: iwashi and iwashiMap
 const initIwashi = (maps, H, W, T, N) => {
-	const iwashi = Array(N).fill().map(() => {
-		let x = 0;
-		let y = 0;
-		while (maps[y][x] === '#') {
-			x = Math.max(0, Math.min(W - 1, Math.floor(Math.random() * (W - 2)) + 1));
-			y = Math.max(0, Math.min(H - 1, Math.floor(Math.random() * (H - 2)) + 1));
-		}
-		return {x, y, t: Math.max(0, Math.min(T, Math.floor(Math.random() * T)))};
-	});
-	let iwashiMap = Array(H).fill().map(() => Array(W).fill(0));
+	const iwashi = Array(N)
+		.fill()
+		.map(() => {
+			let x = 0;
+			let y = 0;
+			while (maps[y][x] === '#') {
+				x = Math.max(
+					0,
+					Math.min(W - 1, Math.floor(Math.random() * (W - 2)) + 1)
+				);
+				y = Math.max(
+					0,
+					Math.min(H - 1, Math.floor(Math.random() * (H - 2)) + 1)
+				);
+			}
+			return {x, y, t: Math.max(0, Math.min(T, Math.floor(Math.random() * T)))};
+		});
+	const iwashiMap = Array(H)
+		.fill()
+		.map(() => Array(W).fill(0));
 	for (const dat of iwashi) {
 		if (dat.t === 0) {
 			iwashiMap[dat.y][dat.x]++;
@@ -102,12 +135,12 @@ const initIwashi = (maps, H, W, T, N) => {
 
 module.exports.initIwashi = initIwashi;
 
-// change position of player 
+// change position of player
 // arg: map of TSG, player data and move datum
 // return: player's new position
 const movePlayer = (maps, player, move) => {
-	let x = player.x + move.x;
-	let y = player.y + move.y;
+	const x = player.x + move.x;
+	const y = player.y + move.y;
 	if (maps[y][x] !== '#' && player.paralyzed === 0) {
 		return {x, y, paralyzed: player.paralyzed};
 	}
@@ -120,11 +153,11 @@ module.exports.movePlayer = movePlayer;
 // arg: iwashiMap, map of TSG, player data, H and W.
 // ret: new iwashiMap
 const iwashiMove = (iwashiMap, maps, player, H, W) => {
-	let distanceMap = new Array(H);
+	const distanceMap = new Array(H);
 	for (let i = 0; i < H; i++) {
 		distanceMap[i] = new Array(W).fill(H * W);
 	}
-	let queue = [];
+	const queue = [];
 	const dx = [0, 1, 0, -1, 0];
 	const dy = [-1, 0, 1, 0, 0];
 
@@ -147,7 +180,7 @@ const iwashiMove = (iwashiMap, maps, player, H, W) => {
 	}
 
 	while (queue.length > 0) {
-		let pos = queue.shift();
+		const pos = queue.shift();
 		for (let i = 0; i < 4; i++) {
 			const nx = pos.x + dx[i];
 			const ny = pos.y + dy[i];
@@ -161,7 +194,7 @@ const iwashiMove = (iwashiMap, maps, player, H, W) => {
 		}
 	}
 
-	let nextIwashiMap = new Array(H);
+	const nextIwashiMap = new Array(H);
 	for (let i = 0; i < H; i++) {
 		nextIwashiMap[i] = new Array(W).fill(0);
 	}
@@ -175,7 +208,9 @@ const iwashiMove = (iwashiMap, maps, player, H, W) => {
 					for (let k = 0; k < 5; k++) {
 						const ni = i + dy[k];
 						const nj = j + dx[k];
-						if (maps[ni][nj] === '#')	continue;
+						if (maps[ni][nj] === '#') {
+							continue;
+						}
 						if (distanceMap[i][j] > distanceMap[ni][nj] || k == 4) {
 							nextIwashiMap[ni][nj] += iwashiMap[i][j];
 							break;
@@ -195,9 +230,9 @@ module.exports.iwashiMove = iwashiMove;
 // arg: current iwashi map, player data, ,current score, iwashi data and current turn.
 // ret: new score and new player data.
 const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
-	let newPlayer = Object.assign(player);
-	let newIwashi = iwashiMap.map((i) => i.slice());
-	let iwashiQueue = iwashi.slice();
+	const newPlayer = Object.assign(player);
+	const newIwashi = iwashiMap.map((i) => i.slice());
+	const iwashiQueue = iwashi.slice();
 
 	// iwashiがつちからはえてくるんだ
 	while (iwashiQueue.length > 0 && iwashiQueue[0].t < turn) {
@@ -211,13 +246,21 @@ const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
 	let retScore = score;
 	if (newPlayer.paralyzed > 0) {
 		newPlayer.paralyzed--;
-	} else if (0 < newIwashi[newPlayer.y][newPlayer.x] && newIwashi[newPlayer.y][newPlayer.x] <= 5) {
+	} else if (
+		0 < newIwashi[newPlayer.y][newPlayer.x] &&
+		newIwashi[newPlayer.y][newPlayer.x] <= 5
+	) {
 		retScore += newIwashi[newPlayer.y][newPlayer.x];
 		newIwashi[newPlayer.y][newPlayer.x] = 0;
 	} else if (newIwashi[newPlayer.y][newPlayer.x] > 5) {
 		newPlayer.paralyzed += 5;
 	}
-	return {retScore, iwashiMap: newIwashi, player: newPlayer, iwashi: iwashiQueue};
+	return {
+		retScore,
+		iwashiMap: newIwashi,
+		player: newPlayer,
+		iwashi: iwashiQueue,
+	};
 };
 
 module.exports.calculateScore = calculateScore;
@@ -232,7 +275,10 @@ const serialize = ({params, state}) => {
 };
 
 const deserialize = (stdin) => {
-	const lines = stdin.trim().split('\n').map((line) => line.split(' '));
+	const lines = stdin
+		.trim()
+		.split('\n')
+		.map((line) => line.split(' '));
 	const height = parseInt(lines[0][0]);
 	const n = parseInt(lines[0][3]);
 	return {
@@ -263,9 +309,19 @@ const deserialize = (stdin) => {
 
 module.exports.deserialize = deserialize;
 
-module.exports.battler = async(execute, params, {onFrame = noop, initState} = {}) => {
+module.exports.battler = async (
+	execute,
+	params,
+	{onFrame = noop, initState} = {}
+) => {
 	const maps = initMaps(params.height, params.width, params.mode);
-	let iwashi = initIwashi(maps, params.height, params.width, params.turn, params.n).sort((a, b) => (a.t - b.t));
+	const iwashi = initIwashi(
+		maps,
+		params.height,
+		params.width,
+		params.turn,
+		params.n
+	).sort((a, b) => a.t - b.t);
 	const initialState = initState || {
 		maps,
 		iwashiMap: iwashi.iwashiMap,
@@ -287,9 +343,27 @@ module.exports.battler = async(execute, params, {onFrame = noop, initState} = {}
 			break;
 		}
 		const player = movePlayer(state.maps, state.player, turn);
-		const iwashiMap = iwashiMove(state.iwashiMap, state.maps, player, params.H, params.W);
-		const result = calculateScore(iwashiMap, player, state.score, state.iwashi, turnCnt);
-		onFrame({...state, player: result.player, iwashiMap: result.iwashiMap, score: result.score, iwashi: result.iwashi});
+		const iwashiMap = iwashiMove(
+			state.iwashiMap,
+			state.maps,
+			player,
+			params.H,
+			params.W
+		);
+		const result = calculateScore(
+			iwashiMap,
+			player,
+			state.score,
+			state.iwashi,
+			turnCnt
+		);
+		onFrame({
+			...state,
+			player: result.player,
+			iwashiMap: result.iwashiMap,
+			score: result.score,
+			iwashi: result.iwashi,
+		});
 		turnCnt++;
 	}
 
@@ -338,18 +412,24 @@ module.exports.configs = [
 ];
 
 module.exports.matchConfigs = [
-	...Array(6).fill().map(() => ({
-		config: 'little',
-		players: [0],
-	})),
-	...Array(6).fill().map(() => ({
-		config: 'much',
-		players: [0],
-	})),
-	...Array(3).fill()	.map(() => ({
-		config: 'challenge',
-		players: [0],
-	})),
+	...Array(6)
+		.fill()
+		.map(() => ({
+			config: 'little',
+			players: [0],
+		})),
+	...Array(6)
+		.fill()
+		.map(() => ({
+			config: 'much',
+			players: [0],
+		})),
+	...Array(3)
+		.fill()
+		.map(() => ({
+			config: 'challenge',
+			players: [0],
+		})),
 ];
 
 module.exports.judgeMatch = (results) => ({
