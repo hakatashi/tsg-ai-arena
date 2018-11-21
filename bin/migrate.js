@@ -259,59 +259,80 @@ mongoose.Promise = global.Promise;
 				以下は、この問題に対して不正でない出力を行うC++のサンプルコードである。
 
 				\`\`\`
-				#include <bits/stdc++.h>
-				using namespace std;
-
-				int **drops;
-
-				int main() {
-					cin.tie(0);
-					ios::sync_with_stdio(false);
-
-					int H, W, N, M;
-					cin >> H >> W >> N >> M;
-
-					drops = (int **)malloc(sizeof(int *) * H);
-					for (int y = 0; y < H; y++) {
-						drops[y] = (int *)malloc(sizeof(int) * W);
-						for (int x = 0; x < W; x++) {
-							cin >> drops[y][x];
-						}
-					}
-
-					for (int i = 0; i < N; i++) {
-						cout << 2 << " " << 2 << endl;
-
-						for (int j = 0; j < M; j++) {
-							cout << (j % 4) + 1;
-							if (j == M - 1) {
-								cout << endl;
-							} else {
-								cout << " ";
-							}
-						}
-					}
-
-					return 0;
-				}
+				// TODO
 				\`\`\`
 
 				### 入力例
 
 				\`\`\`
-				5 5 1 3
-				1 2 3 4 5
-				1 2 3 4 5
-				1 2 3 3 4
-				1 2 5 4 5
-				1 2 3 4 5
+				10 10 150 50
+				2 3
+				##########
+				#....#...#
+				##.#.....#
+				#.##.....#
+				#........#
+				####.....#
+				#....##..#
+				###......#
+				##...##..#
+				##########
+				5 2 0
+				5 7 4
+				5 6 17
+				7 5 23
+				6 8 24
+				6 3 24
+				9 6 28
+				6 8 32
+				9 3 34
+				3 2 35
+				4 8 35
+				9 5 43
+				9 4 44
+				3 5 46
+				9 5 54
+				5 5 63
+				5 9 68
+				4 7 71
+				7 5 77
+				4 8 78
+				6 4 78
+				8 5 80
+				8 7 80
+				5 9 82
+				8 6 83
+				9 6 87
+				4 9 92
+				9 2 99
+				2 2 100
+				7 5 102
+				9 4 102
+				5 7 103
+				9 6 103
+				8 3 105
+				7 5 106
+				4 7 106
+				8 6 108
+				3 2 114
+				3 3 117
+				5 9 120
+				9 9 121
+				4 5 123
+				8 4 124
+				8 8 127
+				2 5 129
+				3 7 136
+				2 7 139
+				9 9 139
+				7 3 145
+				3 7 148
 				\`\`\`
 
 				### 出力例
 
 				\`\`\`
-				3 4
-				1 2 2
+				NWWNSEWNSEWSNWWSNWSESESEEWWNNNWSWWENENWSNNWWNNNNEENEWNWWSWWNSNSSNSNNWENESSSSWWSENWSSWEWNESSENWSSEEWNNEENEESSNSNWSENESSWSWNWSENWWSNSNESEWNEENNSWSNSENWS
 				\`\`\`
 			`,
 			en: stripIndent`

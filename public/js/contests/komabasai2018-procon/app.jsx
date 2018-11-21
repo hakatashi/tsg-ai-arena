@@ -163,6 +163,31 @@ class App extends React.Component {
 						r={size / 2 - 5}
 						fill="red"
 					/>
+					{this.state.iwashiMap.map((row, y) => (
+						row.map((cell, x) => (
+							cell > 0 && (
+								<g key={y * this.params.width + x}>
+									<circle
+										cx={x * size + size / 2}
+										cy={y * size + size / 2}
+										r={size / 2 - 5}
+										fill={cell < 5 ? 'transparent' : '#3F51B5'}
+										stroke="#3F51B5"
+										strokeWidth="2"
+									/>
+									<text
+										x={x * size + size / 2}
+										y={y * size + size * 0.7}
+										fill={cell < 5 ? '#3F51B5' : 'white'}
+										fontSize={size / 2}
+										textAnchor="middle"
+									>
+										{cell}
+									</text>
+								</g>
+							)
+						))
+					))}
 				</svg>
 				<div
 					style={{

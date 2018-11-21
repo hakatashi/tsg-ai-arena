@@ -4,7 +4,6 @@
 const noop = require('lodash/noop');
 const sumBy = require('lodash/sumBy');
 const sample = require('lodash/sample');
-const flatten = require('lodash/flatten');
 module.exports.presets = {};
 
 // convert player's output from str to obj
@@ -317,7 +316,7 @@ module.exports.battler = async (
 			params.n
 		);
 		iwashi.iwashi.sort((a, b) => a.t - b.t);
-		const playerIndex = sample(maps.join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
+		const playerIndex = sample(maps.map((row) => row.join('')).join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
 		const player = {
 			x: playerIndex % params.width,
 			y: Math.floor(playerIndex / params.width),
