@@ -87,7 +87,7 @@ const initMaps = (height, width, mode, wallRatio) => {
 				if (i === 0 || i === height - 1) {
 					return '#'.repeat(width);
 				} else if (i % 2 === 1) {
-					return '#'.repeat(width);
+					return `#${'.'.repeat(width - 2)}#`;
 				} else if (i % 4 === 0) {
 					return `${'#'.repeat(width - 2)}.#`;
 				}
@@ -265,10 +265,10 @@ module.exports.calculateScore = calculateScore;
 const serialize = ({params, state}) => {
 	const head = [
 		`${params.height} ${params.width} ${params.turns} ${params.n}`,
-		`${state.player.x} ${state.player.y}`,
+		`${state.player.x + 1} ${state.player.y + 1}`,
 	];
-	const end = state.iwashi.map((dat) => `${dat.x} ${dat.y} ${dat.t}`);
-	return head.concat(state.maps, end).join('\n');
+	const end = state.iwashi.map((dat) => `${dat.x + 1} ${dat.y + 1} ${dat.t}`);
+	return `${head.concat(state.maps, end).join('\n')}\n`;
 };
 
 const deserialize = (stdin) => {
@@ -286,13 +286,13 @@ const deserialize = (stdin) => {
 		},
 		state: {
 			player: {
-				x: parseInt(lines[1][0]),
-				y: parseInt(lines[1][1]),
+				x: parseInt(lines[1][0]) - 1,
+				y: parseInt(lines[1][1]) - 1,
 				paralyzed: 0,
 			},
 			iwashi: lines.slice(2 + height, 2 + height + n).map(([x, y, t]) => ({
-				x: parseInt(x),
-				y: parseInt(y),
+				x: parseInt(x) - 1,
+				y: parseInt(y) - 1,
 				t: parseInt(t),
 			})),
 			maps: lines.slice(2, 2 + height).map((tokens) => tokens[0].split('')),
@@ -366,7 +366,6 @@ module.exports.battler = async (
 		onFrame({state});
 		turnCnt++;
 	}
-	console.log(state);
 
 	return {
 		result: 'settled',
