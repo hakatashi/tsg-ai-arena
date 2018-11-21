@@ -1,13 +1,10 @@
 /* eslint array-plural/array-plural: off, no-nested-ternary: off */
 
 // title: iwashi harvest(iwashi収穫祭)
-const clamp = require('lodash/clamp');
-const shuffle = require('lodash/shuffle');
-const chunk = require('lodash/chunk');
-const meanBy = require('lodash/meanBy');
 const noop = require('lodash/noop');
-const flatten = require('lodash/flatten');
 const sumBy = require('lodash/sumBy');
+const sample = require('lodash/sample');
+const flatten = require('lodash/flatten');
 module.exports.presets = {};
 
 // convert player's output from str to obj
@@ -42,15 +39,15 @@ module.exports.normalize = normalize;
 // make maps
 // arg: height, width and mode
 // return: maps
-const initMaps = (height, width, mode) => {
+const initMaps = (height, width, mode, wallRatio) => {
 	if (mode === 'random') {
 		// rate: 25%
 		const maps = Array(height)
 			.fill()
-			.map((_, i) => i == 0 || i == height - 1
+			.map((_, i) => i === 0 || i === height - 1
 				? Array(width).fill('#')
 				: ['#'].concat(Array(width - 2).fill('.'), ['#']));
-		let count = Math.max(Math.floor((height * width) / 4), 0);
+		let count = Math.max(Math.floor((height * width) * wallRatio), 0);
 		while (count--) {
 			let x = Math.max(
 				0,
@@ -70,7 +67,7 @@ const initMaps = (height, width, mode) => {
 					Math.min(height - 1, Math.floor(Math.random() * (height - 2)) + 1)
 				);
 			}
-			mapx[y][x] = '#';
+			maps[y][x] = '#';
 		}
 		return maps.map((v) => v.join(''));
 	} else if (mode === 'challenge') {
@@ -211,7 +208,7 @@ const iwashiMove = (iwashiMap, maps, player, H, W) => {
 						if (maps[ni][nj] === '#') {
 							continue;
 						}
-						if (distanceMap[i][j] > distanceMap[ni][nj] || k == 4) {
+						if (distanceMap[i][j] > distanceMap[ni][nj] || k === 4) {
 							nextIwashiMap[ni][nj] += iwashiMap[i][j];
 							break;
 						}
@@ -240,7 +237,7 @@ const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
 	}
 	while (iwashiQueue.length > 0 && iwashiQueue[0].t === turn) {
 		newIwashi[iwashiQueue[0].y][iwashiQueue[0].x]++;
-		iwashi.shift();
+		iwashiQueue.shift();
 	}
 
 	let retScore = score;
@@ -256,7 +253,7 @@ const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
 		newPlayer.paralyzed += 5;
 	}
 	return {
-		retScore,
+		score: retScore,
 		iwashiMap: newIwashi,
 		player: newPlayer,
 		iwashi: iwashiQueue,
@@ -267,7 +264,7 @@ module.exports.calculateScore = calculateScore;
 
 const serialize = ({params, state}) => {
 	const head = [
-		`${params.height} ${params.width} ${params.turn} ${params.n}`,
+		`${params.height} ${params.width} ${params.turns} ${params.n}`,
 		`${state.player.x} ${state.player.y}`,
 	];
 	const end = state.iwashi.map((dat) => `${dat.x} ${dat.y} ${dat.t}`);
@@ -279,15 +276,13 @@ const deserialize = (stdin) => {
 		.trim()
 		.split('\n')
 		.map((line) => line.split(' '));
-	const height = parseInt(lines[0][0]);
-	const n = parseInt(lines[0][3]);
+	const [height, width, turn, n] = lines[0].map((n) => parseInt(n));
 	return {
 		params: {
 			height,
-			width: parseInt(lines[0][1]),
-			turn: parseInt(lines[0][2]),
+			width,
+			turn,
 			n,
-			maps: lines.slice(2, 2 + height),
 		},
 		state: {
 			player: {
@@ -295,14 +290,12 @@ const deserialize = (stdin) => {
 				y: parseInt(lines[1][1]),
 				paralyzed: 0,
 			},
-			iwashi: lines.slice(2 + height, 2 + height + n).map((v) => {
-				const dat = v.split(' ');
-				return {
-					x: parseInt(dat[0]),
-					y: parseInt(dat[1]),
-					t: parseInt(dat[2]),
-				};
-			}),
+			iwashi: lines.slice(2 + height, 2 + height + n).map(([x, y, t]) => ({
+				x: parseInt(x),
+				y: parseInt(y),
+				t: parseInt(t),
+			})),
+			maps: lines.slice(2, 2 + height).map((tokens) => tokens[0].split('')),
 		},
 	};
 };
@@ -314,14 +307,15 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
-	const maps = initMaps(params.height, params.width, params.mode);
+	const maps = initMaps(params.height, params.width, params.mode, params.wallRatio);
 	const iwashi = initIwashi(
 		maps,
 		params.height,
 		params.width,
-		params.turn,
+		params.turns,
 		params.n
-	).sort((a, b) => a.t - b.t);
+	);
+	iwashi.iwashi.sort((a, b) => a.t - b.t);
 	const initialState = initState || {
 		maps,
 		iwashiMap: iwashi.iwashiMap,
@@ -332,13 +326,21 @@ module.exports.battler = async (
 			paralyzed: 0,
 		},
 	};
-	const {state} = deserialize(serialize({params, state: initialState}));
-	const {stdout} = await execute(serialize({params, state}), 0);
+	const playerIndex = sample(maps.join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
+	const player = {
+		x: playerIndex % params.width,
+		y: Math.floor(playerIndex / params.width),
+		paralyzed: 0,
+	};
+	const {state} = deserialize(serialize({params, state: {...initialState, player}}));
+	state.iwashiMap = iwashi.iwashiMap;
+	state.score = 0;
+	const {stdout} = await execute(serialize({params, state: {...initialState, player}}), 0);
 	const turns = normalize(stdout);
 
 	// doing hogehoge
 	let turnCnt = 1;
-	for (const turn of turns.slice(0, 1)) {
+	for (const turn of turns) {
 		if (turnCnt > state.T) {
 			break;
 		}
@@ -347,8 +349,8 @@ module.exports.battler = async (
 			state.iwashiMap,
 			state.maps,
 			player,
-			params.H,
-			params.W
+			params.height,
+			params.width
 		);
 		const result = calculateScore(
 			iwashiMap,
@@ -357,26 +359,37 @@ module.exports.battler = async (
 			state.iwashi,
 			turnCnt
 		);
-		onFrame({
-			...state,
-			player: result.player,
-			iwashiMap: result.iwashiMap,
-			score: result.score,
-			iwashi: result.iwashi,
-		});
+		state.player = result.player;
+		state.iwashiMap = result.iwashiMap;
+		state.score = result.score;
+		state.iwashi = result.iwashi;
+		onFrame({state});
 		turnCnt++;
 	}
+	console.log(state);
 
 	return {
 		result: 'settled',
 		winner: 0,
-		scores: [state.score],
+		scores: [state.score / params.n],
 	};
 };
 
 module.exports.configs = [
 	{
 		default: true,
+		id: 'tiny',
+		name: '10 x 10 tiny',
+		params: {
+			mode: 'random',
+			height: 10,
+			width: 10,
+			turns: 150,
+			n: 50,
+			wallRatio: 0.15,
+		},
+	},
+	{
 		id: 'little',
 		name: '20 x 20 little',
 		params: {
@@ -385,6 +398,7 @@ module.exports.configs = [
 			width: 20,
 			turns: 1000,
 			n: 250,
+			wallRatio: 0.25,
 		},
 	},
 	{
@@ -396,6 +410,7 @@ module.exports.configs = [
 			width: 20,
 			turns: 1000,
 			n: 3000,
+			wallRatio: 0.25,
 		},
 	},
 	{
@@ -407,11 +422,18 @@ module.exports.configs = [
 			width: 20,
 			turns: 1000,
 			n: 1000,
+			wallRatio: null,
 		},
 	},
 ];
 
 module.exports.matchConfigs = [
+	...Array(1)
+		.fill()
+		.map(() => ({
+			config: 'tiny',
+			players: [0],
+		})),
 	...Array(6)
 		.fill()
 		.map(() => ({
