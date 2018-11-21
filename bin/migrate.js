@@ -183,16 +183,20 @@ mongoose.Promise = global.Promise;
 				#### iwashiの行動について
 
 				具体的には、以下のアルゴリズムで動作します。
-				1. fiord君(治療中でない)とiwashiがいるマスをソースとして、BFSを行い「最短距離」のマップを生成します。
-				2. (1,1)→(1,2)→…→(1,W)→(2,1)→…→(2,W)→(3,1)→…→(H,W)の順に、以下のことを行います。
+				* (1,1)→(1,2)→…→(1,W)→(2,1)→…→(2,W)→(3,1)→…→(H,W)の順に、以下のことを行います。
 					1. iwashiがいないなら次へ行きます。
-					2. 既にそのマスへ外からiwashiがやってくることが分かっているなら元々そのマスにいたiwashiは動きません。そうでなければ、北→東→南→西の順に、現在位置よりも1のマップ上で距離が短いマスを探し、見つけたらそちらへ移動します。
+					2. 既にそのマスへ外からiwashiがやってくることが分かっているなら元々そのマスにいたiwashiは動きません。
+					3. そうでなければ、他のiwashiのいるマスと治療中でないfiord君をソース（距離0）として「最短距離」のマップを作成。
+					4. 北→東→南→西の順に、現在位置よりも3のマップ上で距離が短いマスを探し、見つけたらそちらへ移動します。
 
 				また、各ターンは、
-				1. fiord君移動
-				2. iwashi移動（運悪くiwashiがケガをしているfiord君のマスへ突っ込むときがあります。その際は、治療期間が5ターン増えます）
+				1. fiord君移動(治療中は動けません)
+				2. iwashi移動（運悪くiwashiがfiord君のマスへ突っ込むときがあります。）
 				3. iwashiがつちからはえてくる(fiord君がいるマスへはえてくる可能性もあります)
-				4. fiord君収穫に挑戦（fiord君がケガをしている間は収穫できません。iwashiが素通りすることもあります）
+				4. fiord君収穫に挑戦（fiord君がケガをしている間は収穫できません。ケガもしません。iwashiが素通りすることもあります）
+					* fiord君が治療中なら収穫出来ません。fiord君のマスにiwashiがいても何も起こりません。
+					* fiord君のいるマスに5匹以下のiwashiがいるなら、そのiwashi達を収穫します。
+					* fiord君のいるマスに6匹以上のiwashiがいるなら、fiord君は全治5ターンのケガをします。iwashiはつばめが嬉々として狩っていくので消滅します。
 				の順になります。
 
 				### 入力
@@ -212,7 +216,7 @@ mongoose.Promise = global.Promise;
 				xN yN tN
 				\`\`\`
 
-				* TSG国の区画はH×Wです。その区画は\{Si | 1≦i≦H\}になっています。1≦i≦Hで|Si|=Wが成立し、Sij="#"でそのマスが壁、Sij="."で通路であることを示します。外周は"#"で囲まれていることが保証されています。
+				* TSG国の区画はH×Wです。その区画は\{Si | 0≦i≦H-1\}になっています。0≦i≦H-1で|Si|=Wが成立し、Sij="#"でそのマスが壁、Sij="."で通路であることを示します。外周は"#"で囲まれていることが保証されています。
 				* 現在のfiord君の位置は(Px, Py)です。周囲が壁て囲まれていて動けない可能性があります。
 				* また、この日にfiord君はTターン行動可能です。hakata社のエスパーによると今日はN匹のiwashiがつちからはえてくるらしいです。
 				* i匹目(1≦i≦N)のiwashiは位置(xi, yi)に現在からtiターン後につちからはえてきます。ti=0は既にはえているiwashiです。
@@ -256,10 +260,41 @@ mongoose.Promise = global.Promise;
 
 				#### サンプルコード
 
-				以下は、この問題に対して不正でない出力を行うC++のサンプルコードである。
+				以下は、この問題に対して不正でない出力を行う(かつ正の得点を得ると推定される)C++のサンプルコードである。
 
 				\`\`\`
-				// TODO
+				#include <iostream>
+				#include <vector>
+				#include <string>
+				#include <tuple>
+				#include <algorithm>
+				#define MAXH 22
+				#define MAXW 22
+
+				int H, W;
+				string maps[MAXH];
+				vector<tuple<int, int, int>> iwashi;
+
+				int main(void) {
+					int T, N;	cin >> H >> W >> T >> N;
+					int px, py; cin >> px >> py;
+					for (int i = 0; i < H; i++) {
+						cin >> maps[i];
+					}
+					for (int i = 0; i < N; i++) {
+						int x, y, t;	cin >> x >> y >> t;
+						iwashi.push_back(make_tuple(t, x, y));
+					}
+					string ret = 0;
+					int x = 3;
+					string hoge = "NEWS";
+					for (int i = 0; i < T; i++) {
+						x = (3 * x + 2) % 4;
+						ret += hoge[x];
+					}
+					cout << ret << endl;
+					return 0;
+				}
 				\`\`\`
 
 				### 入力例
