@@ -197,6 +197,7 @@ mongoose.Promise = global.Promise;
 					* fiord君が治療中なら収穫出来ません。fiord君のマスにiwashiがいても何も起こりません。
 					* fiord君のいるマスに5匹以下のiwashiがいるなら、そのiwashi達を収穫します。
 					* fiord君のいるマスに6匹以上のiwashiがいるなら、fiord君は全治5ターンのケガをします。iwashiはつばめが嬉々として狩っていくので消滅します。
+				
 				の順になります。
 
 				### 入力
@@ -268,13 +269,25 @@ mongoose.Promise = global.Promise;
 				#include <string>
 				#include <tuple>
 				#include <algorithm>
+				using namespace std;
 				#define MAXH 22
 				#define MAXW 22
-
+				
+				uint32_t xor128(void) { 
+					static uint32_t x = 123456789;
+					static uint32_t y = 362436069;
+					static uint32_t z = 521288629;
+					static uint32_t w = 88675123; 
+					uint32_t t;
+					t = x ^ (x << 11);
+					x = y; y = z; z = w;
+					return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8)); 
+				}
+				
 				int H, W;
 				string maps[MAXH];
 				vector<tuple<int, int, int>> iwashi;
-
+				
 				int main(void) {
 					int T, N;	cin >> H >> W >> T >> N;
 					int px, py; cin >> px >> py;
@@ -285,12 +298,12 @@ mongoose.Promise = global.Promise;
 						int x, y, t;	cin >> x >> y >> t;
 						iwashi.push_back(make_tuple(t, x, y));
 					}
-					string ret = 0;
+					string ret = "";
 					int x = 3;
 					string hoge = "NEWS";
 					for (int i = 0; i < T; i++) {
-						x = (3 * x + 2) % 4;
-						ret += hoge[x];
+						x = xor128();
+						ret += hoge[abs(x%4)];
 					}
 					cout << ret << endl;
 					return 0;
