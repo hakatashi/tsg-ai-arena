@@ -115,6 +115,71 @@ const deltas = new Map([
 	['r', {x: 1, y: 0}],
 ]);
 
+const _evaluate = (field, visited, robots) => {
+	const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
+	// maximum recursionするかも...
+	robots.forEach((robot, idx) => {
+		uldr.forEach((dirc) => {
+			const x = robot.x + dirc[0];
+			const y = robot.y + dirc[1];
+			if (x < 0 || x >= field[0].length ||
+				y < 0 || y >= field.length) {
+				// continue
+			}
+			else if (field[y][x] === 'block' || 
+					field[y][x] === 'beam') {
+				// continue
+			}
+			else if (visited[y][x]) {
+				// continue
+			} else {
+				visited[y][x] = true;
+				const tmpx = robot.x;
+				const tmpy = robot.y;
+				robots[idx] = {x, y};
+				_evaluate(field, visited, robots)
+				robots[idx] = {x: tmpx, y: tmpy};
+			}
+		});
+	});
+};
+
+/* 
+> evaluate(["empty", "block", "empty", "block"], {width:2, height:2}, [{position: 0}])
+2
+> evaluate(["empty", "block", "block", "block"], {width:2, height:2}, [{position: 0}]);
+1
+> evaluate(["empty", "block", "empty", "empty", "block", "empty", "empty", "block", "empty"], {width:3, height:3}, [{position: 3}, {position: 5}]); 
+*/
+
+const evaluate = (field1D, params, robots) => {
+	const field = [];
+	const visited = [];
+	for (let i = 0; i < params.height; i++) {
+		field.push(field1D.slice(params.width * i, params.width * (i + 1)));
+		visited.push(Array(params.width).fill(false));
+	}
+	const robotPoses = robots.map((robot) => {
+		const r = {
+			x: robot.position % params.width,
+			y: Math.floor(robot.position / params.width),
+		};
+		visited[r.y][r.x] = true;
+		return r;
+	});
+
+	_evaluate(field, visited, robotPoses);
+	let cnt = 0;
+	visited.forEach((row) => {
+		row.forEach((x) => {
+			if (x) {
+				cnt++;
+			}
+		});
+	});
+	return cnt;
+};
+
 module.exports.presets = {
 	random: (stdin) => {
 		const {state} = deserialize(stdin);
@@ -131,6 +196,9 @@ module.exports.presets = {
 		r = Math.floor(Math.random() * state.targets.length);
 		return `${state.targets[r].id} ${direction}`;
 	},
+	cat: (stdin) => {
+		return random(stdin);
+	}
 };
 
 module.exports.battler = async (
@@ -156,7 +224,6 @@ module.exports.battler = async (
 	};
 	const _checkConnectivity = (field, startX, startY, visited) => {
 		const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
-		let result = false;
 		uldr.forEach((dirc) => {
 			const x = startX + dirc[0];
 			const y = startY + dirc[1];
