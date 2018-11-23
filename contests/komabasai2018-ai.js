@@ -133,8 +133,6 @@ module.exports.presets = {
 	},
 };
 
-module.exports.tmp = checkConnectivity;
-
 module.exports.battler = async (
 	execute,
 	params,
@@ -179,16 +177,18 @@ module.exports.battler = async (
 		});
 	};
 
-	const checkConnectivity = (field) => {
-		let emptyCount = 0;
+	const checkConnectivity = (field1D) => {
+		const field = [];
 		const visited = [];
+		for (let i = 0; i < params.height; i++) {
+			field.push(field1D.slice(params.width * i, params.width * (i + 1)));
+		}
 		let startX = -1;
 		let startY = -1;
 		field.forEach((row, j) => {
 			visited.push(row.map(_ => false));
 			row.forEach((x, i) => {
 				if (x == 'empty') {
-					emptyCount++;
 					startX = i;
 					startY = j;
 				}
@@ -200,7 +200,7 @@ module.exports.battler = async (
 		let result = true;
 		field.forEach((row, j) => {
 			row.forEach((x, i) => {
-				if (x == 'empty' && visited[j][i] == false) {
+				if (x === 'empty' && visited[j][i] === false) {
 					result = false;
 				}
 			});
@@ -211,9 +211,19 @@ module.exports.battler = async (
 	const initialState =
 		initState ||
 		(() => {
-			const field = Array(params.width * params.height)
-				.fill()
-				.map(() => (random() < 0.2 ? 'block' : 'empty'));
+			const field = Array(params.width * params.height).fill('empty');
+			for (let i = 0; i < params.width * params.height * 0.2; i++) {
+				while(true) {
+					const idx = Math.floor(random() * params.width * params.height);
+					if (field[idx] === 'empty') {
+						field[idx] = 'block';
+						if (checkConnectivity(field)) {
+							break;
+						}
+						field[idx] = 'empty';
+					}
+				}
+			}
 			const beams = sampleSize(
 				range(params.width * params.height).filter(
 					(position) => field[position] === 'empty'

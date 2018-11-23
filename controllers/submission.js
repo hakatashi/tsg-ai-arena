@@ -145,6 +145,7 @@ module.exports.postSubmission = async (req, res) => {
 			.sort({createdAt: -1})
 			.exec();
 		if (
+			false &&
 			latestSubmission !== null &&
 			latestSubmission.createdAt > Date.now() - 15 * 1000
 		) {
