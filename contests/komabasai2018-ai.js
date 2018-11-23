@@ -133,6 +133,8 @@ module.exports.presets = {
 	},
 };
 
+module.exports.tmp = checkConnectivity;
+
 module.exports.battler = async (
 	execute,
 	params,
@@ -153,6 +155,57 @@ module.exports.battler = async (
 			clones[index] = temp;
 		}
 		return clones.slice(0, size);
+	};
+	const _checkConnectivity = (field, startX, startY, visited) => {
+		const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
+		let result = false;
+		uldr.forEach((dirc) => {
+			const x = startX + dirc[0];
+			const y = startY + dirc[1];
+			if (x < 0 || x >= field[0].length ||
+				y < 0 || y >= field.length) {
+				// continue
+			}
+			else if (field[y][x] == 'block') {
+				// continue
+			}
+			else if (visited[y][x]) {
+				// continue
+			}
+			else {
+				visited[y][x] = true;
+				_checkConnectivity(field, x, y, visited);
+			}
+		});
+	};
+
+	const checkConnectivity = (field) => {
+		let emptyCount = 0;
+		const visited = [];
+		let startX = -1;
+		let startY = -1;
+		field.forEach((row, j) => {
+			visited.push(row.map(_ => false));
+			row.forEach((x, i) => {
+				if (x == 'empty') {
+					emptyCount++;
+					startX = i;
+					startY = j;
+				}
+			});
+		});
+		visited[startY][startX] = true;
+		_checkConnectivity(field, startX, startY, visited);
+
+		let result = true;
+		field.forEach((row, j) => {
+			row.forEach((x, i) => {
+				if (x == 'empty' && visited[j][i] == false) {
+					result = false;
+				}
+			});
+		});
+		return result;
 	};
 
 	const initialState =
