@@ -202,7 +202,7 @@ const iwashiMove = (iwashiMap, maps, player, H, W) => {
 			for (let k = 0; k < 5; k++) {
 				const ni = i + dy[k];
 				const nj = j + dx[k];
-				if (iwashiMap[ni][nj] < 0) {
+				if (maps[ni][nj] === '#') {
 					continue;
 				}
 				if (distanceMap[i][j] > distanceMap[ni][nj] || k === 4) {
