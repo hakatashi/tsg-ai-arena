@@ -25,14 +25,16 @@ mongoose.Promise = global.Promise;
 
 	await Contest.deleteMany({id: 'rotating-drops'});
 
-	await Contest.updateOne({id: 'dragon-puzzles'}, {
-		name: 'Dragon Puzzles',
-		id: 'dragon-puzzles',
-		start: new Date('1970-01-01T00:00:00.000Z'),
-		end: new Date('2038-01-19T12:14:07.000+0900'),
-		type: 'score',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'dragon-puzzles'},
+		{
+			name: 'Dragon Puzzles',
+			id: 'dragon-puzzles',
+			start: new Date('1970-01-01T00:00:00.000Z'),
+			end: new Date('2038-01-19T12:14:07.000+0900'),
+			type: 'score',
+			description: {
+				ja: stripIndent`
 				# ドラゴンのパズル
 
 				* H×Wマスのフィールド上に、1マスにつき1個のドロップが配置されている。
@@ -145,19 +147,23 @@ mongoose.Promise = global.Promise;
 				1 2 2
 				\`\`\`
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
-	await Contest.updateOne({id: 'komabasai2018-procon'}, {
-		name: '駒場祭2018 Live Programming Contest',
-		id: 'komabasai2018-procon',
-		start: new Date('2018-11-24T16:03:00+0900'),
-		end: new Date('2018-11-24T17:18:00+0900'),
-		type: 'score',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'komabasai2018-procon'},
+		{
+			name: '駒場祭2018 Live Programming Contest',
+			id: 'komabasai2018-procon',
+			start: new Date('2018-11-24T16:03:00+0900'),
+			end: new Date('2018-11-24T17:18:00+0900'),
+			type: 'score',
+			description: {
+				ja: stripIndent`
 				# iwashiの収穫祭
 
 				### 問題
@@ -383,19 +389,23 @@ mongoose.Promise = global.Promise;
 				NWWNSEWNSEWSNWWSNWSESESEEWWNNNWSWWENENWSNNWWNNNNEENEWNWWSWWNSNSSNSNNWENESSSSWWSENWSSWEWNESSENWSSEEWNNEENEESSNSNWSENESSWSWNWSENWWSNSNESEWNEENNSWSNSENWS
 				\`\`\`
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
-	await Contest.updateOne({id: 'komabasai2018-ai'}, {
-		name: '駒場祭2018 Live AI Contest',
-		id: 'komabasai2018-ai',
-		start: new Date('2018-11-25T12:03:00+0900'),
-		end: new Date('2018-11-25T13:18:00+0900'),
-		type: 'battle',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'komabasai2018-ai'},
+		{
+			name: '駒場祭2018 Live AI Contest',
+			id: 'komabasai2018-ai',
+			start: new Date('2018-11-25T12:03:00+0900'),
+			end: new Date('2018-11-25T13:18:00+0900'),
+			type: 'battle',
+			description: {
+				ja: stripIndent`
 				# 問題文
 
 				## 背景（プレイヤーは読まなくていい）
@@ -456,26 +466,32 @@ mongoose.Promise = global.Promise;
 				* r: robotのID
 				* d: 方向。上がu、左がl、下がd、右がrのいずれかの文字。
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
 	const contestAi = await Contest.findOne({id: 'komabasai2018-ai'});
 
 	for (const presetName of ['random']) {
-		await Submission.updateOne({
-			name: presetName,
-			contest: contestAi,
-		}, {
-			isPreset: true,
-			name: presetName,
-			user: null,
-			contest: contestAi,
-			language: null,
-			code: null,
-			size: null,
-		}, {upsert: true});
+		await Submission.updateOne(
+			{
+				name: presetName,
+				contest: contestAi,
+			},
+			{
+				isPreset: true,
+				name: presetName,
+				user: null,
+				contest: contestAi,
+				language: null,
+				code: null,
+				size: null,
+			},
+			{upsert: true}
+		);
 	}
 
 	mongoose.connection.close();
