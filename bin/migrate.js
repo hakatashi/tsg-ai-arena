@@ -350,6 +350,11 @@ mongoose.Promise = global.Promise;
 				# 問題文
 
 				## 背景（プレイヤーは読まなくていい）
+				ロボットたちは、盤面上の円を追いかけるのには疲れてしまった。お互いに協力して好きな場所にいくのは確かに難しいし、最初はたのしいと思っていたこともあったんだ。だが、お互いにお互いを踏み台にしてたどり着くその先に何がある？
+
+				文明は進歩する。ある日ロボットは自由に四方に動く能力だけでなく、拡張機能に「ビームを打つガジェット」をいくつか手に入れた。これを装着すると、自分が動き始めるやいなや、自らが進む方向にビームが打てるようになるらしい。
+
+				日々に退屈をしていたロボットたちは、これに喜び早速とあるゲームを考えた。
 
 				## ゲームの概要
 
@@ -357,14 +362,14 @@ mongoose.Promise = global.Promise;
 				* 各プレイヤーは同じ盤面から始めてそれぞれ攻撃側と防御側を一度ずつ行う。
 				* 盤面の外周は壁で囲われているものとする。
 				* 初期盤面では、大きさW x Hの盤面の上にはロボットといくつかの壁が配置されている。
-				  * ロボットの種類は、Beam, Pawn, Targetであり、BeamとPawnが攻撃側、Targetが防御側に属する。
+				  * ロボットの種類は、Beam, Targetであり、Beamが攻撃側、Targetが防御側に属する。
 				* 各ターンごとに、プレイヤーは自分のロボットを選んで、四方の好きな方向を選び動かすことができる。
 				  * ロボットは、他のロボットか、壁に衝突するまで止まらずに真っ直ぐ進む。
 				  * ただし、Beamのロボットだけは、**移動前に選んだ方向にビームを打ってから**、移動をする。
 					* このとき、ビームの先にTargetロボットが存在すればそのロボットは消滅する。
 					* またこのビームの軌跡は盤面上に残りTargetロボットはこのBeamを超えることはできない。すなわち、**Targetロボットにとっては、ビームの軌跡も壁になる**。
 					* また、ビーム自体は壁を突き破ることはない。
-				* このビームによりすべてのTargetロボットが消滅したときに、ゲーム終了となり、攻守交代をして再び対戦をする。
+				* このビームによりすべてのTargetロボットが消滅したときに、ゲーム終了となり、攻守交代をして **同じ盤面で** 再び対戦をする。
 				* 300ターン後に決着がついていない場合、ゲームが終了する。
 
 				## 勝利条件
@@ -388,15 +393,11 @@ mongoose.Promise = global.Promise;
 				cH1 cH2 cH3 ... cHW
 				\`\`\`
 
-				* W(10 <= W <= 1000)は盤面の横幅、H(10 <= W <= 1000)は盤面の縦幅である。
+				* W(10 <= W <= 30)は盤面の横幅、H(10 <= W <= 30)は盤面の縦幅である。
 				* TはAまたはDのが入っており、攻撃側か防御側かをそれぞれA,Dで表す。
 				* 以降のc11からcHWは各行スペース区切りでそれぞれcijが地点(i, j)における初期盤面の状態である。以下にそれぞれの表示方法を提示する
-				* ロボットの表示は、最初にprefixとして1文字で、ロボットの種類を表す。bがBeam, pがpawn, tがtargetである。その後に続く数字がロボットのID(0<=ID<=1000)となる。例えば、BeamのID10のロボットはb10と表現する。
+				* ロボットの表示は、最初にprefixとして1文字で、ロボットの種類を表す。bがBeam, pがpawn, tがtargetである。その後に続く数字がロボットのID(0<=ID<=30)となる。例えば、BeamのID10のロボットはb10と表現する。
 				* また、壁を \`*\` 、ビームが通過したマスを \`x\` で表し、何も無い場合は \`.\` と書く。
-
-				\`\`\`
-				r
-				\`\`\`
 
 				### 出力
 
@@ -406,6 +407,13 @@ mongoose.Promise = global.Promise;
 
 				* r: robotのID
 				* d: 方向。上がu、左がl、下がd、右がrのいずれかの文字。
+				* 最後には改行が必要
+
+				### 初期実装
+
+				* 各ターンランダムに自分のロボットを選び、ランダムな方向に移動するような初期実装を既に用意している。これをベースに用いても良い
+					* [https://gist.github.com/moratorium08/2aa569af96f2b50156893bb09a45a0d7](https://gist.github.com/moratorium08/2aa569af96f2b50156893bb09a45a0d7)
+
 			`,
 				en: stripIndent`
 			`,
@@ -416,23 +424,19 @@ mongoose.Promise = global.Promise;
 
 	const contestAi = await Contest.findOne({id: 'komabasai2018-ai'});
 
-	for (const presetName of ['random']) {
-		await Submission.updateOne(
-			{
-				name: presetName,
-				contest: contestAi,
-			},
-			{
-				isPreset: true,
-				name: presetName,
-				user: null,
-				contest: contestAi,
-				language: null,
-				code: null,
-				size: null,
-			},
-			{upsert: true}
-		);
+	for (const presetName of ['random', 'cat']) {
+		await Submission.updateOne({
+			name: presetName,
+			contest: contestAi,
+		}, {
+			isPreset: true,
+			name: presetName,
+			user: null,
+			contest: contestAi,
+			language: null,
+			code: null,
+			size: null,
+		}, {upsert: true});
 	}
 
 	mongoose.connection.close();

@@ -120,7 +120,6 @@ const getVisualizer = async (req, res, id) => {
 		return;
 	}
 
-	console.log(battle);
 	const config = battle.config === undefined
 		? req.contestData.configs.find((c) => c.default === true)
 		: req.contestData.configs.find((c) => battle.config === c.id);
