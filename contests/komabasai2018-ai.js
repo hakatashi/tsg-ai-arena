@@ -863,61 +863,46 @@ module.exports.configs = [
 ];
 
 const matchConfigs = [
-	{
-		config: 'default',
-		players: [0, 1],
-		seed: 1,
-	},
-	{
-		config: 'default',
-		players: [1, 0],
-		seed: 1,
-	},
-	{
-		config: 'default',
-		players: [0, 1],
-		seed: 2,
-	},
-	{
-		config: 'default',
-		players: [1, 0],
-		seed: 2,
-	},
-	{
-		config: 'default',
-		players: [0, 1],
-		seed: 3,
-	},
-	{
-		config: 'default',
-		players: [1, 0],
-		seed: 3,
-	},
-	{
-		config: 'default',
-		players: [0, 1],
-		seed: 4,
-	},
-	{
-		config: 'default',
-		players: [1, 0],
-		seed: 4,
-	},
+	...Array(10 * 2)
+		.fill()
+		.map((_, i) => ({
+			config: '10x10',
+			players: [i % 2, (i + 1) % 2],
+			seed: Math.floor(i / 2),
+			score: 40,
+		})),
+	...Array(3 * 2)
+		.fill()
+		.map((_, i) => ({
+			config: '20x20',
+			players: [i % 2, (i + 1) % 2],
+			seed: 20 + Math.floor(i / 2),
+			score: 100,
+		})),
+	...Array(1 * 2)
+		.fill()
+		.map((_, i) => ({
+			config: '30x30',
+			players: [i % 2, (i + 1) % 2],
+			seed: 26 + Math.floor(i / 2),
+			score: 200,
+		})),
 ];
 
 module.exports.matchConfigs = matchConfigs;
 
 module.exports.judgeMatch = (results) => {
-	const score1 = sum(
-		results.map(
-			(result, index) => result.scores[matchConfigs[index].players[0]]
-		)
-	);
-	const score2 = sum(
-		results.map(
-			(result, index) => result.scores[matchConfigs[index].players[1]]
-		)
-	);
+	let score1 = 0;
+	let score2 = 0;
+	for (let i = 0; i < Math.floor(results.length / 2); i++) {
+		const tmp1 = results[2 * i].scores[matchConfigs[2 * i].players[0]];
+		const tmp2 = results[2 * i + 1].scores[matchConfigs[2 * i + 1].players[1]];
+		if (tmp1 < tmp2) {
+			score1 += matchConfigs[2 * i].score;
+		} else {
+			score2 += matchConfigs[2 * i + 1].score;
+		}
+	}
 
 	if (score1 === score2) {
 		return {
@@ -929,7 +914,7 @@ module.exports.judgeMatch = (results) => {
 
 	return {
 		result: 'settled',
-		winner: score1 > score2 ? 1 : 0,
+		winner: score1 < score2 ? 1 : 0,
 		scores: [score1, score2],
 	};
 };
