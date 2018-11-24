@@ -255,52 +255,7 @@ mongoose.Promise = global.Promise;
 
 				以下は、この問題に対して不正でない出力を行う(かつ正の得点を得ると推定される)C++のサンプルコードである。
 
-				\`\`\`
-				#include <iostream>
-				#include <vector>
-				#include <string>
-				#include <tuple>
-				#include <algorithm>
-				using namespace std;
-				#define MAXH 22
-				#define MAXW 22
-				
-				uint32_t xor128(void) { 
-					static uint32_t x = 123456789;
-					static uint32_t y = 362436069;
-					static uint32_t z = 521288629;
-					static uint32_t w = 88675123; 
-					uint32_t t;
-					t = x ^ (x << 11);
-					x = y; y = z; z = w;
-					return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8)); 
-				}
-				
-				int H, W;
-				string maps[MAXH];
-				vector<tuple<int, int, int>> iwashi;
-				
-				int main(void) {
-					int T, N;	cin >> H >> W >> T >> N;
-					int px, py; cin >> px >> py;
-					for (int i = 0; i < H; i++) {
-						cin >> maps[i];
-					}
-					for (int i = 0; i < N; i++) {
-						int x, y, t;	cin >> x >> y >> t;
-						iwashi.push_back(make_tuple(t, x, y));
-					}
-					string ret = "";
-					int x = 3;
-					string hoge = "NEWS";
-					for (int i = 0; i < T; i++) {
-						x = xor128();
-						ret += hoge[abs(x%4)];
-					}
-					cout << ret << endl;
-					return 0;
-				}
-				\`\`\`
+				[https://gist.github.com/hakatashi/2798ea1afa296b1a5f2d05406c8d6368](https://gist.github.com/hakatashi/2798ea1afa296b1a5f2d05406c8d6368)
 
 				### 入力例
 
