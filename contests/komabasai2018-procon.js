@@ -243,11 +243,11 @@ const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
 		newPlayer.paralyzed--;
 	} else if (
 		0 < newIwashi[newPlayer.y][newPlayer.x] &&
-		newIwashi[newPlayer.y][newPlayer.x] < 5
+		newIwashi[newPlayer.y][newPlayer.x] <= 5
 	) {
 		retScore += newIwashi[newPlayer.y][newPlayer.x];
 		newIwashi[newPlayer.y][newPlayer.x] = 0;
-	} else if (newIwashi[newPlayer.y][newPlayer.x] >= 5) {
+	} else if (newIwashi[newPlayer.y][newPlayer.x] > 5) {
 		newPlayer.paralyzed += 5;
 		newIwashi[newPlayer.y][newPlayer.x] = 0;
 	}
