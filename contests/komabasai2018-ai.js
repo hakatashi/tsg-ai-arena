@@ -153,7 +153,29 @@ const _evaluate = (field, visited, robots) => {
 */
 
 const printField = (field, robots) =>  {
-
+	s = '';
+	field.forEach((row, j) => {
+		row.forEach((x, i) => {
+			let flag = true;
+			robots.forEach((robot) => {
+				if (robot.x === i && robot.y === j) {
+					s += robot.type[0] + ' ';
+					flag = false;
+				}
+			})
+			if (flag) {
+				if (x === 'empty') {
+					s += '  ';
+				} else if (x === 'block') {
+					s += '* ';
+				} else if (x === 'beam') { 
+					s += 'x ';
+				}
+			}
+		});
+		s += '\n';
+	});
+	console.log(s);
 };
 
 const field1DTo2D = (state, params) => {
@@ -168,13 +190,12 @@ const field1DTo2D = (state, params) => {
 	robots.forEach((robot) => {
 		robot.x = robot.position % params.width;
 		robot.y = Math.floor(robot.position / params.width);
-		console.log(robotMap, robot.x, robot.y);
 		robotMap[robot.y][robot.x] = robot;
 	});
 	return {field, robotMap};
 }
 
-const evaluate = (field, robots, params) => {
+const evaluate = (field, robots) => {
 	const visited = field.map((row) => Array(row.length).fill(false));
 	const robotPoses = robots.map((robot) => {
 		visited[robot.y][robot.x] = true;
@@ -237,12 +258,12 @@ robotMap = [[false, false, false], [false, robot, false], [false, false, false]]
 move(field, robotMap, robot, [-1, 0]);
 */
 
-const attackCatMain = (field, robots, robotMap, depth, params) => {
-	console.log(depth);
+const attackCatMain = (field, robots, targets, robotMap, depth, params) => {
 	let score = 1000000;
 	const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
 	if (depth == 0) {
-		return evaluate(field, robots, params);
+		const tmp = evaluate(field, targets);
+		return tmp;
 	}
 	robots.forEach((robot) => {
 		uldr.forEach((dirc) => {
@@ -250,13 +271,12 @@ const attackCatMain = (field, robots, robotMap, depth, params) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc);
-			const tmp = attackCatMain(cloned, robots, robotMapCloned, depth - 1, params);
+			const tmp = attackCatMain(cloned, robots, targets, robotMapCloned, depth - 1, params);
 			robot.x = x;
 			robot.y = y;
 			score = Math.min(score, tmp);
 		});
 	});
-	console.log(score);
 	return score;
 };
 
@@ -271,10 +291,23 @@ const attackCat = (state) => {
 	// first randomly select robot/dirc
 	const r = Math.floor(Math.random() * 4);
 	let direction = r === 0 ? 'u' : r === 1 ? 'l' : r === 2 ? 'd' : 'r';
-	let id = state.beams[Math.floor(Math.random() * state.beams.length)];
+	let id = state.beams[Math.floor(Math.random() * state.beams.length)].id;
 
 	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
-	let score = 1000000000000;
+	//shuffle
+	for(let i = uldr.length - 1; i > 0; i--){
+		let r = Math.floor(Math.random() * (i + 1));
+		let tmp = uldr[i];
+		uldr[i] = uldr[r];
+		uldr[r] = tmp;
+	}
+	for(let i = robots.length - 1; i > 0; i--){
+		let r = Math.floor(Math.random() * (i + 1));
+		let tmp = robots[i];
+		robots[i] = robots[r];
+		robots[r] = tmp;
+	}
+	let score = evaluate(field, state.targets);
 
 	robots.forEach((robot) => {
 		uldr.forEach((dirc) => {
@@ -282,7 +315,7 @@ const attackCat = (state) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
-			const tmp = attackCatMain(cloned, robots, robotMapCloned, 1, state.params);
+			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, 1, state.params);
 			robot.x = x;
 			robot.y = y;
 			if (tmp < score) {
@@ -292,7 +325,7 @@ const attackCat = (state) => {
 			}
 		});
 	});
-	console.log("bye:", id, direction);
+	// console.log("bye:", score, id, direction);
 	return `${id} ${direction}`;
 };
 
