@@ -2,6 +2,38 @@ extends layout
 
 include mixins
 
+block head
+  meta(name='data', content=JSON.stringify(battles))
+    
+  // TODO: kesu
+  script(defer=true).
+    document.addEventListener('DOMContentLoaded', () => {
+      const battles = JSON.parse(document.querySelector('meta[name=data]').getAttribute('content'));
+      const visualizer = document.querySelector('.match-visualizer');
+      const rows = document.querySelectorAll('.match-visualizer .row');
+      const button = document.querySelector('.show-visualizer');
+      button.addEventListener('click', async () => {
+        visualizer.style.display = 'block';
+        let red = 0;
+        let blue = 0;
+        for (const [index, battle] of battles.entries()) {
+          if (index % 2 === 0) {
+            red += battle.scores[0];
+          } else {
+            blue += battle.scores[0];
+          }
+        }
+        const rowList = Array.from(rows);
+        const totalRow = rowList[rowList.length - 1];
+        totalRow.querySelector('.score:first-child').textContent = red;
+        totalRow.querySelector('.score:last-child').textContent = blue;
+        for (const row of rowList) {
+          row.style.visibility = 'visible';
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      })
+    });
+
 block content
   .container.content
     if !contest.isStarted() && (!user || !user.admin)
@@ -10,9 +42,25 @@ block content
       .page-header
         h1= match.versusText()
         
-      h3 Score
-      
-      p= match.scoreText()
+      if match.result === 'pending'
+        h2 Match is pending...
+      else
+        button.show-visualizer Show result
+        .match-visualizer(style={display: 'none'})
+          .players
+            .player(style={color: 'red'})= match.players[0].userText()
+            .player(style={color: 'blue'})= match.players[1].userText()
+          .battles
+            for battle in battles
+              .row(style={visibility: 'hidden'})
+                for score, index in battle.scores
+                  .score= score
+                  if index === 0
+                    .hyphen -
+            .row.total
+              .score x
+              .hyphen -
+              .score x
       
       .page-header
         h3 Battles

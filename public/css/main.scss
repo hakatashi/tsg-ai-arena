@@ -157,3 +157,46 @@ textarea.code {
 	margin-left: initial;
 	margin-right: initial;
 }
+
+.match-visualizer {
+	.players {
+		font-weight: bold;
+		display: flex;
+		justify-content: center;
+		.player {
+			font-size: 2rem;
+			width: 230px;
+			text-align: center;
+		}
+	}
+
+	.battles {
+		text-align: center;
+
+		.row {
+			display: flex;
+			justify-content: center;
+			line-height: 5rem;
+
+			&:nth-child(even) {
+				flex-direction: row-reverse;
+			}
+
+			&.total {
+				margin-top: 1rem;
+			}
+
+			.score {
+				font-weight: bold;
+				font-size: 5rem;
+				width: 200px;
+			}
+
+			.hyphen {
+				font-weight: bold;
+				font-size: 5rem;
+				width: 30px;
+			}
+		}
+	}
+}

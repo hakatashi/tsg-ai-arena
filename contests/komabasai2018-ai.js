@@ -693,6 +693,36 @@ const matchConfigs = [
 		players: [1, 0],
 		seed: 1,
 	},
+	{
+		config: 'default',
+		players: [0, 1],
+		seed: 2,
+	},
+	{
+		config: 'default',
+		players: [1, 0],
+		seed: 2,
+	},
+	{
+		config: 'default',
+		players: [0, 1],
+		seed: 3,
+	},
+	{
+		config: 'default',
+		players: [1, 0],
+		seed: 3,
+	},
+	{
+		config: 'default',
+		players: [0, 1],
+		seed: 4,
+	},
+	{
+		config: 'default',
+		players: [1, 0],
+		seed: 4,
+	},
 ];
 
 module.exports.matchConfigs = matchConfigs;
