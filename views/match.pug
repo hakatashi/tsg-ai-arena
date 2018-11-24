@@ -20,6 +20,14 @@ block head
         totalRow.querySelector('.score:last-child').textContent = match.scores[1];
         for (const row of rowList) {
           row.style.visibility = 'visible';
+          const player1 = row.querySelector('.score:first-child').textContent;
+          const player2 = row.querySelector('.score:last-child').textContent;
+          if ((parseInt(player1) < parseInt(player2)) ^ row.classList.contains('total')) {
+            row.querySelector('.score:first-child').style.color = 'red';
+          }
+          if ((parseInt(player1) > parseInt(player2)) ^ row.classList.contains('total')) {
+            row.querySelector('.score:last-child').style.color = 'blue';
+          }
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
         if (match.scores[0] > match.scores[1]) {
