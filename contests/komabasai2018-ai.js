@@ -53,6 +53,7 @@ const deserialize = (stdin) => {
 		});
 	});
 
+
 	return {
 		state: {
 			turn: lines[1][0],
@@ -105,6 +106,130 @@ const serialize = ({state, params}) => `${[
 		})
 		.join(' ')),
 ].join('\n')}\n`;
+
+const clone2D = (matrix) => (
+	matrix.map((row) => row.slice(0, row.length))
+);
+
+const parts = [
+	`
+	..**....*.
+    *..**.....
+    .....*...*
+    .*........
+    .......**.
+    .......*..
+    ***.......
+    ..........
+    *....*....
+    .....*..*.
+	`,
+	`
+	.*........
+	..*.*.....
+	....***...
+	*.....*...
+	....*.***.
+	**........
+	....**....
+	....**..**
+	.*......*.
+	.*........
+	`,
+	`
+	..*.......
+	.**....*..
+	........*.
+	....**....
+	....**....
+	**.....*.*
+	.*........
+	...*.**...
+	..........
+	.*.....**.
+	`,
+	`
+	..**....*.
+	.*....**..
+	.....*....
+	*....*....
+	..........
+	....***...
+	........**
+	.*........
+	.**..*....
+	.....**...
+	`,
+	`
+	....*...*.
+	**...*....
+	.......*..
+	...*.*....
+	....*.....
+	...*.*....
+	..........
+	.*......**
+	*..*..*...
+	.....*..*.
+	`,
+	`
+	...*....*.
+	......*...
+	..*......*
+	*.*.......
+	........*.
+	....**...*
+	.*...*.*..
+	...*...*..
+	*.........
+	....*...*.
+	`
+];
+
+const baseCase = () => {
+	samples = [];
+	parts.forEach((part) => {
+		const tmp = part.trim()
+		.replace(/ +/g, '')
+		.replace(/\t+/g, '')
+		.split('\n');
+		const map = tmp.map((x) => {
+			const l = [];
+			for (let i = 0; i < x.length; i++) {
+				if (x[i] === '*') {
+					l.push('block');
+				} else {
+					l.push('empty');
+				}
+			}
+			return l;
+		})
+		samples.push(clone2D(map));
+		for (let k = 0; k < 3; k++) {
+			// rotate 90
+
+			// transpose
+			for (let i = 0; i < map[0].length; i++) {
+				for (let j = i; j < map.length; j++) {
+					const tmp = map[i][j];
+					map[i][j] = map[j][i];
+					map[j][i] = tmp;
+				}
+			}
+			// reverse columns
+			for (let i = 0; i < map[0].length; i++) {
+				for (let j = 0; j < Math.floor(map.length / 2); j++) {
+					const rev = map.length - j - 1;
+					const tmp = map[j][i];
+					map[j][i] = map[rev][i];
+					map[rev][i] = tmp;
+				}
+			}
+			samples.push(clone2D(map));
+		}
+	});
+	return samples;
+};
 
 module.exports.serialize = serialize;
 
@@ -287,9 +412,6 @@ const attackCatMain = (field, robots, targets, robotMap, depth, params) => {
 	return score;
 };
 
-const clone2D = (matrix) => (
-	matrix.map((row) => row.slice(0, row.length))
-);
 
 const checkKillable = (field, robotMap, beams, targets) => {
 	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
@@ -354,7 +476,10 @@ const attackCat = (state) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
-			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, 3, state.params);
+			const depth = robots.length < 3 ? 3 
+						: robots.length == 3 ? 2
+						: 1;
+			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
 			robot.x = x;
 			robot.y = y;
 			if (tmp < score) {
@@ -389,13 +514,11 @@ const escapeCat = (state) => {
 
 	robots.forEach((robot) => {
 		uldr.forEach((dirc) => {
-			console.log(robot, dirc);
 			const cloned = clone2D(field);
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
 			const killed = checkKillable(cloned, robotMapCloned, state.beams, state.targets);
-			console.log(killed);
 			robot.x = x;
 			robot.y = y;
 			if (killed.cnt < killedCnt) {
@@ -513,15 +636,32 @@ module.exports.battler = async (
 		initState ||
 		(() => {
 			const field = Array(params.width * params.height).fill('empty');
-			for (let i = 0; i < params.width * params.height * 0.10; i++) {
-				while(true) {
-					const idx = Math.floor(random() * params.width * params.height);
-					if (field[idx] === 'empty') {
-						field[idx] = 'block';
-						if (checkConnectivity(field)) {
-							break;
+			if (params.useVerified && params.width % 10 == 0 && params.height % 10 == 0) {
+				const samples = baseCase();
+				let ptr = 0;
+				for (let i = 0; i < Math.floor(params.width / 10); i++) {
+					for (let j = 0; j < Math.floor(params.height / 10); j++) {
+						const idx = Math.floor(random() * samples.length);
+						const sample = samples[idx]
+						sample.forEach((row) => {
+							row.forEach((x) => {
+								field[ptr] = x;
+								ptr++;
+							});
+						});
+					}
+				}
+			} else {
+				for (let i = 0; i < params.width * params.height * 0.10; i++) {
+					while(true) {
+						const idx = Math.floor(random() * params.width * params.height);
+						if (field[idx] === 'empty') {
+							field[idx] = 'block';
+							if (checkConnectivity(field)) {
+								break;
+							}
+							field[idx] = 'empty';
 						}
-						field[idx] = 'empty';
 					}
 				}
 			}
@@ -678,6 +818,46 @@ module.exports.configs = [
 			beams: 2,
 			targets: 2,
 			pawns: 0,
+			useVerified: false,
+		},
+	},
+	{
+		default: false,
+		id: '10x10',
+		name: '10x10',
+		params: {
+			width: 10,
+			height: 10,
+			beams: 3,
+			targets: 2,
+			pawns: 0,
+			useVerified: true,
+		},
+	},
+	{
+		default: false,
+		id: '20x20',
+		name: '20x20',
+		params: {
+			width: 20,
+			height: 20,
+			beams: 10,
+			targets: 3,
+			pawns: 0,
+			useVerified: true,
+		},
+	},
+	{
+		default: false,
+		id: '30x30',
+		name: '30x30',
+		params: {
+			width: 30,
+			height: 30,
+			beams: 20,
+			targets: 5,
+			pawns: 0,
+			useVerified: true,
 		},
 	},
 ];
