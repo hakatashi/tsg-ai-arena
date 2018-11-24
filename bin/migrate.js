@@ -415,7 +415,7 @@ mongoose.Promise = global.Promise;
 
 	const contestAi = await Contest.findOne({id: 'komabasai2018-ai'});
 
-	for (const presetName of ['random']) {
+	for (const presetName of ['random', 'cat']) {
 		await Submission.updateOne({
 			name: presetName,
 			contest: contestAi,
