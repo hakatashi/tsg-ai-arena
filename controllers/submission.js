@@ -172,21 +172,9 @@ module.exports.postSubmission = async (req, res) => {
 			return submissionRecord.save();
 		});
 
-		if (req.contest.type === 'battle') {
-			await runner.enqueue({
-				players: req.contest.type === 'battle' ? [submission, competitor] : [submission],
-				contest: req.contest,
-				user: req.user,
-				config: req.body.config,
-			});
-
-			res.redirect(`/contests/${req.contest.id}/submissions/${submission._id}`);
-			return;
-		}
-
 		const match = new Match({
 			contest: req.contest,
-			players: [submission],
+			players: req.contest.type === 'battle' ? [submission, competitor] : [submission],
 			result: 'pending',
 			winner: null,
 			scores: [null],
@@ -198,7 +186,7 @@ module.exports.postSubmission = async (req, res) => {
 			const config = req.contestData.configs.find(({id}) => matchConfig.config === id);
 
 			await runner.enqueue({
-				players: [submission],
+				players: req.contest.type === 'battle' ? matchConfig.players.map((index) => [submission, competitor][index]) : [submission],
 				contest: req.contest,
 				user: req.user,
 				config: config.id,

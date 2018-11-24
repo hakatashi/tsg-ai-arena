@@ -54,7 +54,7 @@ block content
                     = battle.players[0].userText()
                   else
                     a(href=`./submissions/${battle.players[0]._id}`)= battle.players[0].userText()
-                if contest.type === 'battle'
+                if contest.type === 'battle' && battle.players[1]
                   td
                     if battle.players[1].isPreset
                       = battle.players[1].userText()

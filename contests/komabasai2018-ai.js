@@ -479,7 +479,7 @@ const attackCat = (state) => {
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
 			if (x != robot.x || y != robot.y) {
-				const depth = robots.length < 3 ? 4 
+				const depth = robots.length < 3 ? 4
 							: robots.length == 3 ? 3
 							: 1;
 				const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
@@ -903,7 +903,8 @@ module.exports.judgeMatch = (results) => {
 		const tmp2 = results[2 * i + 1].scores[matchConfigs[2 * i + 1].players[1]];
 		if (tmp1 < tmp2) {
 			score1 += matchConfigs[2 * i].score;
-		} else {
+		}
+		if (tmp1 > tmp2) {
 			score2 += matchConfigs[2 * i + 1].score;
 		}
 	}
