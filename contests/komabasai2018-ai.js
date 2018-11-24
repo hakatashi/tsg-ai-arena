@@ -479,8 +479,8 @@ const attackCat = (state) => {
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
 			if (x != robot.x || y != robot.y) {
-				const depth = robots.length < 3 ? 3 
-							: robots.length == 3 ? 2
+				const depth = robots.length < 3 ? 4 
+							: robots.length == 3 ? 3
 							: 1;
 				const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
 				robot.x = x;
