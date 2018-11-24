@@ -31,6 +31,14 @@ block head
           row.style.visibility = 'visible';
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
+        if (red < blue) {
+          visualizer.querySelector('.result').textContent = document.getElementById('red').textContent + ' Won!!';
+          visualizer.querySelector('.result').style.color = 'red';
+        }
+        if (red > blue) {
+          visualizer.querySelector('.result').textContent = document.getElementById('blue').textContent + ' Won!!';
+          visualizer.querySelector('.result').style.color = 'blue';
+        }
       })
     });
 
@@ -48,8 +56,8 @@ block content
         button.show-visualizer Show result
         .match-visualizer(style={display: 'none'})
           .players
-            .player(style={color: 'red'})= match.players[0].userText()
-            .player(style={color: 'blue'})= match.players[1].userText()
+            .player#red(style={color: 'red'})= match.players[0].userText()
+            .player#blue(style={color: 'blue'})= match.players[1].userText()
           .battles
             for battle in battles
               .row(style={visibility: 'hidden'})
@@ -57,10 +65,11 @@ block content
                   .score= score
                   if index === 0
                     .hyphen -
-            .row.total
+            .row.total(style={visibility: 'hidden'})
               .score x
               .hyphen -
               .score x
+            .result 
       
       .page-header
         h3 Battles

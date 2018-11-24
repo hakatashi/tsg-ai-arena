@@ -165,7 +165,7 @@ textarea.code {
 		justify-content: center;
 		.player {
 			font-size: 2rem;
-			width: 230px;
+			width: 330px;
 			text-align: center;
 		}
 	}
@@ -184,12 +184,16 @@ textarea.code {
 
 			&.total {
 				margin-top: 1rem;
+
+				.score {
+					font-size: 7rem;
+				}
 			}
 
 			.score {
 				font-weight: bold;
 				font-size: 5rem;
-				width: 200px;
+				width: 300px;
 			}
 
 			.hyphen {
@@ -197,6 +201,11 @@ textarea.code {
 				font-size: 5rem;
 				width: 30px;
 			}
+		}
+
+		.result {
+			font-size: 5rem;
+			font-weight: bold;
 		}
 	}
 }
