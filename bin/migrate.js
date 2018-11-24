@@ -255,7 +255,7 @@ mongoose.Promise = global.Promise;
 
 				以下は、この問題に対して不正でない出力を行う(かつ正の得点を得ると推定される)C++のサンプルコードである。
 
-				[https://gist.github.com/hakatashi/2798ea1afa296b1a5f2d05406c8d6368](https://gist.github.com/hakatashi/2798ea1afa296b1a5f2d05406c8d6368)
+				[https://gist.github.com/hakatashi/c93259d9e88278d4ad42f86ceb4c98f1](https://gist.github.com/hakatashi/c93259d9e88278d4ad42f86ceb4c98f1)
 
 				### 入力例
 
