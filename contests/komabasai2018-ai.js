@@ -126,7 +126,7 @@ const _evaluate = (field, visited, robots) => {
 				y < 0 || y >= field.length) {
 				// continue
 			}
-			else if (field[y][x] === 'block' || 
+			else if (field[y][x] === 'block' ||
 					field[y][x] === 'beam') {
 				// continue
 			}
@@ -144,12 +144,12 @@ const _evaluate = (field, visited, robots) => {
 	});
 };
 
-/* 
+/*
 > evaluate(['empty', 'block', 'empty', 'block'], {width:2, height:2}, [{position: 0}])
 2
 > evaluate(['empty', 'block', 'block', 'block'], {width:2, height:2}, [{position: 0}]);
 1
-> evaluate(['empty', 'block', 'empty', 'empty', 'block', 'empty', 'empty', 'block', 'empty'], {width:3, height:3}, [{position: 3}, {position: 5}]); 
+> evaluate(['empty', 'block', 'empty', 'empty', 'block', 'empty', 'empty', 'block', 'empty'], {width:3, height:3}, [{position: 3}, {position: 5}]);
 */
 
 const printField = (field, robots) =>  {
@@ -168,7 +168,7 @@ const printField = (field, robots) =>  {
 					s += '  ';
 				} else if (x === 'block') {
 					s += '* ';
-				} else if (x === 'beam') { 
+				} else if (x === 'beam') {
 					s += 'x ';
 				}
 			}
@@ -686,10 +686,12 @@ const matchConfigs = [
 	{
 		config: 'default',
 		players: [0, 1],
+		seed: 1,
 	},
 	{
 		config: 'default',
 		players: [1, 0],
+		seed: 1,
 	},
 ];
 
