@@ -3,39 +3,30 @@ extends layout
 include mixins
 
 block head
-  meta(name='data', content=JSON.stringify(battles))
+  meta(name='data', content=JSON.stringify({match, battles}))
     
   // TODO: kesu
   script(defer=true).
     document.addEventListener('DOMContentLoaded', () => {
-      const battles = JSON.parse(document.querySelector('meta[name=data]').getAttribute('content'));
+      const {match, battles} = JSON.parse(document.querySelector('meta[name=data]').getAttribute('content'));
       const visualizer = document.querySelector('.match-visualizer');
       const rows = document.querySelectorAll('.match-visualizer .row');
       const button = document.querySelector('.show-visualizer');
       button.addEventListener('click', async () => {
         visualizer.style.display = 'block';
-        let red = 0;
-        let blue = 0;
-        for (const [index, battle] of battles.entries()) {
-          if (index % 2 === 0) {
-            red += battle.scores[0];
-          } else {
-            blue += battle.scores[0];
-          }
-        }
         const rowList = Array.from(rows);
         const totalRow = rowList[rowList.length - 1];
-        totalRow.querySelector('.score:first-child').textContent = red;
-        totalRow.querySelector('.score:last-child').textContent = blue;
+        totalRow.querySelector('.score:first-child').textContent = match.scores[0];
+        totalRow.querySelector('.score:last-child').textContent = match.scores[1];
         for (const row of rowList) {
           row.style.visibility = 'visible';
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
-        if (red < blue) {
+        if (match.scores[0] > match.scores[1]) {
           visualizer.querySelector('.result').textContent = document.getElementById('red').textContent + ' Won!!';
           visualizer.querySelector('.result').style.color = 'red';
         }
-        if (red > blue) {
+        if (match.scores[0] < match.scores[1]) {
           visualizer.querySelector('.result').textContent = document.getElementById('blue').textContent + ' Won!!';
           visualizer.querySelector('.result').style.color = 'blue';
         }
@@ -59,12 +50,14 @@ block content
             .player#red(style={color: 'red'})= match.players[0].userText()
             .player#blue(style={color: 'blue'})= match.players[1].userText()
           .battles
-            for battle in battles
-              .row(style={visibility: 'hidden'})
-                for score, index in battle.scores
-                  .score= score
-                  if index === 0
-                    .hyphen -
+            for battle, index in battles
+              if index % 2 === 0
+                .row(style={visibility: 'hidden'})
+                  .score
+                    a(href=`../battles/${battle._id}`)= battle.scores[0]
+                  .hyphen -
+                  .score
+                    a(href=`../battles/${battles[index + 1]._id}`)= battles[index + 1].scores[0]
             .row.total(style={visibility: 'hidden'})
               .score x
               .hyphen -

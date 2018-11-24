@@ -3,7 +3,6 @@
 const React = require('react');
 const cloneDeep = require('lodash/cloneDeep');
 const pick = require('lodash/pick');
-const chunk = require('lodash/chunk');
 const contest = require('../../../../contests/komabasai2018-ai.js');
 
 class App extends React.Component {
@@ -210,8 +209,21 @@ class App extends React.Component {
 				</svg>
 				<div
 					style={{
-						color: this.state.turns === this.frames.length - 1 ? 'red' : 'dimgrey',
+						fontSize: '2em',
+						fontWeight: 'bold',
+						width: '100%',
+						textAlign: 'center',
+					}}
+				>
+					<span style={{color: 'red'}}>{this.data.players[0]}</span> vs{' '}
+					<span style={{color: 'blue'}}>{this.data.players[1]}</span>
+				</div>
+				<div
+					style={{
+						color:
+							this.state.turns === this.frames.length - 1 ? 'red' : 'dimgrey',
 						fontSize: '3em',
+						lineHeight: '1em',
 						fontWeight: 'bold',
 						width: '100%',
 						textAlign: 'center',

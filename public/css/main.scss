@@ -173,14 +173,15 @@ textarea.code {
 	.battles {
 		text-align: center;
 
+		a {
+			text-decoration: none;
+			color: inherit;
+		}
+
 		.row {
 			display: flex;
 			justify-content: center;
 			line-height: 5rem;
-
-			&:nth-child(even) {
-				flex-direction: row-reverse;
-			}
 
 			&.total {
 				margin-top: 1rem;
