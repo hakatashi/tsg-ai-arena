@@ -403,10 +403,12 @@ const attackCatMain = (field, robots, targets, robotMap, depth, params) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc);
-			const tmp = attackCatMain(cloned, robots, targets, robotMapCloned, depth - 1, params);
-			robot.x = x;
-			robot.y = y;
-			score = Math.min(score, tmp);
+			if (robot.x != x || robot.y != y) {
+				const tmp = attackCatMain(cloned, robots, targets, robotMapCloned, depth - 1, params);
+				robot.x = x;
+				robot.y = y;
+				score = Math.min(score, tmp);
+			}
 		});
 	});
 	return score;
@@ -476,16 +478,18 @@ const attackCat = (state) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
-			const depth = robots.length < 3 ? 3 
-						: robots.length == 3 ? 2
-						: 1;
-			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
-			robot.x = x;
-			robot.y = y;
-			if (tmp < score) {
-				score = tmp;
-				id = robot.id;
-				direction = dirc[1];
+			if (x != robot.x || y != robot.y) {
+				const depth = robots.length < 3 ? 3 
+							: robots.length == 3 ? 2
+							: 1;
+				const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
+				robot.x = x;
+				robot.y = y;
+				if (tmp < score) {
+					score = tmp;
+					id = robot.id;
+					direction = dirc[1];
+				}
 			}
 		});
 	});
