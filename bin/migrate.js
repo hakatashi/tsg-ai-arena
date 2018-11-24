@@ -9,30 +9,18 @@ mongoose.Promise = global.Promise;
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
-	const battles = await Battle.find({});
-
-	for (const battle of battles) {
-		battle.scores = Array(battle.players.length).fill(0);
-		await battle.save();
-	}
-
-	const contests = await Contest.find({});
-
-	for (const contest of contests) {
-		contest.type = 'battle';
-		await contest.save();
-	}
-
 	await Contest.deleteMany({id: 'rotating-drops'});
 
-	await Contest.updateOne({id: 'dragon-puzzles'}, {
-		name: 'Dragon Puzzles',
-		id: 'dragon-puzzles',
-		start: new Date('1970-01-01T00:00:00.000Z'),
-		end: new Date('2038-01-19T12:14:07.000+0900'),
-		type: 'score',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'dragon-puzzles'},
+		{
+			name: 'Dragon Puzzles',
+			id: 'dragon-puzzles',
+			start: new Date('1970-01-01T00:00:00.000Z'),
+			end: new Date('2038-01-19T12:14:07.000+0900'),
+			type: 'score',
+			description: {
+				ja: stripIndent`
 				# ドラゴンのパズル
 
 				* H×Wマスのフィールド上に、1マスにつき1個のドロップが配置されている。
@@ -145,19 +133,23 @@ mongoose.Promise = global.Promise;
 				1 2 2
 				\`\`\`
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
-	await Contest.updateOne({id: 'komabasai2018-procon'}, {
-		name: '駒場祭2018 Live Programming Contest',
-		id: 'komabasai2018-procon',
-		start: new Date('2018-11-24T16:03:00+0900'),
-		end: new Date('2018-11-24T17:18:00+0900'),
-		type: 'score',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'komabasai2018-procon'},
+		{
+			name: '駒場祭2018 Live Programming Contest',
+			id: 'komabasai2018-procon',
+			start: new Date('2018-11-24T16:03:00+0900'),
+			end: new Date('2018-11-24T17:18:00+0900'),
+			type: 'score',
+			description: {
+				ja: stripIndent`
 				# iwashiの収穫祭
 
 				### 問題
@@ -183,16 +175,21 @@ mongoose.Promise = global.Promise;
 				#### iwashiの行動について
 
 				具体的には、以下のアルゴリズムで動作します。
-				1. fiord君(治療中でない)とiwashiがいるマスをソースとして、BFSを行い「最短距離」のマップを生成します。
-				2. (1,1)→(1,2)→…→(1,W)→(2,1)→…→(2,W)→(3,1)→…→(H,W)の順に、以下のことを行います。
+				* (1,1)→(1,2)→…→(1,W)→(2,1)→…→(2,W)→(3,1)→…→(H,W)の順に、以下のことを行います。
 					1. iwashiがいないなら次へ行きます。
-					2. 既にそのマスへ外からiwashiがやってくることが分かっているなら元々そのマスにいたiwashiは動きません。そうでなければ、北→東→南→西の順に、現在位置よりも1のマップ上で距離が短いマスを探し、見つけたらそちらへ移動します。
+					2. 既にそのマスへ外からiwashiがやってくることが分かっているなら元々そのマスにいたiwashiは動きません。
+					3. そうでなければ、他のiwashiのいるマスと治療中でないfiord君をソース（距離0）として「最短距離」のマップを作成。
+					4. 北→東→南→西の順に、現在位置よりも3のマップ上で距離が短いマスを探し、見つけたらそちらへ移動します。
 
 				また、各ターンは、
-				1. fiord君移動
-				2. iwashi移動（運悪くiwashiがケガをしているfiord君のマスへ突っ込むときがあります。その際は、治療期間が5ターン増えます）
+				1. fiord君移動(治療中は動けません)
+				2. iwashi移動（運悪くiwashiがfiord君のマスへ突っ込むときがあります。）
 				3. iwashiがつちからはえてくる(fiord君がいるマスへはえてくる可能性もあります)
-				4. fiord君収穫に挑戦（fiord君がケガをしている間は収穫できません。iwashiが素通りすることもあります）
+				4. fiord君収穫に挑戦（fiord君がケガをしている間は収穫できません。ケガもしません。iwashiが素通りすることもあります）
+					* fiord君が治療中なら収穫出来ません。fiord君のマスにiwashiがいても何も起こりません。
+					* fiord君のいるマスに5匹以下のiwashiがいるなら、そのiwashi達を収穫します。
+					* fiord君のいるマスに6匹以上のiwashiがいるなら、fiord君は全治5ターンのケガをします。iwashiはつばめが嬉々として狩っていくので消滅します。
+				
 				の順になります。
 
 				### 入力
@@ -212,7 +209,7 @@ mongoose.Promise = global.Promise;
 				xN yN tN
 				\`\`\`
 
-				* TSG国の区画はH×Wです。その区画は\{Si | 1≦i≦H\}になっています。1≦i≦Hで|Si|=Wが成立し、Sij="#"でそのマスが壁、Sij="."で通路であることを示します。外周は"#"で囲まれていることが保証されています。
+				* TSG国の区画はH×Wです。その区画は\{Si | 0≦i≦H-1\}になっています。0≦i≦H-1で|Si|=Wが成立し、Sij="#"でそのマスが壁、Sij="."で通路であることを示します。外周は"#"で囲まれていることが保証されています。
 				* 現在のfiord君の位置は(Px, Py)です。周囲が壁て囲まれていて動けない可能性があります。
 				* また、この日にfiord君はTターン行動可能です。hakata社のエスパーによると今日はN匹のiwashiがつちからはえてくるらしいです。
 				* i匹目(1≦i≦N)のiwashiは位置(xi, yi)に現在からtiターン後につちからはえてきます。ti=0は既にはえているiwashiです。
@@ -252,15 +249,13 @@ mongoose.Promise = global.Promise;
 
 				スコアは各テストケースで{iwashiの収穫数}/Nで求めます。勝敗は各テストケースのスコアの総和で求めます。
 
-				今回の五月祭では全体を通して赤vs青の形式を取っています。この大戦では、ceil(勝者のスコアの総和 - 敗者のスコアの総和)ptが勝利したチームに加算されます。
+				今回の五月祭では全体を通して赤vs青の形式を取っています。この大戦では、ceil(100*(勝者のスコアの総和 - 敗者のスコアの総和))ptが勝利したチームに加算されます。
 
 				#### サンプルコード
 
-				以下は、この問題に対して不正でない出力を行うC++のサンプルコードである。
+				以下は、この問題に対して不正でない出力を行う(かつ正の得点を得ると推定される)C++のサンプルコードである。
 
-				\`\`\`
-				// TODO
-				\`\`\`
+				[https://gist.github.com/hakatashi/c93259d9e88278d4ad42f86ceb4c98f1](https://gist.github.com/hakatashi/c93259d9e88278d4ad42f86ceb4c98f1)
 
 				### 入力例
 
@@ -335,19 +330,23 @@ mongoose.Promise = global.Promise;
 				NWWNSEWNSEWSNWWSNWSESESEEWWNNNWSWWENENWSNNWWNNNNEENEWNWWSWWNSNSSNSNNWENESSSSWWSENWSSWEWNESSENWSSEEWNNEENEESSNSNWSENESSWSWNWSENWWSNSNESEWNEENNSWSNSENWS
 				\`\`\`
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
-	await Contest.updateOne({id: 'komabasai2018-ai'}, {
-		name: '駒場祭2018 Live AI Contest',
-		id: 'komabasai2018-ai',
-		start: new Date('2018-11-25T12:03:00+0900'),
-		end: new Date('2018-11-25T13:18:00+0900'),
-		type: 'battle',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'komabasai2018-ai'},
+		{
+			name: '駒場祭2018 Live AI Contest',
+			id: 'komabasai2018-ai',
+			start: new Date('2018-11-25T12:03:00+0900'),
+			end: new Date('2018-11-25T13:18:00+0900'),
+			type: 'battle',
+			description: {
+				ja: stripIndent`
 				# 問題文
 
 				## 背景（プレイヤーは読まなくていい）
@@ -408,10 +407,12 @@ mongoose.Promise = global.Promise;
 				* r: robotのID
 				* d: 方向。上がu、左がl、下がd、右がrのいずれかの文字。
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
-	}, {upsert: true});
+		{upsert: true}
+	);
 
 	const contestAi = await Contest.findOne({id: 'komabasai2018-ai'});
 

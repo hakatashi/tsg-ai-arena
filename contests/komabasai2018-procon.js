@@ -18,18 +18,20 @@ const normalize = (stdout, params) => {
 		.trim()
 		.split('\n')[0]
 		.split('');
-	const moves = Array(params.turns).fill().map((_, index) => {
-		let move = {x: 0, y: 0};
-		dir.forEach((str, i) => {
-			if (line[index] === str) {
-				move = {
-					x: dx[i],
-					y: dy[i],
-				};
-			}
+	const moves = Array(params.turns)
+		.fill()
+		.map((_, index) => {
+			let move = {x: 0, y: 0};
+			dir.forEach((str, i) => {
+				if (line[index] === str) {
+					move = {
+						x: dx[i],
+						y: dy[i],
+					};
+				}
+			});
+			return move;
 		});
-		return move;
-	});
 	return moves;
 };
 
@@ -46,7 +48,7 @@ const initMaps = (height, width, mode, wallRatio) => {
 			.map((_, i) => i === 0 || i === height - 1
 				? Array(width).fill('#')
 				: ['#'].concat(Array(width - 2).fill('.'), ['#']));
-		let count = Math.max(Math.floor((height * width) * wallRatio), 0);
+		let count = Math.max(Math.floor(height * width * wallRatio), 0);
 		while (count--) {
 			let x = Math.max(
 				0,
@@ -91,7 +93,8 @@ const initMaps = (height, width, mode, wallRatio) => {
 					return `${'#'.repeat(width - 2)}.#`;
 				}
 				return `#.${'#'.repeat(width - 2)}`;
-			}).map((line) => line.split(''));
+			})
+			.map((line) => line.split(''));
 	}
 };
 
@@ -149,69 +152,65 @@ module.exports.movePlayer = movePlayer;
 // arg: iwashiMap, map of TSG, player data, H and W.
 // ret: new iwashiMap
 const iwashiMove = (iwashiMap, maps, player, H, W) => {
-	const distanceMap = new Array(H);
-	for (let i = 0; i < H; i++) {
-		distanceMap[i] = new Array(W).fill(H * W);
-	}
-	const queue = [];
 	const dx = [0, 1, 0, -1, 0];
 	const dy = [-1, 0, 1, 0, 0];
-
-	// player
-	if (player.paralyzed === 0) {
-		distanceMap[player.y][player.x] = 0;
-		queue.push({x: player.x, y: player.y});
-	}
-	// iwashi
-	for (let i = 0; i < H; i++) {
-		for (let j = 0; j < W; j++) {
-			if (iwashiMap[i][j] > 0) {
-				distanceMap[i][j] = 0;
-				queue.push({x: j, y: i});
-			} else if (player.pos === {x: j, y: i}) {
-				distanceMap[i][j] = 0;
-				queue.push({x: j, y: i});
-			}
-		}
-	}
-
-	while (queue.length > 0) {
-		const pos = queue.shift();
-		for (let i = 0; i < 4; i++) {
-			const nx = pos.x + dx[i];
-			const ny = pos.y + dy[i];
-			if (maps[ny][nx] === '#') {
-				continue;
-			}
-			if (distanceMap[ny][nx] > distanceMap[pos.y][pos.x] + 1) {
-				distanceMap[ny][nx] = distanceMap[pos.y][pos.x] + 1;
-				queue.push({x: nx, y: ny});
-			}
-		}
-	}
-
 	const nextIwashiMap = new Array(H);
 	for (let i = 0; i < H; i++) {
 		nextIwashiMap[i] = new Array(W).fill(0);
 	}
-
 	for (let i = 0; i < H; i++) {
 		for (let j = 0; j < W; j++) {
-			if (iwashiMap[i][j] > 0) {
-				if (nextIwashiMap[i][j] > 0) {
-					nextIwashiMap[i][j] += iwashiMap[i][j];
-				} else {
-					for (let k = 0; k < 5; k++) {
-						const ni = i + dy[k];
-						const nj = j + dx[k];
-						if (maps[ni][nj] === '#') {
-							continue;
-						}
-						if (distanceMap[i][j] > distanceMap[ni][nj] || k === 4) {
-							nextIwashiMap[ni][nj] += iwashiMap[i][j];
-							break;
-						}
+			if (maps[i][j] === '#') {
+				continue;
+			} else if (nextIwashiMap[i][j] > 0) {
+				nextIwashiMap[i][j] += iwashiMap[i][j];
+				continue;
+			}
+			const distanceMap = new Array(H);
+			for (let k = 0; k < W; k++) {
+				distanceMap[k] = new Array(W).fill(H * W);
+			}
+			const queue = [];
+			for (let y = 0; y < H; y++) {
+				for (let x = 0; x < W; x++) {
+					if (maps[y][x] === '#') {
+						continue;
+					} else if (i === y && j === x) {
+						continue;
 					}
+					if (iwashiMap[y][x] > 0) {
+						distanceMap[y][x] = 0;
+						queue.push({y, x});
+					}
+				}
+			}
+			if (player.paralyzed === 0) {
+				distanceMap[player.y][player.x] = 0;
+				queue.push({y: player.y, x: player.x});
+			}
+			while (queue.length > 0) {
+				const pos = queue.shift();
+				for (let k = 0; k < 4; k++) {
+					const nx = pos.x + dx[k];
+					const ny = pos.y + dy[k];
+					if (maps[ny][nx] === '#') {
+						continue;
+					}
+					if (distanceMap[ny][nx] > distanceMap[pos.y][pos.x] + 1) {
+						distanceMap[ny][nx] = distanceMap[pos.y][pos.x] + 1;
+						queue.push({x: nx, y: ny});
+					}
+				}
+			}
+			for (let k = 0; k < 5; k++) {
+				const ni = i + dy[k];
+				const nj = j + dx[k];
+				if (maps[ni][nj] === '#') {
+					continue;
+				}
+				if (distanceMap[i][j] > distanceMap[ni][nj] || k === 4) {
+					nextIwashiMap[ni][nj] += iwashiMap[i][j];
+					break;
 				}
 			}
 		}
@@ -250,6 +249,7 @@ const calculateScore = (iwashiMap, player, score, iwashi, turn) => {
 		newIwashi[newPlayer.y][newPlayer.x] = 0;
 	} else if (newIwashi[newPlayer.y][newPlayer.x] > 5) {
 		newPlayer.paralyzed += 5;
+		newIwashi[newPlayer.y][newPlayer.x] = 0;
 	}
 	return {
 		score: retScore,
@@ -267,7 +267,9 @@ const serialize = ({params, state}) => {
 		`${state.player.x + 1} ${state.player.y + 1}`,
 	];
 	const end = state.iwashi.map((dat) => `${dat.x + 1} ${dat.y + 1} ${dat.t}`);
-	return `${head.concat(state.maps.map((line) => line.join('')), end).join('\n')}\n`;
+	return `${head
+		.concat(state.maps.map((line) => line.join('')), end)
+		.join('\n')}\n`;
 };
 
 const deserialize = (stdin) => {
@@ -306,29 +308,43 @@ module.exports.battler = async (
 	params,
 	{onFrame = noop, initState} = {}
 ) => {
-	const initialState = initState || (() => {
-		const maps = initMaps(params.height, params.width, params.mode, params.wallRatio);
-		const iwashi = initIwashi(
-			maps,
-			params.height,
-			params.width,
-			params.turns,
-			params.n
-		);
-		iwashi.iwashi.sort((a, b) => a.t - b.t);
-		const playerIndex = sample(maps.map((row) => row.join('')).join('').split('').map((cell, i) => ({cell, i})).filter(({cell}) => cell === '.')).i;
-		const player = {
-			x: playerIndex % params.width,
-			y: Math.floor(playerIndex / params.width),
-			paralyzed: 0,
-		};
-		return {
-			maps,
-			iwashiMap: iwashi.iwashiMap,
-			iwashi: iwashi.iwashi,
-			player,
-		};
-	})();
+	const initialState =
+		initState ||
+		(() => {
+			const maps = initMaps(
+				params.height,
+				params.width,
+				params.mode,
+				params.wallRatio
+			);
+			const iwashi = initIwashi(
+				maps,
+				params.height,
+				params.width,
+				params.turns,
+				params.n
+			);
+			iwashi.iwashi.sort((a, b) => a.t - b.t);
+			const playerIndex = sample(
+				maps
+					.map((row) => row.join(''))
+					.join('')
+					.split('')
+					.map((cell, i) => ({cell, i}))
+					.filter(({cell}) => cell === '.')
+			).i;
+			const player = {
+				x: playerIndex % params.width,
+				y: Math.floor(playerIndex / params.width),
+				paralyzed: 0,
+			};
+			return {
+				maps,
+				iwashiMap: iwashi.iwashiMap,
+				iwashi: iwashi.iwashi,
+				player,
+			};
+		})();
 	const {state} = deserialize(serialize({params, state: initialState}));
 	const iwashiMap = Array(params.height)
 		.fill()

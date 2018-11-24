@@ -14,9 +14,9 @@ class App extends React.Component {
 		);
 
 		const input = contest.deserialize(this.data.turns[0].input);
-		const iwashiMap = Array(input.params.height).fill().map(() => (
-			Array(input.params.width).fill(0)
-		));
+		const iwashiMap = Array(input.params.height)
+			.fill()
+			.map(() => Array(input.params.width).fill(0));
 		for (const i of input.state.iwashi) {
 			if (i.t === 0) {
 				iwashiMap[i.y][i.x]++;
@@ -55,6 +55,8 @@ class App extends React.Component {
 	collateFrames = async () => {
 		const frames = [];
 		let turnIndex = 0;
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		await contest.battler(
 			() => {
@@ -144,49 +146,66 @@ class App extends React.Component {
 					}}
 					viewBox="0 0 500 500"
 				>
-					{this.state.maps.map((row, y) => (
-						row.map((cell, x) => (
-							<rect
-								key={y * this.params.width + x}
-								x={x * size}
-								y={y * size}
-								width={size}
-								height={size}
-								opacity={0.3}
-								fill={cell === '#' ? 'black' : 'white'}
+					{this.state.maps.map((row, y) => row.map((cell, x) => (
+						<rect
+							key={y * this.params.width + x}
+							x={x * size}
+							y={y * size}
+							width={size}
+							height={size}
+							opacity={0.3}
+							fill={cell === '#' ? 'black' : 'white'}
+						/>
+					)))}
+					{this.state.player.paralyzed === 0 ? (
+						<circle
+							cx={this.state.player.x * size + size / 2}
+							cy={this.state.player.y * size + size / 2}
+							r={size / 2 - 5}
+							fill="red"
+						/>
+					) : (
+						<g>
+							<line
+								x1={this.state.player.x * size + 4}
+								y1={this.state.player.y * size + 4}
+								x2={this.state.player.x * size + size - 4}
+								y2={this.state.player.y * size + size - 4}
+								stroke="red"
+								strokeWidth="5"
 							/>
-						))
-					))}
-					<circle
-						cx={this.state.player.x * size + size / 2}
-						cy={this.state.player.y * size + size / 2}
-						r={size / 2 - 5}
-						fill="red"
-					/>
-					{this.state.iwashiMap.map((row, y) => (
-						row.map((cell, x) => (
-							cell > 0 && (
-								<g key={y * this.params.width + x}>
-									<circle
-										cx={x * size + size / 2}
-										cy={y * size + size / 2}
-										r={size / 2 - 5}
-										fill={cell < 5 ? 'transparent' : '#3F51B5'}
-										stroke="#3F51B5"
-										strokeWidth="2"
-									/>
-									<text
-										x={x * size + size / 2}
-										y={y * size + size * 0.7}
-										fill={cell < 5 ? '#3F51B5' : 'white'}
-										fontSize={size / 2}
-										textAnchor="middle"
-									>
-										{cell}
-									</text>
-								</g>
-							)
-						))
+							<line
+								x1={this.state.player.x * size + 4}
+								y1={this.state.player.y * size + size - 4}
+								x2={this.state.player.x * size + size - 4}
+								y2={this.state.player.y * size + 4}
+								stroke="red"
+								strokeWidth="5"
+							/>
+						</g>
+					)}
+					{this.state.iwashiMap.map((row, y) => row.map(
+						(cell, x) => cell > 0 && (
+							<g key={y * this.params.width + x}>
+								<circle
+									cx={x * size + size / 2}
+									cy={y * size + size / 2}
+									r={size / 2 - 5}
+									fill={cell <= 5 ? 'transparent' : '#3F51B5'}
+									stroke="#3F51B5"
+									strokeWidth="2"
+								/>
+								<text
+									x={x * size + size / 2}
+									y={y * size + size * 0.7}
+									fill={cell <= 5 ? '#3F51B5' : 'white'}
+									fontSize={size / 2}
+									textAnchor="middle"
+								>
+									{cell}
+								</text>
+							</g>
+						)
 					))}
 				</svg>
 				<div
@@ -198,7 +217,7 @@ class App extends React.Component {
 						textAlign: 'center',
 					}}
 				>
-					{`Score: ${this.state.score}`}
+					{`Score: ${this.state.score}/${this.params.n}`}
 				</div>
 			</div>
 		);
@@ -218,26 +237,26 @@ class App extends React.Component {
 					this.renderContent()
 				) : this.data.result === 'pending' ? (
 					<h1> Battle is Pending...</h1>
+				) : this.state.isCollated ? (
+					<button
+						type="button"
+						onClick={this.handleClickStart}
+						style={{
+							backgroundColor: '#2196f3',
+							fontSize: '6em',
+							fontWeight: 'bold',
+							width: '50%',
+							textAlign: 'center',
+							border: 'none',
+							color: 'white',
+							borderRadius: '10px',
+							cursor: 'pointer',
+						}}
+					>
+						Start
+					</button>
 				) : (
-					this.state.isCollated && (
-						<button
-							type="button"
-							onClick={this.handleClickStart}
-							style={{
-								backgroundColor: '#2196f3',
-								fontSize: '6em',
-								fontWeight: 'bold',
-								width: '50%',
-								textAlign: 'center',
-								border: 'none',
-								color: 'white',
-								borderRadius: '10px',
-								cursor: 'pointer',
-							}}
-						>
-							Start
-						</button>
-					)
+					<h1>Loading...</h1>
 				)}
 			</div>
 		);
