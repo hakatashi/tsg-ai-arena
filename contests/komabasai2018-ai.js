@@ -53,7 +53,6 @@ const deserialize = (stdin) => {
 		});
 	});
 
-
 	return {
 		state: {
 			turn: lines[1][0],
@@ -107,9 +106,7 @@ const serialize = ({state, params}) => `${[
 		.join(' ')),
 ].join('\n')}\n`;
 
-const clone2D = (matrix) => (
-	matrix.map((row) => row.slice(0, row.length))
-);
+const clone2D = (matrix) => matrix.map((row) => row.slice(0, row.length));
 
 const parts = [
 	`
@@ -230,16 +227,17 @@ const parts = [
 	**........
 	*.....*...
 	....*...*.
-	.*..*.....`
+	.*..*.....`,
 ];
 
 const baseCase = () => {
 	samples = [];
-	parts.forEach((part) => {
-		const tmp = part.trim()
-		.replace(/ +/g, '')
-		.replace(/\t+/g, '')
-		.split('\n');
+	for (const part of parts) {
+		const tmp = part
+			.trim()
+			.replace(/ +/g, '')
+			.replace(/\t+/g, '')
+			.split('\n');
 		const map = tmp.map((x) => {
 			const l = [];
 			for (let i = 0; i < x.length; i++) {
@@ -250,7 +248,7 @@ const baseCase = () => {
 				}
 			}
 			return l;
-		})
+		});
 		samples.push(clone2D(map));
 		for (let k = 0; k < 3; k++) {
 			// rotate 90
@@ -274,7 +272,7 @@ const baseCase = () => {
 			}
 			samples.push(clone2D(map));
 		}
-	});
+	}
 	return samples;
 };
 
@@ -291,28 +289,24 @@ const _evaluate = (field, visited, robots) => {
 	const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
 	// maximum recursionするかも...
 	robots.forEach((robot, idx) => {
-		uldr.forEach((dirc) => {
+		for (const dirc of uldr) {
 			const x = robot.x + dirc[0];
 			const y = robot.y + dirc[1];
-			if (x < 0 || x >= field[0].length ||
-				y < 0 || y >= field.length) {
+			if (x < 0 || x >= field[0].length || y < 0 || y >= field.length) {
 				// continue
-			}
-			else if (field[y][x] === 'block' ||
-					field[y][x] === 'beam') {
+			} else if (field[y][x] === 'block' || field[y][x] === 'beam') {
 				// continue
-			}
-			else if (visited[y][x]) {
+			} else if (visited[y][x]) {
 				// continue
 			} else {
 				visited[y][x] = true;
 				const tmpx = robot.x;
 				const tmpy = robot.y;
 				robots[idx] = {x, y};
-				_evaluate(field, visited, robots)
+				_evaluate(field, visited, robots);
 				robots[idx] = {x: tmpx, y: tmpy};
 			}
-		});
+		}
 	});
 };
 
@@ -324,17 +318,17 @@ const _evaluate = (field, visited, robots) => {
 > evaluate(['empty', 'block', 'empty', 'empty', 'block', 'empty', 'empty', 'block', 'empty'], {width:3, height:3}, [{position: 3}, {position: 5}]);
 */
 
-const printField = (field, robots) =>  {
+const printField = (field, robots) => {
 	s = '';
 	field.forEach((row, j) => {
 		row.forEach((x, i) => {
 			let flag = true;
-			robots.forEach((robot) => {
+			for (const robot of robots) {
 				if (robot.x === i && robot.y === j) {
-					s += robot.type[0] + ' ';
+					s += `${robot.type[0]} `;
 					flag = false;
 				}
-			})
+			}
 			if (flag) {
 				if (x === 'empty') {
 					s += '  ';
@@ -359,13 +353,13 @@ const field1DTo2D = (state, params) => {
 		robotMap.push(Array(params.width).fill(false));
 	}
 	const robots = state.beams.slice(0, state.beams.length).concat(state.targets);
-	robots.forEach((robot) => {
+	for (const robot of robots) {
 		robot.x = robot.position % params.width;
 		robot.y = Math.floor(robot.position / params.width);
 		robotMap[robot.y][robot.x] = robot;
-	});
+	}
 	return {field, robotMap};
-}
+};
 
 const evaluate = (field, robots) => {
 	const visited = field.map((row) => Array(row.length).fill(false));
@@ -376,21 +370,21 @@ const evaluate = (field, robots) => {
 
 	_evaluate(field, visited, robotPoses);
 	let cnt = 0;
-	visited.forEach((row) => {
-		row.forEach((x) => {
+	for (const row of visited) {
+		for (const x of row) {
 			if (x) {
 				cnt++;
 			}
-		});
-	});
+		}
+	}
 	return cnt;
 };
 
 const move = (field, robotMap, robot, delta) => {
 	let x = robot.x;
 	let y = robot.y;
-	let mx = field[0].length;
-	let my = field.length;
+	const mx = field[0].length;
+	const my = field.length;
 
 	// 捕まるロボット
 	const killed = [];
@@ -407,12 +401,15 @@ const move = (field, robotMap, robot, delta) => {
 			break;
 		}
 		// 進む先にロボットないし、ブロックがあったら止まる
-		if (field[y][x] === 'block' || (robotMap[y][x] && robotMap[y][x].type === 'beam')) {
+		if (
+			field[y][x] === 'block' ||
+			(robotMap[y][x] && robotMap[y][x].type === 'beam')
+		) {
 			robot.x = x - delta[0];
 			robot.y = y - delta[1];
 			robotMap[robot.y][robot.x] = robot;
 			break;
-		} else if ((field[y][x] === 'beam') && (robot.type === 'target')) {
+		} else if (field[y][x] === 'beam' && robot.type === 'target') {
 			robot.x = x - delta[0];
 			robot.y = y - delta[1];
 			robotMap[robot.y][robot.x] = robot;
@@ -430,6 +427,7 @@ const move = (field, robotMap, robot, delta) => {
 	}
 	return killed;
 };
+
 /*
 field = [['empty', 'empty', 'empty'], ['empty', 'empty', 'empty'],['empty', 'empty', 'empty']];
 robot = {type: 'beam', x: 1, y: 1};
@@ -444,46 +442,52 @@ const attackCatMain = (field, robots, targets, robotMap, depth, params) => {
 		const tmp = evaluate(field, targets);
 		return tmp;
 	}
-	robots.forEach((robot) => {
-		uldr.forEach((dirc) => {
+	for (const robot of robots) {
+		for (const dirc of uldr) {
 			const cloned = clone2D(field);
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc);
 			if (robot.x != x || robot.y != y) {
-				const tmp = attackCatMain(cloned, robots, targets, robotMapCloned, depth - 1, params);
+				const tmp = attackCatMain(
+					cloned,
+					robots,
+					targets,
+					robotMapCloned,
+					depth - 1,
+					params
+				);
 				robot.x = x;
 				robot.y = y;
 				score = Math.min(score, tmp);
 			}
-		});
-	});
+		}
+	}
 	return score;
 };
-
 
 const checkKillable = (field, robotMap, beams, targets) => {
 	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
 	let id = -1;
 	let direction = '';
 	const set = new Set();
-	beams.forEach((robot) => {
-		uldr.forEach((dirc) => {
+	for (const robot of beams) {
+		for (const dirc of uldr) {
 			const cloned = clone2D(field);
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			const killed = move(cloned, robotMapCloned, robot, dirc[0]);
-			killed.forEach((robot) => {
+			for (const robot of killed) {
 				set.add(robot.id);
-			});
+			}
 			robot.x = x;
 			robot.y = y;
 			if (killed.length > 0) {
 				id = robot.id;
 				direction = dirc[1];
 			}
-		});
-	});
+		}
+	}
 	if (id != -1) {
 		return {ok: true, move: `${id} ${direction}`, cnt: set.size};
 	}
@@ -504,32 +508,37 @@ const attackCat = (state) => {
 	let id = state.beams[Math.floor(Math.random() * state.beams.length)].id;
 
 	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
-	//shuffle
-	for(let i = uldr.length - 1; i > 0; i--){
-		let r = Math.floor(Math.random() * (i + 1));
-		let tmp = uldr[i];
+	// shuffle
+	for (let i = uldr.length - 1; i > 0; i--) {
+		const r = Math.floor(Math.random() * (i + 1));
+		const tmp = uldr[i];
 		uldr[i] = uldr[r];
 		uldr[r] = tmp;
 	}
-	for(let i = robots.length - 1; i > 0; i--){
-		let r = Math.floor(Math.random() * (i + 1));
-		let tmp = robots[i];
+	for (let i = robots.length - 1; i > 0; i--) {
+		const r = Math.floor(Math.random() * (i + 1));
+		const tmp = robots[i];
 		robots[i] = robots[r];
 		robots[r] = tmp;
 	}
 	let score = evaluate(field, state.targets);
 
-	robots.forEach((robot) => {
-		uldr.forEach((dirc) => {
+	for (const robot of robots) {
+		for (const dirc of uldr) {
 			const cloned = clone2D(field);
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
 			if (x != robot.x || y != robot.y) {
-				const depth = robots.length < 3 ? 4
-							: robots.length == 3 ? 3
-							: 1;
-				const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, depth, state.params);
+				const depth = robots.length < 3 ? 4 : robots.length == 3 ? 3 : 1;
+				const tmp = attackCatMain(
+					cloned,
+					robots,
+					state.targets,
+					robotMapCloned,
+					depth,
+					state.params
+				);
 				robot.x = x;
 				robot.y = y;
 				if (tmp < score) {
@@ -538,8 +547,8 @@ const attackCat = (state) => {
 					direction = dirc[1];
 				}
 			}
-		});
-	});
+		}
+	}
 	// console.log("bye:", score, id, direction);
 	return `${id} ${direction}`;
 };
@@ -549,27 +558,32 @@ const escapeCat = (state) => {
 	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
 	const robots = state.targets;
 	let killedCnt = 1000000;
-	//shuffle
-	for(let i = uldr.length - 1; i > 0; i--){
-		let r = Math.floor(Math.random() * (i + 1));
-		let tmp = uldr[i];
+	// shuffle
+	for (let i = uldr.length - 1; i > 0; i--) {
+		const r = Math.floor(Math.random() * (i + 1));
+		const tmp = uldr[i];
 		uldr[i] = uldr[r];
 		uldr[r] = tmp;
 	}
-	for(let i = robots.length - 1; i > 0; i--){
-		let r = Math.floor(Math.random() * (i + 1));
-		let tmp = robots[i];
+	for (let i = robots.length - 1; i > 0; i--) {
+		const r = Math.floor(Math.random() * (i + 1));
+		const tmp = robots[i];
 		robots[i] = robots[r];
 		robots[r] = tmp;
 	}
 
-	robots.forEach((robot) => {
-		uldr.forEach((dirc) => {
+	for (const robot of robots) {
+		for (const dirc of uldr) {
 			const cloned = clone2D(field);
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
-			const killed = checkKillable(cloned, robotMapCloned, state.beams, state.targets);
+			const killed = checkKillable(
+				cloned,
+				robotMapCloned,
+				state.beams,
+				state.targets
+			);
 			robot.x = x;
 			robot.y = y;
 			if (killed.cnt < killedCnt) {
@@ -577,8 +591,8 @@ const escapeCat = (state) => {
 				id = robot.id;
 				direction = dirc[1];
 			}
-		});
-	});
+		}
+	}
 	return `${id} ${direction}`;
 };
 
@@ -603,10 +617,9 @@ module.exports.presets = {
 		state.params = params;
 		if (state.turn == 'A') {
 			return attackCat(state);
-		} else {
-			return escapeCat(state);
 		}
-	}
+		return escapeCat(state);
+	},
 };
 
 module.exports.battler = async (
@@ -632,24 +645,20 @@ module.exports.battler = async (
 	};
 	const _checkConnectivity = (field, startX, startY, visited) => {
 		const uldr = [[0, -1], [-1, 0], [0, 1], [1, 0]];
-		uldr.forEach((dirc) => {
+		for (const dirc of uldr) {
 			const x = startX + dirc[0];
 			const y = startY + dirc[1];
-			if (x < 0 || x >= field[0].length ||
-				y < 0 || y >= field.length) {
+			if (x < 0 || x >= field[0].length || y < 0 || y >= field.length) {
 				// continue
-			}
-			else if (field[y][x] == 'block') {
+			} else if (field[y][x] == 'block') {
 				// continue
-			}
-			else if (visited[y][x]) {
+			} else if (visited[y][x]) {
 				// continue
-			}
-			else {
+			} else {
 				visited[y][x] = true;
 				_checkConnectivity(field, x, y, visited);
 			}
-		});
+		}
 	};
 
 	const checkConnectivity = (field1D) => {
@@ -661,7 +670,7 @@ module.exports.battler = async (
 		let startX = -1;
 		let startY = -1;
 		field.forEach((row, j) => {
-			visited.push(row.map(_ => false));
+			visited.push(row.map((_) => false));
 			row.forEach((x, i) => {
 				if (x == 'empty') {
 					startX = i;
@@ -687,24 +696,28 @@ module.exports.battler = async (
 		initState ||
 		(() => {
 			const field = Array(params.width * params.height).fill('empty');
-			if (params.useVerified && params.width % 10 == 0 && params.height % 10 == 0) {
+			if (
+				params.useVerified &&
+				params.width % 10 == 0 &&
+				params.height % 10 == 0
+			) {
 				const samples = baseCase();
 				let ptr = 0;
 				for (let i = 0; i < Math.floor(params.width / 10); i++) {
 					for (let j = 0; j < Math.floor(params.height / 10); j++) {
 						const idx = Math.floor(random() * samples.length);
-						const sample = samples[idx]
-						sample.forEach((row) => {
-							row.forEach((x) => {
+						const sample = samples[idx];
+						for (const row of sample) {
+							for (const x of row) {
 								field[ptr] = x;
 								ptr++;
-							});
-						});
+							}
+						}
 					}
 				}
 			} else {
-				for (let i = 0; i < params.width * params.height * 0.10; i++) {
-					while(true) {
+				for (let i = 0; i < params.width * params.height * 0.1; i++) {
+					while (true) {
 						const idx = Math.floor(random() * params.width * params.height);
 						if (field[idx] === 'empty') {
 							field[idx] = 'block';
