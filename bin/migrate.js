@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submission');
 const Battle = require('../models/Battle');
+const User = require('../models/User');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
@@ -438,6 +439,14 @@ mongoose.Promise = global.Promise;
 			size: null,
 		}, {upsert: true});
 	}
+
+	const kuromunori = await User.findOne({email: 'kuromunori@twitter.com'});
+	kuromunori.admin = false;
+	await kuromunori.save();
+
+	const moratorium = await User.findOne({email: 'moratorium08@twitter.com'});
+	moratorium.admin = true;
+	await moratorium.save();
 
 	mongoose.connection.close();
 })();
