@@ -220,6 +220,9 @@ const move = (field, robotMap, robot, delta) => {
 	let mx = field[0].length;
 	let my = field.length;
 
+	// 捕まるロボット
+	const killed = [];
+
 	// 今ある場所からはいなくなる
 	robotMap[y][x] = false;
 	while (true) {
@@ -248,8 +251,12 @@ const move = (field, robotMap, robot, delta) => {
 			if (robot.type === 'beam') {
 				field[y][x] = 'beam';
 			}
+			if (robotMap[y][x] && robotMap[y][x].type === 'target') {
+				killed.push(robotMap[y][x]);
+			}
 		}
 	}
+	return killed;
 };
 /*
 field = [['empty', 'empty', 'empty'], ['empty', 'empty', 'empty'],['empty', 'empty', 'empty']];
@@ -284,10 +291,42 @@ const clone2D = (matrix) => (
 	matrix.map((row) => row.slice(0, row.length))
 );
 
+const checkKillable = (field, robotMap, beams, targets) => {
+	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
+	let id = -1;
+	let direction = '';
+	const set = new Set();
+	beams.forEach((robot) => {
+		uldr.forEach((dirc) => {
+			const cloned = clone2D(field);
+			const robotMapCloned = clone2D(robotMap);
+			const {x, y} = {x: robot.x, y: robot.y};
+			const killed = move(cloned, robotMapCloned, robot, dirc[0]);
+			killed.forEach((robot) => {
+				set.add(robot.id);
+			});
+			robot.x = x;
+			robot.y = y;
+			if (killed.length > 0) {
+				id = robot.id;
+				direction = dirc[1];
+			}
+		});
+	});
+	if (id != -1) {
+		return {ok: true, move: `${id} ${direction}`, cnt: set.size};
+	}
+	return {ok: false, cnt: 0};
+};
+
 const attackCat = (state) => {
 	const {field, robotMap} = field1DTo2D(state, state.params);
 	const robots = state.beams;
 
+	const killable = checkKillable(field, robotMap, state.beams, state.targets);
+	if (killable.ok) {
+		return killable.move;
+	}
 	// first randomly select robot/dirc
 	const r = Math.floor(Math.random() * 4);
 	let direction = r === 0 ? 'u' : r === 1 ? 'l' : r === 2 ? 'd' : 'r';
@@ -315,7 +354,7 @@ const attackCat = (state) => {
 			const robotMapCloned = clone2D(robotMap);
 			const {x, y} = {x: robot.x, y: robot.y};
 			move(cloned, robotMapCloned, robot, dirc[0]);
-			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, 1, state.params);
+			const tmp = attackCatMain(cloned, robots, state.targets, robotMapCloned, 3, state.params);
 			robot.x = x;
 			robot.y = y;
 			if (tmp < score) {
@@ -330,9 +369,42 @@ const attackCat = (state) => {
 };
 
 const escapeCat = (state) => {
-	const r = Math.floor(Math.random() * 4);
-	let direction = r === 0 ? 'u' : r === 1 ? 'l' : r === 2 ? 'd' : 'r';
-	let id = state.targets[Math.floor(Math.random() * state.targets.length)];
+	const {field, robotMap} = field1DTo2D(state, state.params);
+	const uldr = [[[0, -1], 'u'], [[-1, 0], 'l'], [[0, 1], 'd'], [[1, 0], 'r']];
+	const robots = state.targets;
+	let killedCnt = 1000000;
+	//shuffle
+	for(let i = uldr.length - 1; i > 0; i--){
+		let r = Math.floor(Math.random() * (i + 1));
+		let tmp = uldr[i];
+		uldr[i] = uldr[r];
+		uldr[r] = tmp;
+	}
+	for(let i = robots.length - 1; i > 0; i--){
+		let r = Math.floor(Math.random() * (i + 1));
+		let tmp = robots[i];
+		robots[i] = robots[r];
+		robots[r] = tmp;
+	}
+
+	robots.forEach((robot) => {
+		uldr.forEach((dirc) => {
+			console.log(robot, dirc);
+			const cloned = clone2D(field);
+			const robotMapCloned = clone2D(robotMap);
+			const {x, y} = {x: robot.x, y: robot.y};
+			move(cloned, robotMapCloned, robot, dirc[0]);
+			const killed = checkKillable(cloned, robotMapCloned, state.beams, state.targets);
+			console.log(killed);
+			robot.x = x;
+			robot.y = y;
+			if (killed.cnt < killedCnt) {
+				killedCnt = killed.cnt;
+				id = robot.id;
+				direction = dirc[1];
+			}
+		});
+	});
 	return `${id} ${direction}`;
 };
 
@@ -441,7 +513,7 @@ module.exports.battler = async (
 		initState ||
 		(() => {
 			const field = Array(params.width * params.height).fill('empty');
-			for (let i = 0; i < params.width * params.height * 0.2; i++) {
+			for (let i = 0; i < params.width * params.height * 0.10; i++) {
 				while(true) {
 					const idx = Math.floor(random() * params.width * params.height);
 					if (field[idx] === 'empty') {
@@ -603,9 +675,9 @@ module.exports.configs = [
 		params: {
 			width: 10,
 			height: 10,
-			beams: 1,
-			targets: 1,
-			pawns: 1,
+			beams: 2,
+			targets: 2,
+			pawns: 0,
 		},
 	},
 ];
