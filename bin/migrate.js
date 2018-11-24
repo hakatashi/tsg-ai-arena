@@ -9,20 +9,6 @@ mongoose.Promise = global.Promise;
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
-	const battles = await Battle.find({});
-
-	for (const battle of battles) {
-		battle.scores = Array(battle.players.length).fill(0);
-		await battle.save();
-	}
-
-	const contests = await Contest.find({});
-
-	for (const contest of contests) {
-		contest.type = 'battle';
-		await contest.save();
-	}
-
 	await Contest.deleteMany({id: 'rotating-drops'});
 
 	await Contest.updateOne(
