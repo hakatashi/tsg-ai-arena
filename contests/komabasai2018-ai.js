@@ -788,7 +788,7 @@ module.exports.battler = async (
 			serialize({state, params}),
 			state.turn === 'A' ? 0 : 1
 		);
-		const tokens = stdout
+		const tokens = (stdout || '')
 			.toString()
 			.trim()
 			.split(/\s+/);
