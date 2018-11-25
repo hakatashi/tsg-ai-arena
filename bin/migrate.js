@@ -344,7 +344,7 @@ mongoose.Promise = global.Promise;
 			name: '駒場祭2018 Live AI Contest',
 			id: 'komabasai2018-ai',
 			start: new Date('2018-11-25T12:03:00+0900'),
-			end: new Date('2018-11-25T13:18:00+0900'),
+			end: new Date('2030-11-25T13:18:00+0900'),
 			type: 'battle',
 			description: {
 				ja: stripIndent`
