@@ -128,7 +128,7 @@ module.exports.postSubmission = async (req, res) => {
 				'Code cannot be longer than 10,000 bytes'
 			);
 			code = await new Promise((resolve) => {
-				const stream = concatStream(resolve);
+				const stream = concatStream({encoding: 'buffer'}, resolve);
 				req.files.file[0].stream.pipe(stream);
 			});
 		} else {

@@ -68,7 +68,7 @@ mongoose.Promise = global.Promise;
 				\`\`\`
 				#### 出力
 				\`\`\`
-				WSESWW
+				ESWSEE
 				\`\`\`
 				-2 + 1 + 2 + 1 + -2 + -2 + 2 = 0です。これならお姉さんも大満足。
 
@@ -89,24 +89,6 @@ mongoose.Promise = global.Promise;
 		}
 		console.log('inserting succeeded');
 	});
-
-
-	const contestAi = await Contest.findOne({id: 'mayfes2019-procon'});
-
-	for (const presetName of ['random', 'cat']) {
-		await Submission.updateOne({
-			name: presetName,
-			contest: contestAi,
-		}, {
-			isPreset: true,
-			name: presetName,
-			user: null,
-			contest: contestAi,
-			language: null,
-			code: null,
-			size: null,
-		}, {upsert: true});
-	}
 
 	const kuromunori = await User.findOne({email: 'kuromunori@twitter.com'});
 	kuromunori.admin = false;

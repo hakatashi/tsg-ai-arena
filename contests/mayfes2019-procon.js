@@ -7,7 +7,10 @@ const sumBy = require('lodash/sumBy');
 module.exports.presets = {};
 
 const initMaps = (height, width) => {
-	const field = Array(width * height).fill(0).map(() => (Math.floor(Math.random() * 201) - 100));
+	const field = Array(width * height).fill(0).map(() => ({
+		num: Math.floor(Math.random() * 201) - 100,
+		visited: false,
+	}));
 	return field;
 };
 
@@ -39,7 +42,7 @@ const deserialize = (stdin) => {
 	const lines = stdin.split('\n').filter((line) => line.length > 0);
 	const [width, height] = lines[0].split(' ').map((token) => parseInt(token));
 	const field = [];
-	lines.slice(2).forEach((l, y) => {
+	lines.slice(1).forEach((l, y) => {
 		const cells = l.split(' ');
 		cells.forEach((cell, x) => {
 			field.push({
@@ -67,9 +70,7 @@ module.exports.deserialize = deserialize;
 
 const serialize = ({state, params}) => `${[
 	`${params.height} ${params.width}`,
-	...chunk(state.field, params.width).map((line) => line.map((cell) => {
-		return cell.toString();
-	}).join(' ')),
+	...chunk(state.field, params.width).map((line) => line.map((cell) => cell.num.toString()).join(' ')),
 ].join('\n')}\n`;
 
 module.exports.serialize = serialize;
@@ -87,15 +88,15 @@ module.exports.battler = async (
 	const initialState = initState || {
 		x: 0,
 		y: 0,
-		score: field[0],
+		score: field[0].num,
 		field,
 	};
 	const {state} = deserialize(serialize({params, state: initialState}));
-	const {stdout} = await execute(serialize({params, state: initialState}));
+	const {stdout} = await execute(serialize({params, state: initialState}), 0);
 	const moves = normalize(stdout, params);
 	moves.forEach((move, idx) => {
 		// move
-		if (state.score != 1e9) {
+		if (state.score !== 1e9) {
 			state.x += move.dx;
 			state.y += move.dy;
 			if (!isInside(state.x, state.y, params.width, params.height)) {
