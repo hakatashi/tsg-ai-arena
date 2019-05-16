@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submission');
 const Battle = require('../models/Battle');
+const User = require('../models/User');
 const {stripIndent} = require('common-tags');
 
 mongoose.Promise = global.Promise;
@@ -9,30 +10,18 @@ mongoose.Promise = global.Promise;
 (async () => {
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
-	const battles = await Battle.find({});
-
-	for (const battle of battles) {
-		battle.scores = Array(battle.players.length).fill(0);
-		await battle.save();
-	}
-
-	const contests = await Contest.find({});
-
-	for (const contest of contests) {
-		contest.type = 'battle';
-		await contest.save();
-	}
-
 	await Contest.deleteMany({id: 'rotating-drops'});
 
-	await Contest.updateOne({id: 'dragon-puzzles'}, {
-		name: 'Dragon Puzzles',
-		id: 'dragon-puzzles',
-		start: new Date('1970-01-01T00:00:00.000Z'),
-		end: new Date('2038-01-19T12:14:07.000+0900'),
-		type: 'score',
-		description: {
-			ja: stripIndent`
+	await Contest.updateOne(
+		{id: 'dragon-puzzles'},
+		{
+			name: 'Dragon Puzzles',
+			id: 'dragon-puzzles',
+			start: new Date('1970-01-01T00:00:00.000Z'),
+			end: new Date('2038-01-19T12:14:07.000+0900'),
+			type: 'score',
+			description: {
+				ja: stripIndent`
 				# ドラゴンのパズル
 
 				* H×Wマスのフィールド上に、1マスにつき1個のドロップが配置されている。
@@ -145,8 +134,9 @@ mongoose.Promise = global.Promise;
 				1 2 2
 				\`\`\`
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
 	}, {upsert: true});
 
@@ -221,8 +211,9 @@ mongoose.Promise = global.Promise;
 			 を使用し、各ケースにおける「整数の合計の絶対値」の合計を競います。各マスの数字はランダムで生成されるため、零和解が存在する保証はありません。
 			 より小さいスコアを目指してください。
 			`,
-			en: stripIndent`
+				en: stripIndent`
 			`,
+			},
 		},
 	}, {upsert: true}, (err) => {
 		if (err) {
@@ -234,7 +225,7 @@ mongoose.Promise = global.Promise;
 
 	const contestAi = await Contest.findOne({id: 'mayfes2019-procon'});
 
-	for (const presetName of ['random']) {
+	for (const presetName of ['random', 'cat']) {
 		await Submission.updateOne({
 			name: presetName,
 			contest: contestAi,
@@ -248,6 +239,14 @@ mongoose.Promise = global.Promise;
 			size: null,
 		}, {upsert: true});
 	}
+
+	const kuromunori = await User.findOne({email: 'kuromunori@twitter.com'});
+	kuromunori.admin = false;
+	await kuromunori.save();
+
+	const moratorium = await User.findOne({email: 'moratorium08@twitter.com'});
+	moratorium.admin = true;
+	await moratorium.save();
 
 	mongoose.connection.close();
 })();

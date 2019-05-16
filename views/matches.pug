@@ -48,11 +48,12 @@ block content
                   else
                     a(href=`./submissions/${match.players[0]._id}`)= match.players[0].userText()
                 if contest.type === 'battle'
-                  td
-                    if match.players[1].isPreset
-                      = match.players[1].userText()
-                    else
-                      a(href=`./submissions/${match.players[1]._id}`)= match.players[1].userText()
+                  if match.players[1]
+                    td
+                      if match.players[1].isPreset
+                        = match.players[1].userText()
+                      else
+                        a(href=`./submissions/${match.players[1]._id}`)= match.players[1].userText()
                   td
                     if match.result === 'pending'
                       | Pending

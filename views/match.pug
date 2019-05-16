@@ -2,6 +2,45 @@ extends layout
 
 include mixins
 
+block head
+  meta(name='data', content=JSON.stringify({match, battles}))
+    
+  // TODO: kesu
+  script(defer=true).
+    document.addEventListener('DOMContentLoaded', () => {
+      const {match, battles} = JSON.parse(document.querySelector('meta[name=data]').getAttribute('content'));
+      const visualizer = document.querySelector('.match-visualizer');
+      const rows = document.querySelectorAll('.match-visualizer .row');
+      const button = document.querySelector('.show-visualizer');
+      button.addEventListener('click', async () => {
+        visualizer.style.display = 'block';
+        const rowList = Array.from(rows);
+        const totalRow = rowList[rowList.length - 1];
+        totalRow.querySelector('.score:first-child').textContent = match.scores[0];
+        totalRow.querySelector('.score:last-child').textContent = match.scores[1];
+        for (const row of rowList) {
+          row.style.visibility = 'visible';
+          const player1 = row.querySelector('.score:first-child').textContent;
+          const player2 = row.querySelector('.score:last-child').textContent;
+          if ((parseInt(player1) < parseInt(player2)) ^ row.classList.contains('total')) {
+            row.querySelector('.score:first-child').style.color = 'red';
+          }
+          if ((parseInt(player1) > parseInt(player2)) ^ row.classList.contains('total')) {
+            row.querySelector('.score:last-child').style.color = 'blue';
+          }
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        if (match.scores[0] > match.scores[1]) {
+          visualizer.querySelector('.result').textContent = document.getElementById('red').textContent + ' Won!!';
+          visualizer.querySelector('.result').style.color = 'red';
+        }
+        if (match.scores[0] < match.scores[1]) {
+          visualizer.querySelector('.result').textContent = document.getElementById('blue').textContent + ' Won!!';
+          visualizer.querySelector('.result').style.color = 'blue';
+        }
+      })
+    });
+
 block content
   .container.content
     if !contest.isStarted() && (!user || !user.admin)
@@ -10,9 +49,28 @@ block content
       .page-header
         h1= match.versusText()
         
-      h3 Score
-      
-      p= match.scoreText()
+      if match.result === 'pending'
+        h2 Match is pending...
+      else
+        button.show-visualizer Show result
+        .match-visualizer(style={display: 'none'})
+          .players
+            .player#red(style={color: 'red'})= match.players[0].userText()
+            .player#blue(style={color: 'blue'})= match.players[1].userText()
+          .battles
+            for battle, index in battles
+              if index % 2 === 0
+                .row(style={visibility: 'hidden'})
+                  .score
+                    a(href=`../battles/${battle._id}`)= battle.scores[0]
+                  .hyphen -
+                  .score
+                    a(href=`../battles/${battles[index + 1]._id}`)= battles[index + 1].scores[0]
+            .row.total(style={visibility: 'hidden'})
+              .score x
+              .hyphen -
+              .score x
+            .result 
       
       .page-header
         h3 Battles

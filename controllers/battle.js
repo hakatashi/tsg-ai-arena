@@ -2,6 +2,7 @@ const Turn = require('../models/Turn');
 const Battle = require('../models/Battle');
 const Submission = require('../models/Submission');
 const runner = require('../lib/runner');
+const sample = require('lodash/sample');
 
 module.exports.getBattle = async (req, res) => {
 	const _id = req.params.battle;
@@ -90,33 +91,35 @@ module.exports.postBattle = async (req, res) => {
 };
 
 const getVisualizer = async (req, res, id) => {
-	const battle =
+	const battles =
 		id === 'latest'
-			? await Battle.findOne({
+			? await Battle.find({
 				contest: req.contest,
 				result: {$ne: 'pending'},
 			  })
 				.sort({createdAt: -1})
+				.limit(20)
 				.populate('contest')
 				.populate({
 					path: 'players',
 					populate: {path: 'user'},
 				})
 				.exec()
-			: await Battle.findOne({_id: id})
+			: [await Battle.findOne({_id: id})
 				.populate('contest')
 				.populate({
 					path: 'players',
 					populate: {path: 'user'},
 				})
-				.exec();
+				.exec()];
+
+	const battle = sample(battles);
 
 	if (battle === null) {
 		res.sendStatus(404);
 		return;
 	}
 
-	console.log(battle);
 	const config = battle.config === undefined
 		? req.contestData.configs.find((c) => c.default === true)
 		: req.contestData.configs.find((c) => battle.config === c.id);
