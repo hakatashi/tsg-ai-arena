@@ -29,7 +29,7 @@ const Agenda = require('agenda');
 /*
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
-dotenv.load({path: '.env'});
+dotenv.config({path: '.env'});
 
 /*
  * Controllers (route handlers).
