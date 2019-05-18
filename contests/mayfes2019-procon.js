@@ -7,9 +7,9 @@ const sumBy = require('lodash/sumBy');
 module.exports.presets = {};
 
 const initMaps = (height, width) => {
-	const field = Array(width * height).fill(0).map(() => ({
+	const field = Array(width * height).fill(0).map((index) => ({
 		num: Math.floor(Math.random() * 201) - 100,
-		visited: false,
+		visited: index === 0,
 	}));
 	return field;
 };
@@ -47,7 +47,7 @@ const deserialize = (stdin) => {
 		cells.forEach((cell, x) => {
 			field.push({
 				num: parseInt(cell),
-				visited: false,
+				visited: x === 0 && y === 0,
 			});
 		});
 	});

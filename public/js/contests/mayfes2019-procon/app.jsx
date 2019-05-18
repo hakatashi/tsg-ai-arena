@@ -7,14 +7,10 @@ const contest = require('../../../../contests/mayfes2019-procon.js');
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
-		this.data = JSON.parse(document.getSelector('meta[name="data"]').getAttribute('content'));
+		this.data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
 
 		const input = contest.deserialize(this.data.turns[0].input);
-		const field = Array(input.params.height)
-			.fill()
-			.map((_, i) => Array(input.params.width)
-				.fill(0)
-				.map((_, j) => input.state.field[i][j]));
+		const field = input.state.field.slice();
 		this.state = {
 			isReady: false,
 			isCollated: false,
@@ -23,21 +19,20 @@ class App extends React.Component {
 			field,
 			score: input.state.score,
 			frame: 0,
-		}
-	  	this.frame = 0;
-	  	this.params = input.params;
+		};
+		this.frame = 0;
+		this.params = input.params;
 		if (this.data.result === 'pending') {
 			setTimeout(() => {
 				location.reload();
 			}, 3000);
 		} else {
 			this.collateFrames().then(() => {
+				console.log(this.frames);
 				this.setState({
 					isCollated: true,
 				});
-				if (this.data.id === 'latest') {
-					this.handleClickStart();
-				}
+				this.handleClickStart();
 			});
 		}
 	}
@@ -61,7 +56,10 @@ class App extends React.Component {
 			this.params,
 			{
 				onFrame: (state) => frames.push(cloneDeep(state)),
-				initState: pick(this.state, ['x', 'y', 'field', 'score']),
+				initState: {
+					...pick(this.state, ['x', 'y', 'score']),
+					field: this.state.field,
+				},
 			}
 		);
 
@@ -70,7 +68,7 @@ class App extends React.Component {
 
 	handleClickStart = () => {
 		this.setState({isReady: true});
-		this.setTimeout(this.handleFrame, 300);
+		setTimeout(this.handleFrame, 300);
 	}
 
 	handleFrame = async () => {
@@ -92,7 +90,8 @@ class App extends React.Component {
 					field: frame.state.field,
 					score: frame.state.score,
 					turns: this.frame + 1,
-				}
+				},
+				resolve,
 			);
 		});
 
@@ -100,7 +99,7 @@ class App extends React.Component {
 		setTimeout(this.handleFrame, Math.min(15000 / this.frames.length, 500));
 	};
 
-	renderContent = () => {
+	render() {
 		const size = 500 / Math.max(this.params.width, this.params.height);
 		return (
 			<div>
@@ -118,9 +117,10 @@ class App extends React.Component {
 				</div>
 				<svg
 					style={{
+						display: 'block',
 						width: '500px',
 						height: '500px',
-						margin: '0 50px',
+						margin: '0 auto',
 						border: '1px solid #555',
 						boxSizing: 'content-box',
 						position: 'relative',
@@ -128,37 +128,37 @@ class App extends React.Component {
 					}}
 					viewBox="0 0 500 500"
 				>
-					{this.state.field.map((row, y) => row.map((cell, x) => (
-						<g key={y * this.params.width + x}>
+					{this.state.field.map((cell, index) => (
+						<g key={index}>
 							<rect
-								x={x * size}
-								y={y * size}
+								x={(index % this.params.width) * size}
+								y={Math.floor(index / this.params.width) * size}
 								width={size}
 								height={size}
 								opacity={0.3}
 								fill={cell.visited ? '#3F51B5' : 'transparent'}
 							/>
 							<text
-								x={x * size + size / 2}
-								y={y * size + size * 0.7}
+								x={(index % this.params.width) * size + size / 2}
+								y={Math.floor(index / this.params.width) * size + size * 0.7}
 								fill={cell.visited ? 'white' : '#3F51B5'}
 								fontSize={size / 2}
-								textAnchor={'middle'}
+								textAnchor="middle"
 							>
 								{cell.num}
 							</text>
 						</g>
-					)))}
+					))}
 					<circle
 						cx={this.state.x * size + size / 2}
 						cy={this.state.y * size + size / 2}
 						r={size / 2 - 5}
-						fill={'red'}
+						fill="red"
 					/>
 				</svg>
 				<div
 					style={{
-						color: this.state.turns === this.frames.length ? 'red' : 'dimgrey',
+						color: (this.frames && this.state.turns === this.frames.length) ? 'red' : 'dimgrey',
 						fontSize: '3em',
 						fontWeight: 'bold',
 						width: '100%',
