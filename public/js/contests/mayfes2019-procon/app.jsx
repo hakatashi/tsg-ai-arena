@@ -4,6 +4,22 @@ const cloneDeep = require('lodash/cloneDeep');
 const pick = require('lodash/pick');
 const contest = require('../../../../contests/mayfes2019-procon.js');
 
+const getColor = (value) => {
+	if (value <= 0) {
+		const R = -70 * Math.abs(value) / 100 + 70;
+		const G = -70 * Math.abs(value) / 100 + 70;
+		const B = (180 - 70) * Math.abs(value) / 100 + 70;
+		return `rgb(${R}, ${G}, ${B})`;
+	}
+
+	{
+		const R = (233 - 70) * Math.abs(value) / 100 + 70;
+		const G = (30 - 70) * Math.abs(value) / 100 + 70;
+		const B = (30 - 70) * Math.abs(value) / 100 + 70;
+		return `rgb(${R}, ${G}, ${B})`;
+	}
+};
+
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
@@ -135,8 +151,8 @@ class App extends React.Component {
 								y={Math.floor(index / this.params.width) * size}
 								width={size}
 								height={size}
-								opacity={0.3}
-								fill={cell.visited ? '#3F51B5' : 'transparent'}
+								opacity={cell.visited ? 1 : 0.3}
+								fill={getColor(cell.num)}
 							/>
 							<text
 								x={(index % this.params.width) * size + size / 2}
