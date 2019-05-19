@@ -110,6 +110,9 @@ module.exports.battler = async (
 			onFrame({state});
 		}
 	});
+	if (state.y !== params.height - 1 || state.x !== params.width - 1) {
+		state.score = 1e9;
+	}
 	return {
 		result: 'settled',
 		winner: 0,
