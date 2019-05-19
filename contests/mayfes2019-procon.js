@@ -75,7 +75,7 @@ const serialize = ({state, params}) => `${[
 
 module.exports.serialize = serialize;
 
-const isInside = (x, y, w, h) => x >= 0 && x <= w && y >= 0 && y <= h;
+const isInside = (x, y, w, h) => x >= 0 && x < w && y >= 0 && y < h;
 
 module.exports.isInside = isInside;
 
