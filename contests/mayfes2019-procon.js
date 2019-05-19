@@ -22,7 +22,7 @@ const normalize = (stdout) => {
 	const dy = [1, 0, -1, 0];
 	const dir = 'SENW'.split('');
 	const moves = lines.map((c) => {
-		let move = {x: 0, y: 0};
+		let move = {dx: 0, dy: 0};
 		dir.forEach((direction, i) => {
 			if (c === direction) {
 				move = {
