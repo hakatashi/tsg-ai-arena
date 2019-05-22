@@ -27,6 +27,7 @@ module.exports = (env, argv = {}) => {
 				'dragon-puzzles',
 				'komabasai2018-ai',
 				'komabasai2018-procon',
+			  	'mayfes2019-procon',
 			].map((name) => ({
 				[`contest-${name}`]: [
 					...(argv.mode === 'development'
