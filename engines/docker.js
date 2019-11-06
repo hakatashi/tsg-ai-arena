@@ -31,12 +31,12 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 	const deferred = new Deferred();
 
 	(async () => {
+		const tmpOption = { unsafeCleanup: true };
+		if (process.platform === 'darwin') {
+			Object.assign(tmpOption, { dir: '/tmp' });
+		}
 		const {tmpPath, cleanup} = await new Promise((resolve, reject) => {
-			tmp.dir(
-				{
-					unsafeCleanup: true,
-				},
-				(error, dTmpPath, dCleanup) => {
+			tmp.dir(tmpOption, (error, dTmpPath, dCleanup) => {
 					if (error) {
 						reject(error);
 					} else {
