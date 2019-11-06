@@ -45,7 +45,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 							cleanup: dCleanup,
 						});
 					}
-				}
+				},
 			);
 		});
 
@@ -106,17 +106,17 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				logger.info('execution started');
 				const executionStart = Date.now();
 
-				stdinStream.pipe(executionStream.output);
+				stdinStream.pipe(executionStream);
 				rootResolve({stdoutStream, stderrStream, deferred});
 
 				container.modem.demuxStream(
-					executionStream.output,
+					executionStream,
 					stdoutStream,
-					stderrStream
+					stderrStream,
 				);
 
 				await new Promise((resolve) => {
-					executionStream.output.on('end', () => {
+					executionStream.on('end', () => {
 						resolve();
 					});
 				});
@@ -133,7 +133,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 					...(data.State.OOMKilled
 						? {
 							error: new MemoryLimitExceededError(
-								`Memory limit of ${memoryLimit} bytes exceeded`
+								`Memory limit of ${memoryLimit} bytes exceeded`,
 							),
 							  }
 						: {}),
@@ -156,7 +156,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				await container.kill().catch((e) => {
 					if (e.statusCode === 409) {
 						logger.verbose(
-							`Killing of container conflicted: ${container.id}`
+							`Killing of container conflicted: ${container.id}`,
 						);
 					} else {
 						throw e;
@@ -165,7 +165,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				await container.remove().catch((e) => {
 					if (e.statusCode === 409) {
 						logger.verbose(
-							`Removal of container conflicted: ${container.id}`
+							`Removal of container conflicted: ${container.id}`,
 						);
 					} else {
 						throw e;
@@ -223,7 +223,7 @@ if (require.main === module) {
 			console.log(
 				'output:',
 				output.trim(),
-				`(duration: ${inputEnd - inputStart}ms)`
+				`(duration: ${inputEnd - inputStart}ms)`,
 			);
 			n = parseInt(output);
 		}
