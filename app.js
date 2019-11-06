@@ -17,7 +17,6 @@ const MongoStore = require('connect-mongo')(session);
 const flash = require('express-flash');
 const mongoose = require('mongoose');
 const passport = require('passport');
-const expressValidator = require('express-validator');
 const Router = require('express-promise-router');
 const sass = require('node-sass-middleware');
 const multer = require('multer');
@@ -70,8 +69,8 @@ mongoose.connect(process.env.MONGODB_URI || process.env.MONGOLAB_URI);
 mongoose.connection.on('error', () => {
 	throw new Error(
 		`${chalk.red(
-			'✗'
-		)} MongoDB connection error. Please make sure MongoDB is running.`
+			'✗',
+		)} MongoDB connection error. Please make sure MongoDB is running.`,
 	);
 });
 
@@ -103,12 +102,12 @@ app.use(
 	sass({
 		src: path.join(__dirname, 'public'),
 		dest: path.join(__dirname, 'public'),
-	})
+	}),
 );
 app.use(
 	webpackDevMiddleware(compiler, {
 		publicPath: webpackConfig.output.publicPath,
-	})
+	}),
 );
 if (process.env.NODE_ENV === 'development') {
 	app.use(webpackHotMiddleware(compiler));
@@ -117,7 +116,6 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(upload.fields([{name: 'file', maxCount: 1}]));
-app.use(expressValidator());
 app.use(
 	session({
 		resave: true,
@@ -127,7 +125,7 @@ app.use(
 			url: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
 			autoReconnect: true,
 		}),
-	})
+	}),
 );
 app.use(passport.initialize());
 app.use(passport.session());
@@ -175,85 +173,85 @@ router.get('/logout', userController.logout);
 router.get(
 	'/account',
 	passportConfig.isAuthenticated,
-	userController.getAccount
+	userController.getAccount,
 );
 router.get(
 	'/contests/:contest',
 	contestController.base,
-	contestController.index
+	contestController.index,
 );
 router.get(
 	'/contests/:contest/submissions',
 	contestController.base,
-	submissionController.getSubmissions
+	submissionController.getSubmissions,
 );
 router.get(
 	'/contests/:contest/submissions/:submission',
 	contestController.base,
-	submissionController.getSubmission
+	submissionController.getSubmission,
 );
 router.get(
 	'/contests/:contest/battles',
 	contestController.base,
-	battleController.getBattles
+	battleController.getBattles,
 );
 router.post(
 	'/contests/:contest/battles',
 	contestController.base,
-	battleController.postBattle
+	battleController.postBattle,
 );
 router.get(
 	'/contests/:contest/battles/:battle',
 	contestController.base,
-	battleController.getBattle
+	battleController.getBattle,
 );
 router.get(
 	'/contests/:contest/battles/latest/visualizer',
 	contestController.base,
-	battleController.getLatestVisualizer
+	battleController.getLatestVisualizer,
 );
 router.get(
 	'/contests/:contest/battles/:battle/visualizer',
 	contestController.base,
-	battleController.getBattleVisualizer
+	battleController.getBattleVisualizer,
 );
 router.get(
 	'/contests/:contest/matches',
 	contestController.base,
-	matchController.getMatches
+	matchController.getMatches,
 );
 router.get(
 	'/contests/:contest/matches/:match',
 	contestController.base,
-	matchController.getMatch
+	matchController.getMatch,
 );
 router.post(
 	'/contests/:contest/matches',
 	contestController.base,
-	matchController.postMatch
+	matchController.postMatch,
 );
 router.get(
 	'/contests/:contest/turns/:turn',
 	contestController.base,
-	turnController.getTurn
+	turnController.getTurn,
 );
 router.get(
 	'/contests/:contest/admin',
 	passportConfig.isAuthenticated,
 	contestController.base,
-	contestController.getAdmin
+	contestController.getAdmin,
 );
 router.post(
 	'/contests/:contest',
 	passportConfig.isAuthenticated,
 	contestController.base,
-	contestController.postContest
+	contestController.postContest,
 );
 router.post(
 	'/contests/:contest/submissions',
 	passportConfig.isAuthenticated,
 	contestController.base,
-	submissionController.postSubmission
+	submissionController.postSubmission,
 );
 
 router.get('/submissions/:submission', submissionController.getOldSubmission);
@@ -267,7 +265,7 @@ router.get(
 	passport.authenticate('twitter', {failureRedirect: '/login'}),
 	(req, res) => {
 		res.redirect(req.session.returnTo || '/');
-	}
+	},
 );
 
 app.use(router);
@@ -287,7 +285,7 @@ const server = app.listen(app.get('port'), () => {
 		'%s App is running at http://localhost:%d in %s mode',
 		chalk.green('✓'),
 		app.get('port'),
-		app.get('env')
+		app.get('env'),
 	);
 	console.log('  Press CTRL-C to stop\n');
 });
