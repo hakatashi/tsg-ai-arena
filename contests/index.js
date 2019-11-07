@@ -6,6 +6,7 @@ const mayfes2019Procon = require('./mayfes2019-procon');
 const dragonPuzzles = require('./dragon-puzzles');
 const komabasai2018Ai = require('./komabasai2018-ai');
 const komabasai2018Procon = require('./komabasai2018-procon');
+const komabasai2019Marathon = require('./komabasai2019-marathon');
 
 module.exports = {
 	test,
@@ -16,4 +17,5 @@ module.exports = {
 	'dragon-puzzles': dragonPuzzles,
 	'komabasai2018-ai': komabasai2018Ai,
 	'komabasai2018-procon': komabasai2018Procon,
+	'komabasai2019-marathon': komabasai2019Marathon,
 };
