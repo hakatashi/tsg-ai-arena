@@ -33,7 +33,7 @@ const getUsedNum = (stdout) => {
 module.exports.getUsedNum = getUsedNum;
 
 const normalize = (stdout) => {
-    const infixFormula = stdout.toString().trim().replace(/ /g, '^').replace(/[+\-*/^()]/g, ' $& ').replace(/\s+/g, ' ').trim().split(' ');
+    const infixFormula = stdout.toString().trim().replace(/\s*([+\-*/()])\s*/g, '$1').replace(/ /g, '^').replace(/[+\-*/^()]/g, ' $& ').replace(/\s+/g, ' ').trim().split(' ');
     return infixFormula;
 };
 
@@ -132,6 +132,17 @@ const evaluation = (infixFormula) => {
     return bigRat(100).subtract(operandStack.pop()).abs();
 };
 
+const myLog10 = (bigRatio) => {
+    const sign = bigRatio.lt(1);
+    const intLog = Math.abs(bigRatio.num.toString().length - bigRatio.denom.toString().length);
+    if (sign) {
+        bigRatio = bigRatio.multiply(bigRat('10').pow(intLog));
+    } else {
+        bigRatio = bigRatio.multiply(bigRat('1', '10').pow(intLog));
+    }
+    return Math.log10(bigRatio) - (sign ? intLog : -intLog);
+};
+
 module.exports.battler = async (
     execute,
     params,
@@ -149,7 +160,7 @@ module.exports.battler = async (
     if (isEqual(usedNumbers, state.sequence)) {
         try {
             const error = evaluation(infixFormula);
-            state.score = Math.floor(Math.log10(error.add(1)) * 100000000);
+            state.score = Math.floor(myLog10(error.add(1)) * 100000000);
         } catch (e) {
             state.score = 1e12;
         }
