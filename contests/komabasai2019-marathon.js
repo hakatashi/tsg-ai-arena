@@ -64,7 +64,7 @@ const serialize = ({state, params}) => `${[
 
 module.exports.serialize = serialize;
 
-const evaluation = (infixFormula) => {
+const parse = (infixFormula) => {
 	const operatorStack = [];
 	const operandStack = [];
 	const level0Operator = ['^'];
@@ -73,26 +73,25 @@ const evaluation = (infixFormula) => {
 	let topRawNumber = 0;
 	const operation = () => {
 		if (operandStack.length < 2) throw new Error('InvalidFormula');
-		const lhs = operandStack.pop();
 		const rhs = operandStack.pop();
+		const lhs = operandStack.pop();
 		const operator = operatorStack.pop();
 		if (operator === '+') {
 			topRawNumber = 0;
-			operandStack.push(rhs.add(lhs));
+			operandStack.push({type: 'operation', operator: '+', lhs, rhs});
 		} else if (operator === '-') {
 			topRawNumber = 0;
-			operandStack.push(rhs.subtract(lhs));
+			operandStack.push({type: 'operation', operator: '-', lhs, rhs});
 		} else if (operator === '*') {
 			topRawNumber = 0;
-			operandStack.push(rhs.multiply(lhs));
+			operandStack.push({type: 'operation', operator: '*', lhs, rhs});
 		} else if (operator === '/') {
-			if (bigRat(0).compare(lhs) == 0) throw new Error('InvalidFormula');
 			topRawNumber = 0;
-			operandStack.push(rhs.divide(lhs));
+			operandStack.push({type: 'operation', operator: '/', lhs, rhs});
 		} else {
 			if (topRawNumber < 2) throw new Error('InvalidFormula');
 			--topRawNumber;
-			operandStack.push(bigRat(rhs.num.toString() + lhs.num.toString()));
+			operandStack.push({type: 'chain', lhs, rhs});
 		}
 	};
 	for (const token of infixFormula) {
@@ -119,8 +118,10 @@ const evaluation = (infixFormula) => {
 			}
 			if (operatorStack.length === 0) throw new Error('InvalidFormula');
 			operatorStack.pop();
+			const body = operandStack.pop();
+			operandStack.push({type: 'parenthesization', body});
 		} else {
-			operandStack.push(bigRat(token));
+			operandStack.push({type: 'literal', value: bigRat(token)});
 			++topRawNumber;
 		}
 	}
@@ -129,8 +130,42 @@ const evaluation = (infixFormula) => {
 		operation();
 	}
 	if (operandStack.length !== 1) throw new Error('InvalidFormula');
-	return bigRat(100).subtract(operandStack.pop()).abs();
+	return operandStack.pop();
 };
+
+module.exports.parse = parse;
+
+const evaluate = (syntaxTree) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			return syntaxTree.value;
+		}
+		case 'operation': {
+			const lhs = evaluate(syntaxTree.lhs);
+			const rhs = evaluate(syntaxTree.rhs);
+			switch (syntaxTree.operator) {
+				case '+': return lhs.add(rhs);
+				case '-': return lhs.subtract(rhs);
+				case '*': return lhs.multiply(rhs);
+				case '/': {
+					if (rhs.equals(bigRat.zero)) throw new Error('DivisionByZero');
+					return lhs.divide(rhs);
+				}
+			}
+			break;
+		}
+		case 'chain': {
+			const lhs = evaluate(syntaxTree.lhs);
+			const rhs = evaluate(syntaxTree.rhs);
+			return bigRat(rhs.num.toString() + lhs.num.toString());
+		}
+		case 'parenthesization': {
+			return evaluate(syntaxTree.body);
+		}
+	}
+};
+
+module.exports.evaluate = evaluate;
 
 const myLog10 = (bigRatio) => {
 	const sign = bigRatio.lt(1);
@@ -159,7 +194,9 @@ module.exports.battler = async (
 	const usedNumbers = getUsedNum(stdout, params);
 	if (isEqual(usedNumbers, state.sequence)) {
 		try {
-			const error = evaluation(infixFormula);
+			const syntaxTree = parse(infixFormula);
+			const result = evaluate(syntaxTree);
+			const error = bigRat(100).subtract(result).abs();
 			state.score = Math.floor(myLog10(error.add(1)) * 100000000);
 		} catch (e) {
 			state.score = 1e12;
