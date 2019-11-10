@@ -1,7 +1,11 @@
 import '@babel/polyfill';
 
-const ReactDOM = require('react-dom');
-const React = require('react');
-const App = require('./App.jsx');
+// const ReactDOM = require('react-dom');
+// const React = require('react');
+// const App = require('./App.jsx');
 
-ReactDOM.render(React.createElement(App), document.getElementById('app'));
+// ReactDOM.render(React.createElement(App), document.getElementById('app'));
+
+const render = require('./render');
+
+render();
