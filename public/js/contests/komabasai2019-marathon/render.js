@@ -12,16 +12,20 @@ const render = () => {
 	const $app = document.querySelector('#app');
 
 	if (data.config.params.length > 20) {
-		$app.append('Dataset is too large!');
+		$app.style.display = 'flex';
+		$app.style.justifyContent = 'center';
+		$app.style.alignItems = 'center';
+		$app.innerHTML = '<p style="font-size: 2rem;">Dataset is too large!</p>';
 		return;
 	}
 
 	const radiusOf = (value) => {
-		return 15 + Math.log10(1 + value) * 15;
+		return 15 + Math.log10(1 + value ** 2) * 8;
 	};
 
 	const nodes = [];
 	const links = [];
+	const animations = [];
 	const appendData = (syntaxTree) => {
 		switch (syntaxTree.type) {
 			case 'literal': {
@@ -30,22 +34,39 @@ const render = () => {
 				nodes.push({
 					id,
 					type: 'literal',
-					value,
+					label: `${value}`,
+					scale: 1,
 					radius: radiusOf(value),
 				});
 				return id;
 			}
 			case 'operation':
 			case 'chain': {
+				const lhsId = appendData(syntaxTree.lhs);
+				const rhsId = appendData(syntaxTree.rhs);
 				const id = nodes.length;
-				nodes.push({ id, type: syntaxTree.type });
-				links.push({
-					source: appendData(syntaxTree.lhs),
-					target: id,
+				const value = contest.evaluate(syntaxTree).valueOf();
+				nodes.push({
+					id,
+					type: syntaxTree.type,
+					label: `${value}`,
+					scale: 0,
+					radius: radiusOf(value),
 				});
 				links.push({
-					source: appendData(syntaxTree.rhs),
+					source: lhsId,
 					target: id,
+					distance: 50,
+				});
+				links.push({
+					source: rhsId,
+					target: id,
+					distance: 50,
+				});
+				animations.push({
+					parent: id,
+					children: [lhsId, rhsId],
+					syntaxTree,
 				});
 				return id;
 			}
@@ -57,8 +78,7 @@ const render = () => {
 
 	appendData(rootTree);
 
-	const width = $app.getBoundingClientRect().width;
-	const height = $app.getBoundingClientRect().height;
+	const {width, height} = $app.getBoundingClientRect();
 
 	const svg = d3.select('#app').append('svg');
 
@@ -70,13 +90,17 @@ const render = () => {
 		.data(links)
 		.enter()
 		.append('line')
-		.attr('stroke-width', 1)
-		.attr('stroke', 'black');
+		.attr('stroke-width', 2)
+		.attr('stroke', 'tomato')
+		.attr('stroke-linejoin', 'round')
+		.attr('stroke-linecap', 'round')
+		.attr('opacity', 0);
 
 	const node = svg
 		.selectAll('g')
 		.data(nodes)
-		.join('g')
+		.enter()
+		.append('g')
 		.attr('cursor', 'pointer');
 
 	node
@@ -90,12 +114,12 @@ const render = () => {
 		.attr('dominant-baseline', 'central')
 		.attr('fill', 'white')
 		.attr('font-size', (d) => d.radius)
-		.text((d) => d.value);
+		.text((d) => d.label);
 
 	const simulation = d3.forceSimulation()
-		.force('link', d3.forceLink())
-		.force('collide', d3.forceCollide().radius((d) => d.radius + 10))
-		.force('charge', d3.forceManyBody())
+		.force('link', d3.forceLink().strength(0).distance((d) => d.distance))
+		.force('collide', d3.forceCollide().radius((d) => d.radius * d.scale + 5))
+		.force('charge', d3.forceManyBody().strength((0)))
 		.force('center', d3.forceCenter(width / 2, height / 2));
 
 	simulation
@@ -107,7 +131,7 @@ const render = () => {
 				.attr('x2', (d) => d.target.x)
 				.attr('y2', (d) => d.target.y);
 			node
-				.attr('transform', (d) => `translate(${d.x}, ${d.y})`);
+				.attr('transform', (d) => `translate(${d.x}, ${d.y}) scale(${d.scale})`);
 		});
 
 	simulation
@@ -130,6 +154,95 @@ const render = () => {
 				d.fx = null;
 				d.fy = null;
 			}));
+
+	const animate = (index) => {
+		const animation = animations[index];
+		const targetLinks = link.filter((d) => d.target.id === animation.parent);
+		const parentNode = node.filter((d) => d.id === animation.parent);
+		const childNodes = node.filter((d) => animation.children.includes(d.id));
+		simulation.force('center', null);
+		simulation.force('link').distance((d) => d.target.id === animation.parent ? 0 : 50);
+		simulation.force('link').strength((d) => d.target.id === animation.parent ? 1 : 0);
+		simulation.force('collide').radius((d) => animation.children.includes(d.id) ? d.radius : d.radius * d.scale + 5);
+		simulation.alphaTarget(0.1).restart();
+		setTimeout(() => {
+			simulation.alphaTarget(0);
+		}, 1000);
+		// targetLinks
+		// 	.transition()
+		// 	.ease(d3.easePoly)
+		// 	.delay(0)
+		// 	.duration(400)
+		// 	.attr('opacity', 1);
+		parentNode
+			.selectAll('circle')
+			.transition()
+			.ease(d3.easePoly)
+			.delay(0)
+			.duration(400)
+			.attr('fill', 'tomato');
+		childNodes
+			.selectAll('circle')
+			.transition()
+			.ease(d3.easePoly)
+			.delay(0)
+			.duration(400)
+			.attr('fill', 'tomato');
+		parentNode
+			.transition()
+			.ease(d3.easePoly)
+			.delay(1000)
+			.duration(400)
+			.tween('radius', (d) => {
+				return (t) => {
+					d.scale = t;
+					parentNode
+						.attr('transform', (d) => `translate(${d.x}, ${d.y}) scale(${d.scale})`);
+					simulation.nodes(nodes);
+					simulation.restart();
+				};
+			});
+		childNodes
+			.transition()
+			.ease(d3.easePoly)
+			.delay(1000)
+			.duration(400)
+			.tween('radius', (d) => {
+				return (t) => {
+					d.scale = 1 - t;
+					childNodes
+						.attr('transform', (d) => `translate(${d.x}, ${d.y}) scale(${d.scale})`);
+					simulation.nodes(nodes);
+					simulation.restart();
+				};
+			});
+		targetLinks
+			.transition()
+			.ease(d3.easePoly)
+			.delay(1000)
+			.duration(400)
+			.attr('opacity', 0);
+		parentNode
+			.selectAll('circle')
+			.transition()
+			.ease(d3.easePoly)
+			.delay(1000)
+			.duration(400)
+			.attr('fill', 'LightSalmon');
+		childNodes
+			.selectAll('circle')
+			.transition()
+			.ease(d3.easePoly)
+			.delay(1000)
+			.duration(400)
+			.attr('fill', 'LightSalmon');
+	};
+
+	for (let i = 0; i < animations.length; i++) {
+		setTimeout(() => {
+			animate(i);
+		}, 2000 * (i + 1));
+	}
 };
 
 module.exports = render;
