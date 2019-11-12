@@ -178,6 +178,8 @@ const myLog10 = (bigRatio) => {
 	return Math.log10(bigRatio) - (sign ? intLog : -intLog);
 };
 
+module.exports.myLog10 = myLog10;
+
 module.exports.battler = async (
 	execute,
 	params,

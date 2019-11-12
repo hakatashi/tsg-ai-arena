@@ -2,107 +2,92 @@ const React = require('react');
 const bigRat = require('big-rational');
 const contest = require('../../../../contests/komabasai2019-marathon.js');
 
-/**
- * @type {Object.<string, React.CSSProperties>}
- */
-const style = {
-	literal: {
-		display: 'flex',
-		margin: 5,
-		border: 'solid 1px #777',
-		borderRadius: '10%',
-		backgroundColor: '#ddd',
-		color: '#000',
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexShrink: 0,
-	},
-	operation: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	operator: {
-		display: 'flex',
-		width: 30,
-		height: 30,
-		margin: 5,
-		border: 'solid 1px #777',
-		borderRadius: '50%',
-		backgroundColor: '#ddd',
-		color: '#000',
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexShrink: 0,
-	},
-	chain: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexShrink: 0,
-	},
-	parenthesization: {
-		display: 'flex',
-		margin: 5,
-		border: 'solid 1px #777',
-		borderRadius: '5px',
-		backgroundColor: '#ddd',
-		color: '#000',
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexShrink: 0,
-	},
-	parenthesis: {
-		display: 'flex',
-		width: 10,
-		height: 60,
-		margin: 5,
-		justifyContent: 'center',
-		alignItems: 'center',
-		flexShrink: 0,
-	},
-};
-
-const SyntaxTree = ({of: syntaxTree}) => {
+const SyntaxTree = ({ of: syntaxTree }) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
+			const { value } = syntaxTree;
+			const size = 60 + contest.myLog10(value.abs().add(bigRat.one)) * 10;
 			return (
 				<span
+					className={
+						value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
+					}
 					style={{
-						...style.literal,
-						width: 60,
-						height: 60,
+						width: 30,
+						height: size,
 					}}
 				>
-					{syntaxTree.value.valueOf()}
+					{value.toDecimal(1)}
 				</span>
 			);
 		}
 		case 'operation': {
+			const operator = {
+				'+': '+',
+				'-': '-',
+				'*': '×',
+				'/': '÷',
+			}[syntaxTree.operator];
 			return (
-				<span style={style.operation}>
-					<SyntaxTree of={syntaxTree.lhs}/>
-					<span style={style.operator}>{syntaxTree.operator}</span>
-					<SyntaxTree of={syntaxTree.rhs}/>
+				<span className="operation">
+					<SyntaxTree of={syntaxTree.lhs} />
+					<span className="operator">{operator}</span>
+					<SyntaxTree of={syntaxTree.rhs} />
 				</span>
 			);
 		}
 		case 'chain': {
 			return (
-				<span style={style.chain}>
-					<SyntaxTree of={syntaxTree.lhs}/>
-					<SyntaxTree of={syntaxTree.rhs}/>
+				<span className="chain">
+					<SyntaxTree of={syntaxTree.lhs} />
+					<SyntaxTree of={syntaxTree.rhs} />
 				</span>
 			);
 		}
 		case 'parenthesization': {
 			return (
-				<span style={style.parenthesization}>
-					<span style={style.parenthesis}>(</span>
-					<SyntaxTree of={syntaxTree.body}/>
-					<span style={style.parenthesis}>)</span>
+				<span className="parenthesization">
+					<span className="parenthesis">(</span>
+					<SyntaxTree of={syntaxTree.body} />
+					<span className="parenthesis">)</span>
 				</span>
 			);
+		}
+	}
+};
+
+const evaluateOnce = (syntaxTree) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			return syntaxTree;
+		}
+		case 'operation':
+		case 'chain': {
+			if (syntaxTree.lhs.type !== 'literal') {
+				return {
+					...syntaxTree,
+					lhs: evaluateOnce(syntaxTree.lhs),
+				};
+			}
+			if (syntaxTree.rhs.type !== 'literal') {
+				return {
+					...syntaxTree,
+					rhs: evaluateOnce(syntaxTree.rhs),
+				};
+			}
+			return {
+				type: 'literal',
+				value: contest.evaluate(syntaxTree),
+			};
+		}
+		case 'parenthesization': {
+			if (syntaxTree.body.type !== 'literal') {
+				return {
+					...syntaxTree,
+					body: evaluateOnce(syntaxTree.body),
+				};
+			}
+			return syntaxTree.body;
 		}
 	}
 };
@@ -110,22 +95,34 @@ const SyntaxTree = ({of: syntaxTree}) => {
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
-		this.data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
-		this.input = this.data.turns[0].input;
-		this.output = this.data.turns[0].stdout;
-		this.syntaxTree = contest.parse(contest.normalize(this.output));
+		const data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
+		const input = data.turns[0].input;
+		// const output = data.turns[0].stdout;
+		const output = '1233 + (1 - 1234) / ( 2 + 3 * 4 - 3174731047917401274089 ) / 6 7';
+		const rootTree = contest.parse(contest.normalize(output));
+		const syntaxTree = rootTree;
+		console.log('Input:');
+		console.log(input);
+		console.log('Output:');
+		console.log(output);
+		this.state = { syntaxTree };
 	}
 
 	render() {
 		return (
-			<div className="container mt-3 mb-3">
-				<div style={{maxWidth: '100%', overflowX: 'auto'}}>
-					<SyntaxTree of={this.syntaxTree}/>
+			<div
+				className="wrapper p-3"
+				onClick={() => this.setState({
+					syntaxTree: evaluateOnce(this.state.syntaxTree),
+				})}
+			>
+				<div className="viewbox">
+					<SyntaxTree of={this.state.syntaxTree} />
 				</div>
-				<h2>Input</h2>
+				{/* <h2>Input</h2>
 				<pre>{this.input}</pre>
 				<h2>Output</h2>
-				<pre>{this.output}</pre>
+				<pre>{this.output}</pre> */}
 			</div>
 		);
 	}
