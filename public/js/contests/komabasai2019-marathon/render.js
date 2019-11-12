@@ -160,20 +160,22 @@ const render = () => {
 		const targetLinks = link.filter((d) => d.target.id === animation.parent);
 		const parentNode = node.filter((d) => d.id === animation.parent);
 		const childNodes = node.filter((d) => animation.children.includes(d.id));
+		const parentDatum = nodes.filter((d) => d.id === animation.parent);
+		const childData = nodes.filter((d) => animation.children.includes(d.id));
 		simulation.force('center', null);
-		simulation.force('link').distance((d) => d.target.id === animation.parent ? 0 : 50);
-		simulation.force('link').strength((d) => d.target.id === animation.parent ? 1 : 0);
+		simulation.force('link').links([
+			{
+				target: animation.children[0],
+				source: animation.children[1],
+			},
+		]);
+		simulation.force('link').distance(0);
+		simulation.force('link').strength(1);
 		simulation.force('collide').radius((d) => animation.children.includes(d.id) ? d.radius : d.radius * d.scale + 5);
 		simulation.alphaTarget(0.1).restart();
 		setTimeout(() => {
 			simulation.alphaTarget(0);
 		}, 1000);
-		// targetLinks
-		// 	.transition()
-		// 	.ease(d3.easePoly)
-		// 	.delay(0)
-		// 	.duration(400)
-		// 	.attr('opacity', 1);
 		parentNode
 			.selectAll('circle')
 			.transition()
@@ -216,12 +218,6 @@ const render = () => {
 					simulation.restart();
 				};
 			});
-		targetLinks
-			.transition()
-			.ease(d3.easePoly)
-			.delay(1000)
-			.duration(400)
-			.attr('opacity', 0);
 		parentNode
 			.selectAll('circle')
 			.transition()
