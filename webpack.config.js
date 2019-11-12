@@ -66,6 +66,10 @@ module.exports = (env, argv = {}) => {
 						},
 					},
 				},
+				{
+					test: /\.s?css$/,
+					loaders: ['style-loader', 'css-loader', 'sass-loader'],
+				},
 			],
 		},
 		node: {
