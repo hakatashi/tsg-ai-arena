@@ -97,8 +97,7 @@ class App extends React.Component {
 		super(props, state);
 		const data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
 		const input = data.turns[0].input;
-		// const output = data.turns[0].stdout;
-		const output = '1233 + (1 - 1234) / ( 2 + 3 * 4 - 3174731047917401274089 ) / 6 7';
+		const output = data.turns[0].stdout;
 		const rootTree = contest.parse(contest.normalize(output));
 		const syntaxTree = rootTree;
 		console.log('Input:');
