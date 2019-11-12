@@ -27,7 +27,8 @@ module.exports = (env, argv = {}) => {
 				'dragon-puzzles',
 				'komabasai2018-ai',
 				'komabasai2018-procon',
-			  	'mayfes2019-procon',
+				'mayfes2019-procon',
+				'komabasai2019-marathon',
 			].map((name) => ({
 				[`contest-${name}`]: [
 					...(argv.mode === 'development'
@@ -64,6 +65,10 @@ module.exports = (env, argv = {}) => {
 							],
 						},
 					},
+				},
+				{
+					test: /\.s?css$/,
+					loaders: ['style-loader', 'css-loader', 'sass-loader'],
 				},
 			],
 		},
