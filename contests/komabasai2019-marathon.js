@@ -33,7 +33,7 @@ const getUsedNum = (stdout) => {
 module.exports.getUsedNum = getUsedNum;
 
 const normalize = (stdout) => {
-	const infixFormula = stdout.toString().trim().replace(/\s*([+\-*/()])\s*/g, '$1').replace(/ /g, '^').replace(/[+\-*/^()]/g, ' $& ').replace(/\s+/g, ' ').trim().split(' ');
+	const infixFormula = stdout.toString().trim().replace(/\s*([+\-*/()])\s*/g, '$1').replace(/ +/g, '^').replace(/[+\-*/^()]/g, ' $& ').replace(/\s+/g, ' ').trim().split(' ');
 	return infixFormula;
 };
 
