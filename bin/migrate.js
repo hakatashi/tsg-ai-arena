@@ -9,7 +9,7 @@ mongoose.Promise = global.Promise;
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
 	await User.updateMany({}, {$set: {admin: false}});
-	for (const id of ['hakatashi', 'naan112358', 'kcz146', 'kuromunori', '__dAi00']) {
+	for (const id of ['hakatashi', 'naan112358', 'kcz146', 'kuromunori', '__dAi00', 'n4o847']) {
 		const user = await User.findOne({email: `${id}@twitter.com`});
 		if (user) {
 			user.admin = true;
