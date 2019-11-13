@@ -157,7 +157,7 @@ const evaluate = (syntaxTree) => {
 		case 'chain': {
 			const lhs = evaluate(syntaxTree.lhs);
 			const rhs = evaluate(syntaxTree.rhs);
-			return bigRat(rhs.num.toString() + lhs.num.toString());
+			return bigRat(lhs.num.toString() + rhs.num.toString());
 		}
 		case 'parenthesization': {
 			return evaluate(syntaxTree.body);
