@@ -1,6 +1,23 @@
 extends layout
 
 block head
+  link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css' integrity='sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq' crossorigin='anonymous')
+  script(defer='' src='https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js' integrity='sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz' crossorigin='anonymous')
+  script(defer='' src='https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js' integrity='sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI' crossorigin='anonymous')
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMathInElement(document.querySelector('.description'), {
+        delimiters: [{
+          left: '$$',
+          right: '$$',
+          display: true,
+        }, {
+          left: '$',
+          right: '$',
+          display: false,
+        }],
+      });
+    });
   if contest.isStarted() || (user && user.admin)
     style
 
@@ -11,7 +28,8 @@ block content
         include partials/countdown.pug
   else
     .container.content
-      != description.ja
+      .description
+        != description.ja
       h1 Submit Code
       form#checker(data-persist='garlic', method='POST', action=`/contests/${contest.id}/submissions`)
         input(type='hidden', name='_csrf', value=_csrf)
