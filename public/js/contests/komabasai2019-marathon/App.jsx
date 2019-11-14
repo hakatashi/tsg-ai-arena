@@ -135,6 +135,7 @@ class App extends React.Component {
 		console.log(output);
 		this.state = {
 			status: 'paused',
+			rootTree,
 			syntaxTree,
 			hasChain: true,
 			intervalId: null,
@@ -142,6 +143,7 @@ class App extends React.Component {
 		this.handleStep = this.handleStep.bind(this);
 		this.handlePlay = this.handlePlay.bind(this);
 		this.handlePause = this.handlePause.bind(this);
+		this.handleRewind = this.handleRewind.bind(this);
 	}
 
 	handleStep() {
@@ -179,6 +181,12 @@ class App extends React.Component {
 		});
 	}
 
+	handleRewind() {
+		this.setState({
+			syntaxTree: this.state.rootTree,
+		});
+	}
+
 	render() {
 		return (
 			<div className="wrapper p-3">
@@ -187,6 +195,14 @@ class App extends React.Component {
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
+						<button
+							type="button"
+							className="btn btn-secondary"
+							onClick={this.handleRewind}
+							disabled={this.state.status === 'playing'}
+						>
+							Rewind
+						</button>
 						{this.state.status === 'paused' ? (
 							<button
 								type="button"
