@@ -1,6 +1,8 @@
 const React = require('react');
 const bigRat = require('big-rational');
 const contest = require('../../../../contests/komabasai2019-marathon.js');
+const {FontAwesomeIcon} = require('@fortawesome/react-fontawesome');
+const {faPlay, faPause, faStepForward, faFastBackward} = require('@fortawesome/free-solid-svg-icons');
 
 const SyntaxTree = ({of: syntaxTree}) => {
 	switch (syntaxTree.type) {
@@ -201,7 +203,8 @@ class App extends React.Component {
 							onClick={this.handleRewind}
 							disabled={this.state.status === 'playing'}
 						>
-							Rewind
+							{/* Rewind */}
+							<FontAwesomeIcon icon={faFastBackward} fixedWidth />
 						</button>
 						{this.state.status === 'paused' ? (
 							<button
@@ -209,7 +212,8 @@ class App extends React.Component {
 								className="btn btn-secondary"
 								onClick={this.handlePlay}
 							>
-								Play
+								{/* Play */}
+								<FontAwesomeIcon icon={faPlay} fixedWidth />
 							</button>
 						) : (
 							<button
@@ -217,7 +221,8 @@ class App extends React.Component {
 								className="btn btn-secondary"
 								onClick={this.handlePause}
 							>
-								Pause
+								{/* Pause */}
+								<FontAwesomeIcon icon={faPause} fixedWidth />
 							</button>
 						)}
 						<button
@@ -226,7 +231,8 @@ class App extends React.Component {
 							onClick={this.handleStep}
 							disabled={this.state.status === 'playing'}
 						>
-							Step
+							{/* Step */}
+							<FontAwesomeIcon icon={faStepForward} fixedWidth />
 						</button>
 					</div>
 				</div>
