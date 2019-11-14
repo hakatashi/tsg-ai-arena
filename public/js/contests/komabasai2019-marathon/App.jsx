@@ -134,13 +134,17 @@ class App extends React.Component {
 		console.log('Output:');
 		console.log(output);
 		this.state = {
+			status: 'paused',
 			syntaxTree,
 			hasChain: true,
+			intervalId: null,
 		};
-		this.handleTick = this.handleTick.bind(this);
+		this.handleStep = this.handleStep.bind(this);
+		this.handlePlay = this.handlePlay.bind(this);
+		this.handlePause = this.handlePause.bind(this);
 	}
 
-	handleTick() {
+	handleStep() {
 		if (this.state.hasChain) {
 			const [hasChain, syntaxTree] = evaluateChain(this.state.syntaxTree);
 			if (hasChain) {
@@ -157,14 +161,58 @@ class App extends React.Component {
 		});
 	}
 
+	handlePlay() {
+		const intervalId = setInterval(() => {
+			this.handleStep();
+		}, 1000);
+		this.setState({
+			status: 'playing',
+			intervalId,
+		});
+	}
+
+	handlePause() {
+		clearInterval(this.state.intervalId);
+		this.setState({
+			status: 'paused',
+			intervalId: null,
+		});
+	}
+
 	render() {
 		return (
-			<div
-				className="wrapper p-3"
-				onClick={this.handleTick}
-			>
+			<div className="wrapper p-3">
 				<div className="viewbox">
 					<SyntaxTree of={this.state.syntaxTree} />
+				</div>
+				<div className="toolbar">
+					<div className="btn-group">
+						{this.state.status === 'paused' ? (
+							<button
+								type="button"
+								className="btn btn-secondary"
+								onClick={this.handlePlay}
+							>
+								Play
+							</button>
+						) : (
+							<button
+								type="button"
+								className="btn btn-secondary"
+								onClick={this.handlePause}
+							>
+								Pause
+							</button>
+						)}
+						<button
+							type="button"
+							className="btn btn-secondary"
+							onClick={this.handleStep}
+							disabled={this.state.status === 'playing'}
+						>
+							Step
+						</button>
+					</div>
 				</div>
 				{/* <h2>Input</h2>
 				<pre>{this.input}</pre>
