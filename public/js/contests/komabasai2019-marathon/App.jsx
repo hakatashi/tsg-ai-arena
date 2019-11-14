@@ -2,10 +2,10 @@ const React = require('react');
 const bigRat = require('big-rational');
 const contest = require('../../../../contests/komabasai2019-marathon.js');
 
-const SyntaxTree = ({ of: syntaxTree }) => {
+const SyntaxTree = ({of: syntaxTree}) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
-			const { value } = syntaxTree;
+			const {value} = syntaxTree;
 			const size = 60 + contest.myLog10(value.abs().add(bigRat.one)) * 10;
 			return (
 				<span
@@ -92,6 +92,35 @@ const evaluateOnce = (syntaxTree) => {
 	}
 };
 
+const evaluateChain = (syntaxTree) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			return [false, syntaxTree];
+		}
+		case 'operation': {
+			const [lhsHasChain, lhs] = evaluateChain(syntaxTree.lhs);
+			if (lhsHasChain) {
+				return [true, {...syntaxTree, lhs}];
+			}
+			const [rhsHasChain, rhs] = evaluateChain(syntaxTree.rhs);
+			if (rhsHasChain) {
+				return [true, {...syntaxTree, rhs}];
+			}
+			return [false, syntaxTree];
+		}
+		case 'chain': {
+			return [true, evaluateOnce(syntaxTree)];
+		}
+		case 'parenthesization': {
+			const [bodyHasChain, body] = evaluateChain(syntaxTree.body);
+			if (bodyHasChain) {
+				return [true, {...syntaxTree, body}];
+			}
+			return [false, syntaxTree];
+		}
+	}
+};
+
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
@@ -104,16 +133,35 @@ class App extends React.Component {
 		console.log(input);
 		console.log('Output:');
 		console.log(output);
-		this.state = { syntaxTree };
+		this.state = {
+			syntaxTree,
+			hasChain: true,
+		};
+		this.handleTick = this.handleTick.bind(this);
+	}
+
+	handleTick() {
+		if (this.state.hasChain) {
+			const [hasChain, syntaxTree] = evaluateChain(this.state.syntaxTree);
+			if (hasChain) {
+				this.setState({
+					hasChain: true,
+					syntaxTree,
+				});
+				return;
+			}
+		}
+		this.setState({
+			hasChain: false,
+			syntaxTree: evaluateOnce(this.state.syntaxTree),
+		});
 	}
 
 	render() {
 		return (
 			<div
 				className="wrapper p-3"
-				onClick={() => this.setState({
-					syntaxTree: evaluateOnce(this.state.syntaxTree),
-				})}
+				onClick={this.handleTick}
 			>
 				<div className="viewbox">
 					<SyntaxTree of={this.state.syntaxTree} />
