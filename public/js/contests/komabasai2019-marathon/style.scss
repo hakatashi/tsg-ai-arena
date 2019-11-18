@@ -1,3 +1,8 @@
+@mixin striped {
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
+}
+
 #app {
   box-sizing: border-box;
 }
@@ -38,8 +43,7 @@
     position: absolute;
     left: 20px;
     height: 20px;
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
-    background-size: 1rem 1rem;
+    @include striped;
   }
 }
 
@@ -81,12 +85,6 @@
   }
 }
 
-.operation {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
 .operator,
 .parenthesis {
   display: flex;
@@ -98,24 +96,6 @@
   flex-shrink: 0;
   font-size: 24px;
   font-weight: bold;
-}
-
-.chain {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  flex-shrink: 0;
-}
-
-.parenthesization {
-  display: flex;
-  // margin: 4px;
-  // border: solid 2px #b9b9b9;
-  // border-radius: 5px;
-  justify-content: center;
-  align-items: flex-end;
-  flex-shrink: 0;
-  // transform: translateY(4px);
 }
 
 .toolbar {
