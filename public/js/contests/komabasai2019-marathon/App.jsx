@@ -11,11 +11,12 @@ const {
 	faFastForward,
 } = require('@fortawesome/free-solid-svg-icons');
 
-const SyntaxTree = ({of: syntaxTree}) => {
+const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
 			const {value} = syntaxTree;
-			const size = 60 + contest.myLog10(value.abs().add(bigRat.one)) * 10;
+			const Log10MaxValue = contest.myLog10(maxValue);
+			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 400;
 			return (
 				<span
 					className={
@@ -38,28 +39,28 @@ const SyntaxTree = ({of: syntaxTree}) => {
 				'/': '÷',
 			}[syntaxTree.operator];
 			return (
-				<span className="operation">
-					<SyntaxTree of={syntaxTree.lhs} />
+				<>
+					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
 					<span className="operator">{operator}</span>
-					<SyntaxTree of={syntaxTree.rhs} />
-				</span>
+					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+				</>
 			);
 		}
 		case 'chain': {
 			return (
-				<span className="chain">
-					<SyntaxTree of={syntaxTree.lhs} />
-					<SyntaxTree of={syntaxTree.rhs} />
-				</span>
+				<>
+					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+				</>
 			);
 		}
 		case 'parenthesization': {
 			return (
-				<span className="parenthesization">
+				<>
 					<span className="parenthesis">(</span>
-					<SyntaxTree of={syntaxTree.body} />
+					<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
 					<span className="parenthesis">)</span>
-				</span>
+				</>
 			);
 		}
 	}
@@ -152,6 +153,24 @@ const generateHistory = (rootTree) => {
 	return history;
 };
 
+const getMax = (syntaxTree) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			return {...syntaxTree, value: syntaxTree.value.abs()};
+		}
+		case 'operation':
+		case 'chain': {
+			const lhs = getMax(syntaxTree.lhs);
+			const rhs = getMax(syntaxTree.rhs);
+			const self = contest.evaluate({...syntaxTree, lhs, rhs});
+			return [lhs, rhs, self].reduce((a, b) => a.value.geq(b.value) ? a : b);
+		}
+		case 'parenthesization': {
+			return getMax(syntaxTree.body);
+		}
+	}
+};
+
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
@@ -161,6 +180,7 @@ class App extends React.Component {
 		// const output = '1 2 3 + 4 5 6 * 7 8 9 / 0';
 		const rootTree = contest.parse(contest.normalize(output));
 		const history = generateHistory(rootTree);
+		const maxValue = getMax(rootTree).value;
 		console.log('Input:');
 		console.log(input);
 		console.log('Output:');
@@ -170,6 +190,7 @@ class App extends React.Component {
 			history,
 			index: 0,
 			intervalId: null,
+			maxValue,
 		};
 		this.handleFastBackward = this.handleFastBackward.bind(this);
 		this.handleStepBackward = this.handleStepBackward.bind(this);
@@ -218,11 +239,11 @@ class App extends React.Component {
 	}
 
 	render() {
-		const {playing, history, index} = this.state;
+		const {playing, history, index, maxValue} = this.state;
 		return (
-			<div className="wrapper p-3">
+			<div className="wrapper">
 				<div className="viewbox">
-					<SyntaxTree of={history[index]} />
+					<SyntaxTree of={history[index]} maxValue={maxValue} />
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
