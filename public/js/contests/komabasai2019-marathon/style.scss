@@ -44,6 +44,8 @@
     left: 20px;
     height: 20px;
     @include striped;
+    transition-duration: 400ms;
+    transition-property: width;
   }
 }
 
