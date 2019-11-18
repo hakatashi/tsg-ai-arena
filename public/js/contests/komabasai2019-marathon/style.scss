@@ -44,8 +44,12 @@
     left: 20px;
     height: 20px;
     @include striped;
-    transition-duration: 400ms;
-    transition-property: width;
+
+    .use-transition & {
+      transition-duration: 250ms;
+      transition-property: width;
+      transition-timing-function: ease-in-out;
+    }
   }
 }
 
@@ -117,8 +121,9 @@
   height: 100%;
   display: flex;
   align-items: flex-end;
-  transition-duration: 400ms;
-  transition-property: transform, opacity;
+  transition-duration: 250ms;
+  transition-property: opacity;
+  transition-timing-function: ease-in-out;
   transform-origin: center;
 
   &-exit,

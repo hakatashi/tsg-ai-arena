@@ -149,7 +149,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
 						<div className="tree">
 							<span
 								className={
@@ -176,7 +176,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 			}[syntaxTree.operator];
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
 						<div className="tree operation">
 							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
 							<span className="operator">{operator}</span>
@@ -189,7 +189,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 		case 'chain': {
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
 						<div className="tree chain">
 							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
 							<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
@@ -201,7 +201,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 		case 'parenthesization': {
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
 						<div className="tree parenthesization">
 							<span className="parenthesis">(</span>
 							<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
@@ -214,14 +214,14 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 	}
 };
 
-const SyntaxTreeWithoutTransition = ({syntaxTree, maxValue}) => {
+const SyntaxTreeWithoutTransition = ({of: syntaxTree, maxValue}) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
 			const {value} = syntaxTree;
 			const Log10MaxValue = contest.myLog10(maxValue);
 			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
 			return (
-				<div className="tree">
+				<>
 					<span
 						className={
 							value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
@@ -233,7 +233,7 @@ const SyntaxTreeWithoutTransition = ({syntaxTree, maxValue}) => {
 					>
 						{value.toDecimal(1)}
 					</span>
-				</div>
+				</>
 			);
 		}
 		case 'operation': {
@@ -244,28 +244,28 @@ const SyntaxTreeWithoutTransition = ({syntaxTree, maxValue}) => {
 				'/': '÷',
 			}[syntaxTree.operator];
 			return (
-				<div className="tree operation">
-					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+				<>
+					<SyntaxTreeWithoutTransition of={syntaxTree.lhs} maxValue={maxValue} />
 					<span className="operator">{operator}</span>
-					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
-				</div>
+					<SyntaxTreeWithoutTransition of={syntaxTree.rhs} maxValue={maxValue} />
+				</>
 			);
 		}
 		case 'chain': {
 			return (
-				<div className="tree chain">
-					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
-					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
-				</div>
+				<>
+					<SyntaxTreeWithoutTransition of={syntaxTree.lhs} maxValue={maxValue} />
+					<SyntaxTreeWithoutTransition of={syntaxTree.rhs} maxValue={maxValue} />
+				</>
 			);
 		}
 		case 'parenthesization': {
 			return (
-				<div className="tree parenthesization">
+				<>
 					<span className="parenthesis">(</span>
-					<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
+					<SyntaxTreeWithoutTransition of={syntaxTree.body} maxValue={maxValue} />
 					<span className="parenthesis">)</span>
-				</div>
+				</>
 			);
 		}
 	}
@@ -286,13 +286,13 @@ class App extends React.Component {
 		console.log('Output:');
 		console.log(output);
 		this.state = {
-			data,
 			playing: false,
 			history,
 			index: 0,
 			intervalId: null,
 			maxValue,
 			maxOperation,
+			useTransition: data.config.params.length <= 20,
 		};
 		this.handleFastBackward = this.handleFastBackward.bind(this);
 		this.handleStepBackward = this.handleStepBackward.bind(this);
@@ -311,13 +311,14 @@ class App extends React.Component {
 	}
 
 	handlePlay() {
+		const interval = this.state.useTransition ? 1000 : 1;
 		const intervalId = setInterval(() => {
 			if (this.state.index < this.state.history.length - 1) {
 				this.handleStepForward();
 			} else {
 				this.handlePause();
 			}
-		}, 1000);
+		}, interval);
 		this.setState({
 			playing: true,
 			intervalId,
@@ -341,10 +342,10 @@ class App extends React.Component {
 	}
 
 	render() {
-		const {data, playing, history, index, maxValue, maxOperation} = this.state;
+		const {playing, history, index, maxValue, maxOperation, useTransition} = this.state;
 		return (
 			<div className="wrapper">
-				<div className="statistics">
+				<div className={`statistics ${useTransition ? 'use-transition' : ''}`}>
 					<div className="statistics-item">
 						<span className="statistics-title">+</span>
 						<div className="statistics-bar" style={{width: history[index].statistics['+'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
@@ -365,9 +366,9 @@ class App extends React.Component {
 				<div className="viewbox">
 					<div className="viewbox-inner">
 						{
-							data.config.params.length <= 20
+							useTransition
 								? <SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
-								: <SyntaxTreeWithoutTransition of={history[index].syntaxTree} maxValue={maxValue} />
+								: <div className="tree"><SyntaxTreeWithoutTransition of={history[index].syntaxTree} maxValue={maxValue} /></div>
 						}
 					</div>
 				</div>
