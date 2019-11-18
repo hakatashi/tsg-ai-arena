@@ -13,6 +13,16 @@ const {
 	faFastForward,
 } = require('@fortawesome/free-solid-svg-icons');
 
+const sizeOfLiteralBar = (value, maxValue) => {
+	return 60 + (contest.myLog10(value.abs().add(bigRat.one)) / contest.myLog10(maxValue.add(bigRat.one))) * 300;
+};
+
+const sizeOfOperationBar = (value, maxValue) => {
+	return value / maxValue * 600;
+};
+
+const TRANSITION_DURATION = 250;
+
 const evaluateChain = (syntaxTree) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
@@ -141,28 +151,25 @@ const getMax = (syntaxTree) => {
 		}
 	}
 };
+
 const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
 			const {value} = syntaxTree;
-			const Log10MaxValue = contest.myLog10(maxValue);
-			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
+			const size = sizeOfLiteralBar(value, maxValue);
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
-						<div className="tree">
-							<span
-								className={
-									value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
-								}
-								style={{
-									width: 30,
-									height: size,
-								}}
-							>
-								{value.toDecimal(1)}
-							</span>
-						</div>
+					<CSSTransition key={syntaxTree.id} timeout={TRANSITION_DURATION} classNames="tree">
+						<span
+							className={
+								value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
+							}
+							style={{
+								height: size,
+							}}
+						>
+							{value.toDecimal(1)}
+						</span>
 					</CSSTransition>
 				</SwitchTransition>
 			);
@@ -176,7 +183,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 			}[syntaxTree.operator];
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={TRANSITION_DURATION} classNames="tree">
 						<div className="tree operation">
 							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
 							<span className="operator">{operator}</span>
@@ -189,7 +196,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 		case 'chain': {
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={TRANSITION_DURATION} classNames="tree">
 						<div className="tree chain">
 							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
 							<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
@@ -201,7 +208,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 		case 'parenthesization': {
 			return (
 				<SwitchTransition>
-					<CSSTransition key={syntaxTree.id} timeout={250} classNames="tree">
+					<CSSTransition key={syntaxTree.id} timeout={TRANSITION_DURATION} classNames="tree">
 						<div className="tree parenthesization">
 							<span className="parenthesis">(</span>
 							<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
@@ -218,8 +225,7 @@ const SyntaxTreeWithoutTransition = ({of: syntaxTree, maxValue}) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
 			const {value} = syntaxTree;
-			const Log10MaxValue = contest.myLog10(maxValue);
-			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
+			const size = sizeOfLiteralBar(value, maxValue);
 			return (
 				<>
 					<span
@@ -227,7 +233,6 @@ const SyntaxTreeWithoutTransition = ({of: syntaxTree, maxValue}) => {
 							value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
 						}
 						style={{
-							width: 30,
 							height: size,
 						}}
 					>
@@ -348,28 +353,30 @@ class App extends React.Component {
 				<div className={`statistics ${useTransition ? 'use-transition' : ''}`}>
 					<div className="statistics-item">
 						<span className="statistics-title">+</span>
-						<div className="statistics-bar" style={{width: history[index].statistics['+'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+						<div className="statistics-bar statistics-bar-add" style={{width: sizeOfOperationBar(history[index].statistics['+'], maxOperation)}} />
 					</div>
 					<div className="statistics-item">
 						<span className="statistics-title">-</span>
-						<div className="statistics-bar" style={{width: history[index].statistics['-'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+						<div className="statistics-bar statistics-bar-sub" style={{width: sizeOfOperationBar(history[index].statistics['-'], maxOperation)}} />
 					</div>
 					<div className="statistics-item">
 						<span className="statistics-title">×</span>
-						<div className="statistics-bar" style={{width: history[index].statistics['*'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+						<div className="statistics-bar statistics-bar-mul" style={{width: sizeOfOperationBar(history[index].statistics['*'], maxOperation)}} />
 					</div>
 					<div className="statistics-item">
 						<span className="statistics-title">÷</span>
-						<div className="statistics-bar" style={{width: history[index].statistics['/'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+						<div className="statistics-bar statistics-bar-div" style={{width: sizeOfOperationBar(history[index].statistics['/'], maxOperation)}} />
 					</div>
 				</div>
 				<div className="viewbox">
 					<div className="viewbox-inner">
-						{
-							useTransition
-								? <SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
-								: <div className="tree"><SyntaxTreeWithoutTransition of={history[index].syntaxTree} maxValue={maxValue} /></div>
-						}
+						<div className="tree">
+							{
+								useTransition
+									? <SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
+									: <SyntaxTreeWithoutTransition of={history[index].syntaxTree} maxValue={maxValue} />
+							}
+						</div>
 					</div>
 				</div>
 				<div className="toolbar">

@@ -3,6 +3,8 @@
   background-size: 1rem 1rem;
 }
 
+$transition-duration: 250ms;
+
 #app {
   box-sizing: border-box;
 }
@@ -45,8 +47,24 @@
     height: 20px;
     @include striped;
 
+    &-add {
+      background-color: #17a2b8;
+    }
+
+    &-sub {
+      background-color: #17a2b8;
+    }
+
+    &-mul {
+      background-color: #17a2b8;
+    }
+
+    &-div {
+      background-color: #17a2b8;
+    }
+
     .use-transition & {
-      transition-duration: 250ms;
+      transition-duration: $transition-duration;
       transition-property: width;
       transition-timing-function: ease-in-out;
     }
@@ -121,19 +139,93 @@
   height: 100%;
   display: flex;
   align-items: flex-end;
-  transition-duration: 250ms;
+  transition-duration: $transition-duration;
   transition-property: opacity;
   transition-timing-function: ease-in-out;
   transform-origin: center;
 
-  &-exit,
-  &-enter-active {
-    opacity: 1;
+  .literal {
+    transition-duration: $transition-duration;
+    transition-property: transform;
+    transition-timing-function: ease-out;
+    transform-origin: center;
+    z-index: 10;
   }
 
-  &-enter,
+  .operator {
+    transition-duration: $transition-duration;
+    transition-property: text-shadow, transform;
+    transition-timing-function: ease-out;
+    transform-origin: center;
+  }
+
+  $translate-chain: 20px;
+  $translate-operation: 35px;
+
+  &-enter {
+    &.chain> :first-child {
+      transform: translateX($translate-chain);
+    }
+
+    &.chain> :last-child {
+      transform: translateX(-$translate-chain);
+    }
+
+    &.operation> :first-child {
+      transform: translateX($translate-operation);
+    }
+
+    &.operation> :last-child {
+      transform: translateX(-$translate-operation);
+    }
+  }
+
+  &-enter-active {
+    > :first-child {
+      transform: translateX(0px);
+    }
+
+    > :last-child {
+      transform: translateX(0px);
+    }
+  }
+
+  &-exit {
+    > :first-child {
+      transform: translateX(0px);
+    }
+
+    > :last-child {
+      transform: translateX(0px);
+    }
+  }
+
   &-exit-active {
-    opacity: 0;
+    &.chain> :first-child {
+      transform: translateX($translate-chain);
+    }
+
+    &.chain> :last-child {
+      transform: translateX(-$translate-chain);
+    }
+
+    &.operation> :first-child {
+      transform: translateX($translate-operation);
+    }
+
+    &.operation> :last-child {
+      transform: translateX(-$translate-operation);
+    }
+  }
+
+  &-exit .operator {
+    transform: scale(1);
+    text-shadow: 0px 0px black, 0px 0px black, 0px 0px black, 0px 0px black;
+  }
+
+  &-exit-active .operator {
+    transform: scale(2);
+    text-shadow: 50px 30px black, -30px 50px black, -50px -30px black, 30px -50px black;
   }
 }
 
