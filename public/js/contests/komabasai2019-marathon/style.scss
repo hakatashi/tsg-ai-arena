@@ -54,7 +54,13 @@
   overflow-y: auto;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+}
+
+.viewbox-inner {
+  // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
+  margin: auto;
+  max-width: 100%;
+  height: 100%;
 }
 
 .literal {
@@ -63,9 +69,9 @@
   margin: 5px;
   border-radius: 5px;
   padding: 10px;
+  width: 30px;
   justify-content: flex-end;
   align-items: center;
-  flex-shrink: 0;
   writing-mode: vertical-lr;
 
   &-positive {
@@ -85,17 +91,43 @@
   }
 }
 
+.operator {
+  width: 20px;
+}
+
+.parenthesis {
+  width: 10px;
+}
+
 .operator,
 .parenthesis {
   display: flex;
+  margin: 5px;
   height: 60px;
   line-height: 60px;
-  margin: 5px;
   justify-content: center;
   align-items: flex-end;
-  flex-shrink: 0;
   font-size: 24px;
   font-weight: bold;
+}
+
+.tree {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  transition-duration: 400ms;
+  transition-property: transform, opacity;
+  transform-origin: center;
+
+  &-exit,
+  &-enter-active {
+    opacity: 1;
+  }
+
+  &-enter,
+  &-exit-active {
+    opacity: 0;
+  }
 }
 
 .toolbar {

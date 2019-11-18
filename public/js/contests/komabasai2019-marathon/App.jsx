@@ -1,6 +1,8 @@
 const React = require('react');
 const bigRat = require('big-rational');
 const contest = require('../../../../contests/komabasai2019-marathon.js');
+const {CSSTransition, TransitionGroup, SwitchTransition} = require('react-transition-group');
+const uniqueId = require('lodash/uniqueId');
 const {FontAwesomeIcon} = require('@fortawesome/react-fontawesome');
 const {
 	faFastBackward,
@@ -10,61 +12,6 @@ const {
 	faStepForward,
 	faFastForward,
 } = require('@fortawesome/free-solid-svg-icons');
-
-const SyntaxTree = ({of: syntaxTree, maxValue}) => {
-	switch (syntaxTree.type) {
-		case 'literal': {
-			const {value} = syntaxTree;
-			const Log10MaxValue = contest.myLog10(maxValue);
-			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
-			return (
-				<span
-					className={
-						value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
-					}
-					style={{
-						width: 30,
-						height: size,
-					}}
-				>
-					{value.toDecimal(1)}
-				</span>
-			);
-		}
-		case 'operation': {
-			const operator = {
-				'+': '+',
-				'-': '-',
-				'*': '×',
-				'/': '÷',
-			}[syntaxTree.operator];
-			return (
-				<>
-					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
-					<span className="operator">{operator}</span>
-					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
-				</>
-			);
-		}
-		case 'chain': {
-			return (
-				<>
-					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
-					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
-				</>
-			);
-		}
-		case 'parenthesization': {
-			return (
-				<>
-					<span className="parenthesis">(</span>
-					<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
-					<span className="parenthesis">)</span>
-				</>
-			);
-		}
-	}
-};
 
 const evaluateChain = (syntaxTree) => {
 	switch (syntaxTree.type) {
@@ -115,6 +62,7 @@ const evaluateOnce = (syntaxTree) => {
 				{
 					type: 'literal',
 					value: contest.evaluate(syntaxTree),
+					id: uniqueId(),
 				},
 			];
 		}
@@ -124,6 +72,22 @@ const evaluateOnce = (syntaxTree) => {
 				return [bodyChanged, {...syntaxTree, body}];
 			}
 			return ['()', syntaxTree.body];
+		}
+	}
+};
+
+const giveId = (syntaxTree) => {
+	const id = uniqueId();
+	switch (syntaxTree.type) {
+		case 'literal': {
+			return {...syntaxTree, id};
+		}
+		case 'operation':
+		case 'chain': {
+			return {...syntaxTree, id, lhs: giveId(syntaxTree.lhs), rhs: giveId(syntaxTree.rhs)};
+		}
+		case 'parenthesization': {
+			return {...syntaxTree, id, body: giveId(syntaxTree.body)};
 		}
 	}
 };
@@ -177,6 +141,135 @@ const getMax = (syntaxTree) => {
 		}
 	}
 };
+const SyntaxTree = ({of: syntaxTree, maxValue}) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			const {value} = syntaxTree;
+			const Log10MaxValue = contest.myLog10(maxValue);
+			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
+			return (
+				<SwitchTransition>
+					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+						<div className="tree">
+							<span
+								className={
+									value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
+								}
+								style={{
+									width: 30,
+									height: size,
+								}}
+							>
+								{value.toDecimal(1)}
+							</span>
+						</div>
+					</CSSTransition>
+				</SwitchTransition>
+			);
+		}
+		case 'operation': {
+			const operator = {
+				'+': '+',
+				'-': '-',
+				'*': '×',
+				'/': '÷',
+			}[syntaxTree.operator];
+			return (
+				<SwitchTransition>
+					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+						<div className="tree operation">
+							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+							<span className="operator">{operator}</span>
+							<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+						</div>
+					</CSSTransition>
+				</SwitchTransition>
+			);
+		}
+		case 'chain': {
+			return (
+				<SwitchTransition>
+					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+						<div className="tree chain">
+							<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+							<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+						</div>
+					</CSSTransition>
+				</SwitchTransition>
+			);
+		}
+		case 'parenthesization': {
+			return (
+				<SwitchTransition>
+					<CSSTransition key={syntaxTree.id} timeout={400} classNames="tree">
+						<div className="tree parenthesization">
+							<span className="parenthesis">(</span>
+							<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
+							<span className="parenthesis">)</span>
+						</div>
+					</CSSTransition>
+				</SwitchTransition>
+			);
+		}
+	}
+};
+
+const SyntaxTreeWithoutTransition = ({syntaxTree, maxValue}) => {
+	switch (syntaxTree.type) {
+		case 'literal': {
+			const {value} = syntaxTree;
+			const Log10MaxValue = contest.myLog10(maxValue);
+			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
+			return (
+				<div className="tree">
+					<span
+						className={
+							value.geq(bigRat.zero) ? 'literal literal-positive' : 'literal literal-negative'
+						}
+						style={{
+							width: 30,
+							height: size,
+						}}
+					>
+						{value.toDecimal(1)}
+					</span>
+				</div>
+			);
+		}
+		case 'operation': {
+			const operator = {
+				'+': '+',
+				'-': '-',
+				'*': '×',
+				'/': '÷',
+			}[syntaxTree.operator];
+			return (
+				<div className="tree operation">
+					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+					<span className="operator">{operator}</span>
+					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+				</div>
+			);
+		}
+		case 'chain': {
+			return (
+				<div className="tree chain">
+					<SyntaxTree of={syntaxTree.lhs} maxValue={maxValue} />
+					<SyntaxTree of={syntaxTree.rhs} maxValue={maxValue} />
+				</div>
+			);
+		}
+		case 'parenthesization': {
+			return (
+				<div className="tree parenthesization">
+					<span className="parenthesis">(</span>
+					<SyntaxTree of={syntaxTree.body} maxValue={maxValue} />
+					<span className="parenthesis">)</span>
+				</div>
+			);
+		}
+	}
+};
 
 class App extends React.Component {
 	constructor(props, state) {
@@ -184,7 +277,7 @@ class App extends React.Component {
 		const data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
 		const input = data.turns[0].input;
 		const output = data.turns[0].stdout;
-		const rootTree = contest.parse(contest.normalize(output));
+		const rootTree = giveId(contest.parse(contest.normalize(output)));
 		const history = generateHistory(rootTree);
 		const maxValue = getMax(rootTree).value;
 		const maxOperation = Math.max(...Object.values(history[history.length - 1].statistics));
@@ -193,6 +286,7 @@ class App extends React.Component {
 		console.log('Output:');
 		console.log(output);
 		this.state = {
+			data,
 			playing: false,
 			history,
 			index: 0,
@@ -247,7 +341,7 @@ class App extends React.Component {
 	}
 
 	render() {
-		const {playing, history, index, maxValue, maxOperation} = this.state;
+		const {data, playing, history, index, maxValue, maxOperation} = this.state;
 		return (
 			<div className="wrapper">
 				<div className="statistics">
@@ -269,7 +363,13 @@ class App extends React.Component {
 					</div>
 				</div>
 				<div className="viewbox">
-					<SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
+					<div className="viewbox-inner">
+						{
+							data.config.params.length <= 20
+								? <SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
+								: <SyntaxTreeWithoutTransition of={history[index].syntaxTree} maxValue={maxValue} />
+						}
+					</div>
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
