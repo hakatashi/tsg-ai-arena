@@ -16,7 +16,7 @@ const SyntaxTree = ({of: syntaxTree, maxValue}) => {
 		case 'literal': {
 			const {value} = syntaxTree;
 			const Log10MaxValue = contest.myLog10(maxValue);
-			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 400;
+			const size = 60 + (contest.myLog10(value.abs().add(bigRat.one)) / Log10MaxValue) * 300;
 			return (
 				<span
 					className={
@@ -98,29 +98,32 @@ const evaluateChain = (syntaxTree) => {
 const evaluateOnce = (syntaxTree) => {
 	switch (syntaxTree.type) {
 		case 'literal': {
-			return [false, syntaxTree];
+			return [null, syntaxTree];
 		}
 		case 'operation':
 		case 'chain': {
 			const [lhsChanged, lhs] = evaluateOnce(syntaxTree.lhs);
 			if (lhsChanged) {
-				return [true, {...syntaxTree, lhs}];
+				return [lhsChanged, {...syntaxTree, lhs}];
 			}
 			const [rhsChanged, rhs] = evaluateOnce(syntaxTree.rhs);
 			if (rhsChanged) {
-				return [true, {...syntaxTree, rhs}];
+				return [rhsChanged, {...syntaxTree, rhs}];
 			}
-			return [true, {
-				type: 'literal',
-				value: contest.evaluate(syntaxTree),
-			}];
+			return [
+				syntaxTree.type === 'operation' ? syntaxTree.operator : '^',
+				{
+					type: 'literal',
+					value: contest.evaluate(syntaxTree),
+				},
+			];
 		}
 		case 'parenthesization': {
 			const [bodyChanged, body] = evaluateOnce(syntaxTree.body);
 			if (bodyChanged) {
-				return [true, {...syntaxTree, body}];
+				return [bodyChanged, {...syntaxTree, body}];
 			}
-			return [true, syntaxTree.body];
+			return ['()', syntaxTree.body];
 		}
 	}
 };
@@ -128,11 +131,12 @@ const evaluateOnce = (syntaxTree) => {
 const generateHistory = (rootTree) => {
 	let changed = false;
 	let syntaxTree = rootTree;
-	const history = [syntaxTree];
+	let statistics = {'+': 0, '-': 0, '*': 0, '/': 0};
+	const history = [{statistics, syntaxTree}];
 	while (true) {
 		[changed, syntaxTree] = evaluateChain(syntaxTree);
 		if (changed) {
-			history.push(syntaxTree);
+			history.push({statistics, syntaxTree});
 		} else {
 			break;
 		}
@@ -141,7 +145,10 @@ const generateHistory = (rootTree) => {
 		try {
 			[changed, syntaxTree] = evaluateOnce(syntaxTree);
 			if (changed) {
-				history.push(syntaxTree);
+				if (changed in statistics) {
+					statistics = {...statistics, [changed]: statistics[changed] + 1};
+				}
+				history.push({statistics, syntaxTree});
 			} else {
 				break;
 			}
@@ -181,6 +188,7 @@ class App extends React.Component {
 		const rootTree = contest.parse(contest.normalize(output));
 		const history = generateHistory(rootTree);
 		const maxValue = getMax(rootTree).value;
+		const maxOperation = Math.max(...Object.values(history[history.length - 1].statistics));
 		console.log('Input:');
 		console.log(input);
 		console.log('Output:');
@@ -191,6 +199,7 @@ class App extends React.Component {
 			index: 0,
 			intervalId: null,
 			maxValue,
+			maxOperation,
 		};
 		this.handleFastBackward = this.handleFastBackward.bind(this);
 		this.handleStepBackward = this.handleStepBackward.bind(this);
@@ -239,11 +248,29 @@ class App extends React.Component {
 	}
 
 	render() {
-		const {playing, history, index, maxValue} = this.state;
+		const {playing, history, index, maxValue, maxOperation} = this.state;
 		return (
 			<div className="wrapper">
+				<div className="statistics">
+					<div className="statistics-item">
+						<span className="statistics-title">+</span>
+						<div className="statistics-bar" style={{width: history[index].statistics['+'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+					</div>
+					<div className="statistics-item">
+						<span className="statistics-title">-</span>
+						<div className="statistics-bar" style={{width: history[index].statistics['-'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+					</div>
+					<div className="statistics-item">
+						<span className="statistics-title">×</span>
+						<div className="statistics-bar" style={{width: history[index].statistics['*'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+					</div>
+					<div className="statistics-item">
+						<span className="statistics-title">÷</span>
+						<div className="statistics-bar" style={{width: history[index].statistics['/'] / maxOperation * 600, backgroundColor: '#17a2b8'}} />
+					</div>
+				</div>
 				<div className="viewbox">
-					<SyntaxTree of={history[index]} maxValue={maxValue} />
+					<SyntaxTree of={history[index].syntaxTree} maxValue={maxValue} />
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
