@@ -169,7 +169,7 @@ const getMax = (syntaxTree) => {
 		case 'chain': {
 			const lhs = getMax(syntaxTree.lhs);
 			const rhs = getMax(syntaxTree.rhs);
-			const self = contest.evaluate({...syntaxTree, lhs, rhs});
+			const self = {type: 'literal', value: contest.evaluate({...syntaxTree, lhs, rhs})};
 			return [lhs, rhs, self].reduce((a, b) => a.value.geq(b.value) ? a : b);
 		}
 		case 'parenthesization': {
@@ -184,7 +184,6 @@ class App extends React.Component {
 		const data = JSON.parse(document.querySelector('meta[name="data"]').getAttribute('content'));
 		const input = data.turns[0].input;
 		const output = data.turns[0].stdout;
-		// const output = '1 2 3 + 4 5 6 * 7 8 9 / 0';
 		const rootTree = contest.parse(contest.normalize(output));
 		const history = generateHistory(rootTree);
 		const maxValue = getMax(rootTree).value;
