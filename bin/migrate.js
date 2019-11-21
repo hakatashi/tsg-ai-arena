@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const {stripIndent} = require('common-tags');
 const Contest = require('../models/Contest');
 const User = require('../models/User');
+const Battle = require('../models/Battle');
+const Match = require('../models/Match');
+const Submission = require('../models/Submission');
+const Turn = require('../models/Turn');
 
 mongoose.Promise = global.Promise;
 
@@ -15,6 +19,17 @@ mongoose.Promise = global.Promise;
 			user.admin = true;
 			await user.save();
 		}
+	}
+
+	const contest = await Contest.findOne({id: 'komabasai2019-marathon'});
+	if (contest) {
+		const battles = await Battle.find({contest});
+		for (const battle of battles) {
+			await Turn.deleteMany({battle});
+		}
+		await Battle.deleteMany({contest});
+		await Match.deleteMany({contest});
+		await Submission.deleteMany({contest});
 	}
 
 	await Contest.updateOne({id: 'komabasai2019-marathon'}, {
