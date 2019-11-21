@@ -72,7 +72,9 @@ const parse = (infixFormula) => {
 	const level2Operator = ['+', '-', '*', '/', '^'];
 	let topRawNumber = 0;
 	const operation = () => {
-		if (operandStack.length < 2) throw new Error('InvalidFormula');
+		if (operandStack.length < 2) {
+throw new Error('InvalidFormula');
+}
 		const rhs = operandStack.pop();
 		const lhs = operandStack.pop();
 		const operator = operatorStack.pop();
@@ -89,7 +91,9 @@ const parse = (infixFormula) => {
 			topRawNumber = 0;
 			operandStack.push({type: 'operation', operator: '/', lhs, rhs});
 		} else {
-			if (topRawNumber < 2) throw new Error('InvalidFormula');
+			if (topRawNumber < 2) {
+throw new Error('InvalidFormula');
+}
 			--topRawNumber;
 			operandStack.push({type: 'chain', lhs, rhs});
 		}
@@ -116,7 +120,9 @@ const parse = (infixFormula) => {
 			while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
 				operation();
 			}
-			if (operatorStack.length === 0) throw new Error('InvalidFormula');
+			if (operatorStack.length === 0) {
+throw new Error('InvalidFormula');
+}
 			operatorStack.pop();
 			const body = operandStack.pop();
 			operandStack.push({type: 'parenthesization', body});
@@ -126,10 +132,14 @@ const parse = (infixFormula) => {
 		}
 	}
 	while (operatorStack.length > 0) {
-		if (!level2Operator.includes(operatorStack[operatorStack.length - 1])) throw new Error('InvalidFormula');
+		if (!level2Operator.includes(operatorStack[operatorStack.length - 1])) {
+throw new Error('InvalidFormula');
+}
 		operation();
 	}
-	if (operandStack.length !== 1) throw new Error('InvalidFormula');
+	if (operandStack.length !== 1) {
+throw new Error('InvalidFormula');
+}
 	return operandStack.pop();
 };
 
@@ -148,7 +158,9 @@ const evaluate = (syntaxTree) => {
 				case '-': return lhs.subtract(rhs);
 				case '*': return lhs.multiply(rhs);
 				case '/': {
-					if (rhs.equals(bigRat.zero)) throw new Error('DivisionByZero');
+					if (rhs.equals(bigRat.zero)) {
+throw new Error('DivisionByZero');
+}
 					return lhs.divide(rhs);
 				}
 			}
@@ -199,16 +211,16 @@ module.exports.battler = async (
 			const syntaxTree = parse(infixFormula);
 			const result = evaluate(syntaxTree);
 			const error = bigRat(100).subtract(result).abs();
-			state.score = Math.floor(myLog10(error.add(1)) * 100000000);
+			state.score = 1e12 - Math.floor(myLog10(error.add(1)) * 100000000);
 		} catch (e) {
-			state.score = 1e12;
+			state.score = 0;
 		}
 	} else {
 		if (usedNumbers.length <= 20) {
 			console.log(usedNumbers);
 			console.log(state.sequence);
 		}
-		state.score = 1e12;
+		state.score = 0;
 	}
 	return {
 		result: 'settled',
