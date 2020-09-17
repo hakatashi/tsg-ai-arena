@@ -1,195 +1,307 @@
 /* eslint array-plural/array-plural: off */
-
+// 
+const {stripIndent} = require('common-tags');
 const noop = require('lodash/noop');
-const chunk = require('lodash/chunk');
 const sumBy = require('lodash/sumBy');
+const isEqual = require('lodash/isEqual');
+const bigRat = require('big-rational');
+const { isInteger } = require('lodash');
+const { match } = require('sinon');
 
 module.exports.presets = {};
 
-const initMaps = (height, width) => {
-	const field = Array(width * height).fill(0).map((index) => ({
-		num: Math.floor(Math.random() * 201) - 100,
-		visited: index === 0,
-	}));
-	return field;
+const BOARD_WIDTH = 4000;
+module.exports.BOARD_WIDTH = BOARD_WIDTH;
+const BOARD_HEIGHT = 4000;
+module.exports.BOARD_HEIGHT = BOARD_HEIGHT;
+const generateBoard = (length, minCost, maxCost) => {
+	const getRandomInt = (min, max) => {
+		return Math.round(
+			Math.random() * (max - min + 0.9) + min - 0.45
+		);
+	};
+
+	const usedCoords = new Set();
+	const newCoord = () => {
+		const ret = {};
+		do {
+			ret.x = getRandomInt(-BOARD_WIDTH, BOARD_WIDTH);
+			ret.y = getRandomInt(-BOARD_HEIGHT, BOARD_HEIGHT);
+		} while (usedCoords.has(ret));
+		usedCoords.add(ret);
+		return ret;
+	};
+
+	return Array(length).fill(0).map((index) => {
+		const coord = newCoord();
+		const cost = getRandomInt(minCost, maxCost);
+		return {
+			x: coord.x,
+			y: coord.y,
+			cost
+		};
+	});
 };
 
-module.exports.initMaps = initMaps;
+const parseInput = (stdin) => {
+	const lines = stdin.toString().split('\n');
+	lines.shift();
+	lines.pop();
+	return lines.map(str => {
+		const tower = str.split(' ').map(x => parseInt(x));
+		return {
+			x : tower[0],
+			y : tower[1],
+			cost : BigInt(tower[2]),
+			activated : false,
+			pressed : BigInt(0),
+			antenna : 0
+		};
+	});
+};
+
+module.exports.parseInput = parseInput;
+
+const parseOutput = (stdout, numTower) => {
+	const lines = stdout.toString().split('\n');
+	const numOperation = parseInt(lines.shift());
+	if (lines[lines.length - 1] == "")
+		lines.pop();
+	
+	if (!isInteger(numOperation) || numOperation < 0 || 200000 < numOperation)
+		throw new Error('Invalid Answer: M is invalid or null');
+	
+	const operations = lines.map(line => {
+		const arr = line.split(' ');
+		if (arr.length != 2)
+			throw new Error('Invalid Answer: presentation error');
+		const op = arr.map(x => parseInt(x)).filter(x => isInteger(x));
+		if (op.length != 2)
+			throw new Error('Invalid Answer: parse error');
+		if (op[0] <= 0 || numTower < op[0] || op[1] <= 0 || 1000000000000 < op[1])
+			throw new Error('Invalid Answer: invalid operation');
+		
+		return {
+			id : op[0],
+			t : BigInt(op[1])
+		};
+	});
+	if (operations.length != numOperation)
+		throw new Error('Invalid Answer: too many or few output');
+
+	return operations;
+};
+
+module.exports.parseOutput = parseOutput;
+
+const normSq = (tw1, tw2) => {
+	const dx = BigInt(tw2.x - tw1.x);
+	const dy = BigInt(tw2.y - tw1.y);
+	return dx * dx + dy * dy;
+};
+
+module.exports.normSq = normSq;
+
+const WORST_SCORE = 32 * (10 ** 9);
+module.exports.WORST_SCORE = WORST_SCORE;
+
+const operate = (towers, op, time) => {
+	const tower = towers[op.id - 1];
+	if (!tower.activated)
+		return {
+			activatedList : [],
+			time : 0n
+		};
+	
+	tower.pressed += op.t;
+	tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+	time += op.t;
+
+	const activatedList = [];
+	for (let i = 0; i < towers.length; i++) {
+		const tw = towers[i];
+		if (normSq(tower, tw) * tower.cost <= tower.pressed) {
+			if (!tw.activated)
+				activatedList.push(i);
+			
+			towers[i].activated = true;
+		}
+	}
+
+	return {
+		activatedList,
+		time
+	};
+};
+
+module.exports.operate = operate;
+
+const calcScore = (towers, operations) => {
+	let total = 0n;
+	operations.forEach(op => {
+		const {time} = operate(towers, op, total);
+		if (towers.length == 20)
+			console.log(time);
+		total = time;
+	});
+
+	if (towers.reduce((acc, tw) => { return acc && tw.activated; }, true))
+		return (total >= WORST_SCORE ? WORST_SCORE : Number(total));
+	else
+		return WORST_SCORE;
+};
+
+module.exports.calcScore = calcScore;
+
+const getUsedNum = (stdout) => {
+	const usedNum = stdout.toString().trim().split('\n')[0].replace(/[+\-*/ ()]+/g, ' ').replace(/\s+/g, ' ').trim().split(' ').map((token) => parseInt(token)).sort();
+	return usedNum;
+};
+
+module.exports.getUsedNum = getUsedNum;
 
 const normalize = (stdout) => {
-	const lines = stdout.toString().trim().split('\n')[0].split('');
-	const dx = [0, 1, 0, -1];
-	const dy = [1, 0, -1, 0];
-	const dir = 'SENW'.split('');
-	const moves = lines.map((c) => {
-		let move = {dx: 0, dy: 0};
-		dir.forEach((direction, i) => {
-			if (c === direction) {
-				move = {
-					dx: dx[i],
-					dy: dy[i],
-				};
-			}
-		});
-		return move;
-	});
-	return moves;
+	const infixFormula = stdout.toString().trim().replace(/\s*([+\-*/()])\s*/g, '$1').replace(/ +/g, '^').replace(/[+\-*/^()]/g, ' $& ').replace(/\s+/g, ' ').trim().split(' ');
+	return infixFormula;
 };
 
 module.exports.normalize = normalize;
 
-const deserialize = (stdin) => {
-	const lines = stdin.split('\n').filter((line) => line.length > 0);
-	const [width, height] = lines[0].split(' ').map((token) => parseInt(token));
-	const field = [];
-	lines.slice(1).forEach((l, y) => {
-		const cells = l.split(' ');
-		cells.forEach((cell, x) => {
-			field.push({
-				num: parseInt(cell),
-				visited: x === 0 && y === 0,
-			});
-		});
-	});
-
-	return {
-		state: {
-			x: 0,
-			y: 0,
-			field,
-			score: field[0].num,
-		},
-		params: {
-			width,
-			height,
-		},
-	};
-};
-
-module.exports.deserialize = deserialize;
-
-const serialize = ({state, params}) => `${[
-	`${params.height} ${params.width}`,
-	...chunk(state.field, params.width).map((line) => line.map((cell) => cell.num.toString()).join(' ')),
-].join('\n')}\n`;
+const serialize = ({state, params}) => `${params.length}\n` +
+	state.sequence.map((tower) => tower.x.toString() + ' ' + tower.y.toString() + ' ' + tower.cost.toString()).join('\n') + '\n';
 
 module.exports.serialize = serialize;
-
-const isInside = (x, y, w, h) => x >= 0 && x < w && y >= 0 && y < h;
-
-module.exports.isInside = isInside;
 
 module.exports.battler = async (
 	execute,
 	params,
-	{onFrame = noop, initState} = {}
+	{onFrame = noop, initState} = {},
 ) => {
-	const field = initMaps(params.height, params.width);
 	const initialState = initState || {
-		x: 0,
-		y: 0,
-		score: field[0].num,
-		field,
+		score: 0,
+		sequence: generateBoard(params.length, params.minCost, params.maxCost),
 	};
-	const {state} = deserialize(serialize({params, state: initialState}));
-	const {stdout} = await execute(serialize({params, state: initialState}), 0);
-	const moves = normalize(stdout, params);
-	moves.forEach((move, idx) => {
-		// move
-		if (state.score !== 1e9) {
-			state.x += move.dx;
-			state.y += move.dy;
-			if (!isInside(state.x, state.y, params.width, params.height)) {
-				state.score = 1e9;
-			} else if (state.field[state.y * params.width + state.x].visited) {
-				state.score = 1e9;
-			} else {
-				state.field[state.y * params.width + state.x].visited = true;
-				state.score += state.field[state.y * params.width + state.x].num;
-			}
-			onFrame({state});
-		}
-	});
-	if (state.y !== params.height - 1 || state.x !== params.width - 1) {
-		state.score = 1e9;
+	const stdin = serialize({params, state: initialState});
+	const towers = parseInput(stdin);
+	towers[0].activated = true;
+
+	try {
+		const {stdout} = await execute(stdin, 0);
+		const operations = parseOutput(stdout);
+
+		return {
+			result: 'settled',
+			winner: 0,
+			scores: [calcScore(towers, operations)],
+		};
 	}
-	return {
-		result: 'settled',
-		winner: 0,
-		scores: [Math.abs(state.score)],
-	};
+	catch (e) {
+		console.log('error! : length = ' + params.length.toString());
+		console.log(e);
+		if (params.length <= 20) {
+			console.log(initialState.sequence);
+		}
+		return {
+			result: 'settled',
+			winner: 0,
+			scores: [WORST_SCORE],
+		};
+	}
 };
 
 module.exports.configs = [
 	{
 		default: true,
-		id: 'tiny',
-		name: '3 x 3 tiny',
-		params: {
-			mode: 'one-path',
-			height: 3,
-			width: 3,
-		},
-	},
-	{
 		id: 'small',
-		name: '5 x 5 small',
+		name: '20 small',
 		params: {
 			mode: 'random',
-			height: 5,
-			width: 5,
+			length: 20,
+			minCost: 1,
+			maxCost: 1000
 		},
 	},
 	{
-		id: 'middle',
-		name: '10 x 10 middle',
+		id: 'mid-a',
+		name: '200 midium-a',
 		params: {
 			mode: 'random',
-			height: 10,
-			width: 10,
+			length: 200,
+			minCost: 1,
+			maxCost: 1000
 		},
 	},
 	{
-		id: 'large',
-		name: '30 x 30 large',
+		id: 'mid-b',
+		name: '200 midium-b',
 		params: {
 			mode: 'random',
-			height: 30,
-			width: 30,
+			length: 200,
+			minCost: 490,
+			maxCost: 510
+		},
+	},
+	{
+		id: 'large-a',
+		name: '2000 large-a',
+		params: {
+			mode: 'random',
+			length: 2000,
+			minCost: 1,
+			maxCost: 1000
+		},
+	},
+	{
+		id: 'large-b',
+		name: '2000 large-b',
+		params: {
+			mode: 'random',
+			length: 2000,
+			minCost: 490,
+			maxCost: 510
 		},
 	},
 ];
 
-
-module.exports.matchConfigs = [
-	...Array(3)
-		.fill()
-		.map(() => ({
-			config: 'tiny',
-			players: [0],
-		})),
-	...Array(3)
+const matchConfigs = [
+	...Array(2)
 		.fill()
 		.map(() => ({
 			config: 'small',
 			players: [0],
 		})),
-	...Array(1)
+	...Array(4)
 		.fill()
 		.map(() => ({
-			config: 'middle',
+			config: 'mid-a',
 			players: [0],
 		})),
-	...Array(1)
+	...Array(4)
 		.fill()
 		.map(() => ({
-			config: 'large',
+			config: 'mid-b',
+			players: [0],
+		})),
+	...Array(3)
+		.fill()
+		.map(() => ({
+			config: 'large-a',
+			players: [0],
+		})),
+	...Array(3)
+		.fill()
+		.map(() => ({
+			config: 'large-b',
 			players: [0],
 		})),
 ];
+module.exports.matchConfigs = matchConfigs;
 
 module.exports.judgeMatch = (results) => ({
 	result: results[0].result,
 	winner: results[0].winner,
-	scores: [sumBy(results, ({scores}) => scores[0])],
+	scores: [sumBy(
+		results,
+		({scores}) => (scores[0] >= WORST_SCORE ? 0 : Math.round(10000 * (1 - Math.sqrt(scores[0]/WORST_SCORE))))
+	)],
 });
