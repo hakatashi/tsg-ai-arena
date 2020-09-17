@@ -303,6 +303,6 @@ module.exports.judgeMatch = (results) => ({
 	winner: results[0].winner,
 	scores: [sumBy(
 		results,
-		({scores}) => (scores[0] >= WORST_SCORE ? 0 : Math.round(10000 * (1 - Math.sqrt(scores[0]/WORST_SCORE))))
+		({scores}) => (scores[0] >= WORST_SCORE ? 0 : Math.round(10000 * (1 - Math.pow(scores[0]/WORST_SCORE, 0.25))))
 	)],
 });
