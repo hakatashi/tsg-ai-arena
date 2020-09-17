@@ -1,0 +1,236 @@
+@mixin striped {
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
+}
+
+$transition-duration: 250ms;
+
+#app {
+  box-sizing: border-box;
+}
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 100px 1fr 60px;
+  background-color: #fff;
+  user-select: none;
+}
+
+.statistics {
+  margin: auto;
+  width: 800px;
+  height: 100px;
+  padding: 2px;
+
+  &-item {
+    position: relative;
+    height: 24px;
+    padding: 2px;
+  }
+
+  &-title {
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  &-bar {
+    position: absolute;
+    left: 20px;
+    height: 20px;
+    @include striped;
+
+    &-add {
+      background-color: #17a2b8;
+    }
+
+    &-sub {
+      background-color: #17a2b8;
+    }
+
+    &-mul {
+      background-color: #17a2b8;
+    }
+
+    &-div {
+      background-color: #17a2b8;
+    }
+
+    .use-transition & {
+      transition-duration: $transition-duration;
+      transition-property: width;
+      transition-timing-function: ease-in-out;
+    }
+  }
+}
+
+.viewbox {
+  width: 100%;
+  height: 100%;
+  overflow-x: scroll;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.viewbox-inner {
+  // https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
+  margin: auto;
+  max-width: 100%;
+  height: 100%;
+}
+
+.literal {
+  display: flex;
+  position: relative;
+  margin: 5px;
+  border-radius: 5px;
+  padding: 10px;
+  width: 30px;
+  justify-content: flex-end;
+  align-items: center;
+  writing-mode: vertical-lr;
+
+  &-positive {
+    bottom: 5px;
+    padding-top: 25px;
+    padding-bottom: 15px;
+    color: #000;
+    background-color: #ffceb9;
+  }
+
+  &-negative {
+    bottom: -5px;
+    padding-top: 15px;
+    padding-bottom: 25px;
+    color: #fff;
+    background-color: #0080c1;
+  }
+}
+
+.operator {
+  width: 20px;
+}
+
+.parenthesis {
+  width: 10px;
+}
+
+.operator,
+.parenthesis {
+  display: flex;
+  margin: 5px;
+  height: 60px;
+  line-height: 60px;
+  justify-content: center;
+  align-items: flex-end;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.tree {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  transition-duration: $transition-duration;
+  transition-property: opacity;
+  transition-timing-function: ease-in-out;
+  transform-origin: center;
+
+  .literal {
+    transition-duration: $transition-duration;
+    transition-property: transform;
+    transition-timing-function: ease-out;
+    transform-origin: center;
+    z-index: 10;
+  }
+
+  .operator {
+    transition-duration: $transition-duration;
+    transition-property: text-shadow, transform;
+    transition-timing-function: ease-out;
+    transform-origin: center;
+  }
+
+  $translate-chain: 20px;
+  $translate-operation: 35px;
+
+  &-enter {
+    &.chain> :first-child {
+      transform: translateX($translate-chain);
+    }
+
+    &.chain> :last-child {
+      transform: translateX(-$translate-chain);
+    }
+
+    &.operation> :first-child {
+      transform: translateX($translate-operation);
+    }
+
+    &.operation> :last-child {
+      transform: translateX(-$translate-operation);
+    }
+  }
+
+  &-enter-active {
+    > :first-child {
+      transform: translateX(0px);
+    }
+
+    > :last-child {
+      transform: translateX(0px);
+    }
+  }
+
+  &-exit {
+    > :first-child {
+      transform: translateX(0px);
+    }
+
+    > :last-child {
+      transform: translateX(0px);
+    }
+  }
+
+  &-exit-active {
+    &.chain> :first-child {
+      transform: translateX($translate-chain);
+    }
+
+    &.chain> :last-child {
+      transform: translateX(-$translate-chain);
+    }
+
+    &.operation> :first-child {
+      transform: translateX($translate-operation);
+    }
+
+    &.operation> :last-child {
+      transform: translateX(-$translate-operation);
+    }
+  }
+
+  &-exit .operator {
+    transform: scale(1);
+    text-shadow: 0px 0px black, 0px 0px black, 0px 0px black, 0px 0px black;
+  }
+
+  &-exit-active .operator {
+    transform: scale(2);
+    text-shadow: 50px 30px black, -30px 50px black, -50px -30px black, 30px -50px black;
+  }
+}
+
+.toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
