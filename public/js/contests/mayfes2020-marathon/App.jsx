@@ -14,6 +14,7 @@ const {
 	faFastForward,
 	faBroadcastTower
 } = require('@fortawesome/free-solid-svg-icons');
+const { ConnectionStates } = require('mongoose');
 
 const TRANSITION_DURATION = 250;
 
@@ -125,17 +126,15 @@ const Towers = ({towers}) => {
 	return towers.map((tower, idx) => (<Tower tower={tower} id={idx}/>));
 };
 
-const generateHistory = (towers, operations) => {
-	const history = [];
+const calcTotalTime = (towers, operations) => {
 	const cur = [].concat(towers);
 	let time = 0n;
 	operations.forEach((op) => {
 		const state = contest.operate(cur, op, time);
 		time = state.time;
-		history.push(state);
 	});
 
-	return history;
+	return time;
 };
 
 const forwardHistory = (towers, operations, history, index) => {
@@ -156,6 +155,36 @@ const rewindHistory = (towers, operations, history, index) => {
 	});
 };
 
+const advanceClock = (towers, operations, deltaTime, operatingIndex, operatingTime, totalTime) => {
+	totalTime -= operatingTime;
+	towers[operations[operatingIndex].id - 1].pressed -= BigInt(operatingTime);
+	deltaTime += operatingTime;
+
+	while (deltaTime > 0 && operatingIndex < operations.length) {
+		const tower = towers[operations[operatingIndex].id - 1];
+		
+		totalTime += Math.min(deltaTime, Number(operations[operatingIndex].t));
+		tower.pressed += BigInt(Math.min(deltaTime, Number(operations[operatingIndex].t)));
+		tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+		deltaTime -= Number(operations[operatingIndex].t);
+
+		for (let i = 0; i < towers.length; i++) {
+			const tw = towers[i];
+			if (contest.normSq(tower, tw) * tower.cost <= tower.pressed)
+				towers[i].activated = true;
+		}
+		
+		if (deltaTime >= 0)
+			operatingIndex += 1;
+	}
+
+	return {
+		operatingIndex,
+		operatingTime : (operatingIndex >= operations.length ? 0 : Number(operations[operatingIndex].t) + deltaTime),
+		totalTime
+	};
+};
+
 class App extends React.Component {
 	constructor(props, state) {
 		super(props, state);
@@ -167,7 +196,7 @@ class App extends React.Component {
 		const towers = contest.parseInput(input);
 		towers[0].activated = true;
 		const operations = contest.parseOutput(output);
-		const history = generateHistory(_.cloneDeep(towers), operations);
+		const totalTime = calcTotalTime(_.cloneDeep(towers), operations);
 
 		console.log('Input:');
 		console.log(input);
@@ -176,10 +205,13 @@ class App extends React.Component {
 
 		this.state = {
 			playing: false,
-			history,
 			towers,
 			operations,
-			index: 0,
+			timeDelta: Number(totalTime / BigInt(300)),
+			time: 0,
+			originalTowers : _.cloneDeep(towers),
+			operatingIndex: 0,
+			operatingTime: 0,
 			useTransition: data.config.params.length <= 50,
 			intervalId: null
 		};
@@ -193,12 +225,9 @@ class App extends React.Component {
 	}
 
 	handleFastBackward() {
-		const {history, towers, operations, index} = this.state;
-		
-		for (let i = index; i > 0; --i)
-			rewindHistory(towers, operations, history, i);
-		
-		this.setState(() => ({index: 0}));
+		const {originalTowers} = this.state;
+
+		this.setState(() => ({towers: _.cloneDeep(originalTowers), operatingIndex: 0, operatingTime: 0, time: 0}));
 	}
 
 	handleStepBackward() {
@@ -209,9 +238,9 @@ class App extends React.Component {
 
 	handlePlay() {
 		console.log(this);
-		const interval = this.state.useTransition ? 1000 : 1;
+		const interval = this.state.useTransition ? 1 : 1;
 		const intervalId = setInterval(() => {
-			if (this.state.index < this.state.history.length) {
+			if (this.state.operatingIndex < this.state.operations.length) {
 				this.handleStepForward();
 			} else {
 				this.handlePause();
@@ -232,21 +261,21 @@ class App extends React.Component {
 	}
 
 	handleStepForward() {
-		const {history, towers, operations, index} = this.state;
-		forwardHistory(towers, operations, history, index);
-		this.setState((state) => ({index: Math.min(state.history.length, state.index + 1)}));
+		const {towers, operations, operatingIndex, operatingTime, time, timeDelta} = this.state;
+		const ret = advanceClock(towers, operations, timeDelta, operatingIndex, operatingTime, time);
+		
+		this.setState((state) => ({time: ret.totalTime, operatingIndex: ret.operatingIndex, operatingTime: ret.operatingTime}));
 	}
 
 	handleFastForward() {
-		const {history, towers, operations, index} = this.state;
-		for (let i = index; i < history.length; ++i)
-			forwardHistory(towers, operations, history, i);
+		const {towers, operations, operatingIndex, operatingTime, time} = this.state;
+		const ret = advanceClock(towers, operations, contest.WORST_SCORE, operatingIndex, operatingTime, time);
 		
-		this.setState((state) => ({index: state.history.length}));
+		this.setState((state) => ({time: ret.totalTime, operatingIndex: ret.operatingIndex, operatingTime: ret.operatingTime}));
 	}
 
 	render() {
-		const {playing, history, towers, index, useTransition} = this.state;
+		const {playing, towers, operations, operatingIndex, operatingTime, useTransition, time} = this.state;
 		return (
 			<div className="wrapper">
 				<div className="viewbox">
@@ -271,8 +300,8 @@ class App extends React.Component {
 				</div>
 				<div
 					className="score"
-					style={{ color : (index === history.length ? 'green' : 'black')}}>
-					{`Time: ${(index == 0 ? 0 : Number(history[index - 1].time))}`}
+					style={{ color : (operatingIndex == operations.length ? 'green' : 'black')}}>
+					{`Time: ${time}`}
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
@@ -280,19 +309,10 @@ class App extends React.Component {
 							type="button"
 							className="btn btn-secondary"
 							onClick={this.handleFastBackward}
-							disabled={playing || index === 0}
+							disabled={playing || time === 0}
 							title="Fast Backward"
 						>
 							<FontAwesomeIcon icon={faFastBackward} fixedWidth />
-						</button>
-						<button
-							type="button"
-							className="btn btn-secondary"
-							onClick={this.handleStepBackward}
-							disabled={playing || index === 0}
-							title="Step Backward"
-						>
-							<FontAwesomeIcon icon={faStepBackward} fixedWidth />
 						</button>
 						{playing
 							? (
@@ -318,7 +338,7 @@ class App extends React.Component {
 							type="button"
 							className="btn btn-secondary"
 							onClick={this.handleStepForward}
-							disabled={playing || index === history.length}
+							disabled={playing || operatingIndex == operations.length}
 							title="Step Forward"
 						>
 							<FontAwesomeIcon icon={faStepForward} fixedWidth />
@@ -327,7 +347,7 @@ class App extends React.Component {
 							type="button"
 							className="btn btn-secondary"
 							onClick={this.handleFastForward}
-							disabled={playing || index === history.length}
+							disabled={playing || operatingIndex == operations.length}
 							title="Fast Forward"
 						>
 							<FontAwesomeIcon icon={faFastForward} fixedWidth />
