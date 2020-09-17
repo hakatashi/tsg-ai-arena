@@ -25,8 +25,8 @@ const generateBoard = (length, minCost, maxCost) => {
 	const newCoord = () => {
 		const ret = {};
 		do {
-			ret.x = getRandomInt(-BOARD_WIDTH, BOARD_WIDTH);
-			ret.y = getRandomInt(-BOARD_HEIGHT, BOARD_HEIGHT);
+			ret.x = getRandomInt(-BOARD_WIDTH/2, BOARD_WIDTH/2);
+			ret.y = getRandomInt(-BOARD_HEIGHT/2, BOARD_HEIGHT/2);
 		} while (usedCoords.has(ret));
 		usedCoords.add(ret);
 		return ret;
@@ -68,8 +68,8 @@ const parseOutput = (stdout, numTower) => {
 	if (lines[lines.length - 1] == "")
 		lines.pop();
 	
-	if (!isInteger(numOperation) || numOperation < 0 || 200000 < numOperation)
-		throw new Error('Invalid Answer: M is invalid or null');
+	if (!isInteger(numOperation) || numOperation < 0 || 1000000 < numOperation)
+		throw new Error('Invalid Answer: M is invalid or null(' + numOperation + ')');
 	
 	const operations = lines.map(line => {
 		const arr = line.split(' ');
@@ -79,7 +79,7 @@ const parseOutput = (stdout, numTower) => {
 		if (op.length != 2)
 			throw new Error('Invalid Answer: parse error');
 		if (op[0] <= 0 || numTower < op[0] || op[1] <= 0 || 1000000000000 < op[1])
-			throw new Error('Invalid Answer: invalid operation');
+			throw new Error('Invalid Answer: invalid operation(' + arr + ')');
 		
 		return {
 			id : op[0],
@@ -184,7 +184,7 @@ module.exports.battler = async (
 	const stdin = serialize({params, state: initialState});
 	const towers = parseInput(stdin);
 	towers[0].activated = true;
-
+	
 	try {
 		const {stdout} = await execute(stdin, 0);
 		const operations = parseOutput(stdout);
@@ -198,6 +198,7 @@ module.exports.battler = async (
 	catch (e) {
 		console.log('error! : length = ' + params.length.toString());
 		console.log(e);
+		console.log(stdin);
 		if (params.length <= 20) {
 			console.log(initialState.sequence);
 		}

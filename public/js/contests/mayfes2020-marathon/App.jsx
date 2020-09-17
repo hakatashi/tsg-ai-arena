@@ -36,9 +36,9 @@ const LightsWithoutTransition = ({towers}) => {
 	return towers.map((tower, idx) => (
 		<circle
 			key={'light' + idx.toString()}
-			cx={(tower.x / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2}
-			cy={(tower.y / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2}
-			r={Math.sqrt(tower.antenna) / 2 / contest.BOARD_WIDTH * BOARD_SIZE}
+			cx={(tower.x  * 2 / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2}
+			cy={(tower.y * 2 / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2}
+			r={Math.sqrt(tower.antenna) / contest.BOARD_WIDTH * BOARD_SIZE}
 			fillOpacity="0.5"
 			fill="yellow"
 			stroke="black"
@@ -54,9 +54,9 @@ const LightsWithTransition = ({towers}) => {
 			<CSSTransition key={'dynlight-transition-' + idx.toString()} timeout={TRANSITION_DURATION} classNames="light">
 				<circle
 					key={'dynlight-' + idx.toString()}
-					cx={(tower.x / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2}
-					cy={(tower.y / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2}
-					r={Math.sqrt(tower.antenna) / 2 / contest.BOARD_WIDTH * BOARD_SIZE}
+					cx={(tower.x * 2 / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2}
+					cy={(tower.y * 2 / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2}
+					r={Math.sqrt(tower.antenna) / contest.BOARD_WIDTH * BOARD_SIZE}
 					fillOpacity="0.5"
 					fill="yellow"
 					stroke="black"
@@ -70,8 +70,8 @@ const LightsWithTransition = ({towers}) => {
 
 const Tower = ({tower}, id) => {
 	const TOWER_SIZE = BOARD_SIZE/50;
-	const tx = (tower.x / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2;
-	const ty = (tower.y / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2;
+	const tx = (tower.x * 2 / contest.BOARD_WIDTH + 1) * BOARD_SIZE / 2;
+	const ty = (tower.y * 2 / contest.BOARD_HEIGHT + 1) * BOARD_SIZE / 2;
 	return (
 	<g key={'tower'+id.toString()}>
 		<line
