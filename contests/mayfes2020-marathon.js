@@ -110,11 +110,11 @@ const operate = (towers, op, time) => {
 	if (!tower.activated)
 		return {
 			activatedList : [],
-			time : 0n
+			time : BigInt(0)
 		};
 	
 	tower.pressed += op.t;
-	tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+	tower.antenna = Number(tower.pressed * BigInt(100) / tower.cost) / 100;
 	time += op.t;
 
 	const activatedList = [];
@@ -137,7 +137,7 @@ const operate = (towers, op, time) => {
 module.exports.operate = operate;
 
 const calcScore = (towers, operations) => {
-	let total = 0n;
+	let total = BigInt(0);
 	operations.forEach(op => {
 		const {time} = operate(towers, op, total);
 		if (towers.length == 20)

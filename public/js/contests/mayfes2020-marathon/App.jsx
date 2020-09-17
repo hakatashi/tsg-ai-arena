@@ -128,7 +128,7 @@ const Towers = ({towers}) => {
 
 const calcTotalTime = (towers, operations) => {
 	const cur = [].concat(towers);
-	let time = 0n;
+	let time = BigInt(0);
 	operations.forEach((op) => {
 		const state = contest.operate(cur, op, time);
 		time = state.time;
@@ -139,8 +139,8 @@ const calcTotalTime = (towers, operations) => {
 
 const forwardHistory = (towers, operations, history, index) => {
 	const tower = towers[operations[index].id - 1];
-	tower.pressed += history[index].time - (index == 0 ? 0n : history[index - 1].time);
-	tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+	tower.pressed += history[index].time - (index == 0 ? BIgInt(0) : history[index - 1].time);
+	tower.antenna = Number(tower.pressed * BigInt(100) / tower.cost) / 100;
 	history[index].activatedList.forEach(i => {
 		towers[i].activated = true;
 	});
@@ -148,8 +148,8 @@ const forwardHistory = (towers, operations, history, index) => {
 
 const rewindHistory = (towers, operations, history, index) => {
 	const tower = towers[operations[index - 1].id - 1];
-	tower.pressed -= history[index - 1].time - (index == 1 ? 0n : history[index - 2].time);
-	tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+	tower.pressed -= history[index - 1].time - (index == 1 ? BigInt(0) : history[index - 2].time);
+	tower.antenna = Number(tower.pressed * BigInt(100) / tower.cost) / 100;
 	history[index - 1].activatedList.forEach(i => {
 		towers[i].activated = false;
 	});
@@ -165,7 +165,7 @@ const advanceClock = (towers, operations, deltaTime, operatingIndex, operatingTi
 		
 		totalTime += Math.min(deltaTime, Number(operations[operatingIndex].t));
 		tower.pressed += BigInt(Math.min(deltaTime, Number(operations[operatingIndex].t)));
-		tower.antenna = Number(tower.pressed * 100n / tower.cost) / 100;
+		tower.antenna = Number(tower.pressed * BigInt(100) / tower.cost) / 100;
 		deltaTime -= Number(operations[operatingIndex].t);
 
 		for (let i = 0; i < towers.length; i++) {
