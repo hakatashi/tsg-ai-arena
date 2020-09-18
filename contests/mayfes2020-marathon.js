@@ -224,7 +224,7 @@ module.exports.configs = [
 	},
 	{
 		id: 'mid-a',
-		name: '200 midium-a',
+		name: '200 medium-a',
 		params: {
 			mode: 'random',
 			length: 200,
@@ -234,7 +234,7 @@ module.exports.configs = [
 	},
 	{
 		id: 'mid-b',
-		name: '200 midium-b',
+		name: '200 medium-b',
 		params: {
 			mode: 'random',
 			length: 200,
