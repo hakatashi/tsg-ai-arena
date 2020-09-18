@@ -68,7 +68,7 @@ const parseOutput = (stdout, numTower) => {
 	if (lines[lines.length - 1] == "")
 		lines.pop();
 	
-	if (!isInteger(numOperation) || numOperation < 0 || 1000000 < numOperation)
+	if (!isInteger(numOperation) || numOperation < 0 || 200000 < numOperation)
 		throw new Error('Invalid Answer: M is invalid or null(' + numOperation + ')');
 	
 	const operations = lines.map(line => {
