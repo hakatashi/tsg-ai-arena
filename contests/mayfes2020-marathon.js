@@ -140,8 +140,6 @@ const calcScore = (towers, operations) => {
 	let total = BigInt(0);
 	operations.forEach(op => {
 		const {time} = operate(towers, op, total);
-		if (towers.length == 20)
-			console.log(time);
 		total = time;
 	});
 
@@ -172,6 +170,8 @@ const serialize = ({state, params}) => `${params.length}\n` +
 
 module.exports.serialize = serialize;
 
+const SMALL_STATIC_INPUT = "20\n-1695 514 334\n-201 974 555\n-1669 -554 666\n-1042 -1750 773\n162 248 889\n-446 1066 515\n-820 -1160 167\n1974 298 523\n-1173 -319 32\n-984 1720 742\n560 -1862 606\n-1074 1733 268\n-214 176 195\n432 1743 468\n1515 -543 262\n-1074 1918 108\n1169 171 896\n-1335 -961 488\n-1888 590 294\n1606 169 409\n";
+
 module.exports.battler = async (
 	execute,
 	params,
@@ -179,9 +179,9 @@ module.exports.battler = async (
 ) => {
 	const initialState = initState || {
 		score: 0,
-		sequence: generateBoard(params.length, params.minCost, params.maxCost),
+		sequence: (params.mode == 'small-static' ? {} : generateBoard(params.length, params.minCost, params.maxCost)),
 	};
-	const stdin = serialize({params, state: initialState});
+	const stdin = (params.mode == 'small-static' ? SMALL_STATIC_INPUT : serialize({params, state: initialState}));
 	const towers = parseInput(stdin);
 	towers[0].activated = true;
 	
@@ -198,7 +198,6 @@ module.exports.battler = async (
 	catch (e) {
 		console.log('error! : length = ' + params.length.toString());
 		console.log(e);
-		console.log(stdin);
 		if (params.length <= 20) {
 			console.log(initialState.sequence);
 		}
@@ -213,6 +212,16 @@ module.exports.battler = async (
 module.exports.configs = [
 	{
 		default: true,
+		id: 'small-static',
+		name: '20 small-static',
+		params: {
+			mode: 'small-static',
+			length: 20,
+			minCost: 1,
+			maxCost: 1000
+		},
+	},
+	{
 		id: 'small',
 		name: '20 small',
 		params: {
@@ -265,6 +274,12 @@ module.exports.configs = [
 ];
 
 const matchConfigs = [
+	...Array(1)
+		.fill()
+		.map(() => ({
+			config: 'small-static',
+			players: [0],
+		})),
 	...Array(2)
 		.fill()
 		.map(() => ({
