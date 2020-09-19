@@ -302,6 +302,9 @@ class App extends React.Component {
 					className="score"
 					style={{ color : (operatingIndex == operations.length ? 'green' : 'black')}}>
 					{`Time: ${time}`}
+					<div style={{ fontSize: "15px" }}>
+						{`(Score: ${(time >= contest.WORST_SCORE ? 0 : Math.round(10000 * (1 - Math.pow(time / contest.WORST_SCORE, 0.25))))})`}
+					</div>
 				</div>
 				<div className="toolbar">
 					<div className="btn-group">
