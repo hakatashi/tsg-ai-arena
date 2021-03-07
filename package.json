@@ -69,7 +69,7 @@
 		"react": "^16.11.0",
 		"react-dom": "^16.11.0",
 		"react-transition-group": "^4.3.0",
-		"reactstrap": "^8.1.1",
+		"reactstrap": "^8.9.0",
 		"sass-loader": "^11.0.1",
 		"seedrandom": "^3.0.5",
 		"shell-escape": "^0.2.0",
