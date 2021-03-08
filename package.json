@@ -60,7 +60,7 @@
 		"morgan": "^1.9.1",
 		"multer": "^2.0.0-alpha.6",
 		"node-sass-middleware": "^0.11.0",
-		"p-queue": "^6.2.0",
+		"p-queue": "^6.6.2",
 		"passport": "^0.4.0",
 		"passport-twitter": "^1.0.4",
 		"prismjs": "^1.23.0",
