@@ -55,7 +55,7 @@
 		"lusca": "^1.6.1",
 		"markdown-it": "^10.0.0",
 		"material-colors": "^1.2.6",
-		"moment": "^2.24.0",
+		"moment": "^2.29.1",
 		"mongoose": "^5.11.7",
 		"morgan": "^1.9.1",
 		"multer": "^2.0.0-alpha.6",
