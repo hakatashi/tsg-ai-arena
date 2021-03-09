@@ -33,7 +33,7 @@
 		"big-rational": "^0.10.9",
 		"bluebird": "^3.7.1",
 		"body-parser": "^1.19.0",
-		"bootstrap": "^4.3.1",
+		"bootstrap": "^4.6.0",
 		"chalk": "^2.4.2",
 		"classnames": "^2.2.6",
 		"common-tags": "^1.8.0",
