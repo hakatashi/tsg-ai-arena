@@ -42,7 +42,7 @@
 		"connect-mongo": "^3.1.2",
 		"css-loader": "^5.0.2",
 		"d3": "^6.5.0",
-		"dockerode": "^3.0.2",
+		"dockerode": "^3.2.1",
 		"dotenv": "^8.2.0",
 		"errorhandler": "^1.5.1",
 		"express": "^4.17.1",
@@ -68,7 +68,7 @@
 		"pug": "^3.0.1",
 		"react": "^17.0.1",
 		"react-dom": "^17.0.1",
-		"react-transition-group": "^4.3.0",
+		"react-transition-group": "^4.4.1",
 		"reactstrap": "^8.9.0",
 		"sass-loader": "^11.0.1",
 		"seedrandom": "^3.0.5",
@@ -76,10 +76,10 @@
 		"socket.io": "^3.1.1",
 		"style-loader": "^2.0.0",
 		"tmp": "^0.2.1",
-		"webpack": "^5.21.2",
+		"webpack": "^5.23.0",
 		"webpack-dev-middleware": "^4.1.0",
 		"webpack-hot-middleware": "^2.25.0",
-		"winston": "^3.2.1"
+		"winston": "^3.3.3"
 	},
 	"devDependencies": {
 		"@hakatashi/eslint-config": "^1.10.1",
