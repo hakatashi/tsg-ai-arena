@@ -61,7 +61,7 @@
 		"multer": "^2.0.0-alpha.6",
 		"node-sass-middleware": "^0.11.0",
 		"p-queue": "^6.6.2",
-		"passport": "^0.4.0",
+		"passport": "^0.4.1",
 		"passport-twitter": "^1.0.4",
 		"prismjs": "^1.23.0",
 		"prop-types": "^15.7.2",
