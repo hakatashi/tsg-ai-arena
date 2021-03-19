@@ -73,7 +73,7 @@
 		"sass-loader": "^11.0.1",
 		"seedrandom": "^3.0.5",
 		"shell-escape": "^0.2.0",
-		"socket.io": "^3.1.1",
+		"socket.io": "^3.1.2",
 		"style-loader": "^2.0.0",
 		"tmp": "^0.2.1",
 		"webpack": "^5.24.2",
