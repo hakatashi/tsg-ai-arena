@@ -65,7 +65,7 @@
 		"passport-twitter": "^1.0.4",
 		"prismjs": "^1.23.0",
 		"prop-types": "^15.7.2",
-		"pug": "^3.0.1",
+		"pug": "^3.0.2",
 		"react": "^17.0.1",
 		"react-dom": "^17.0.1",
 		"react-transition-group": "^4.4.1",
