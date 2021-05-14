@@ -29,7 +29,8 @@ module.exports = (env, argv = {}) => {
 				'komabasai2018-procon',
 				'mayfes2019-procon',
 				'komabasai2019-marathon',
-				'mayfes2020-marathon'
+				'mayfes2020-marathon',
+				'mayfes2021-marathon',
 			].map((name) => ({
 				[`contest-${name}`]: [
 					...(argv.mode === 'development'
