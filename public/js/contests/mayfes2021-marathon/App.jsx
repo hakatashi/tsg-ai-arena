@@ -69,6 +69,17 @@ class App extends React.Component {
     }
     requestAnimationFrame(cb)
     // FIXME: destroy the callback on unmount
+
+    document.addEventListener('keydown', (ev) => {
+      if (this.state.operatingIndex !== this.state.operations.length) {
+        if (this.state.playing) {
+          this.handlePause()
+        } else {
+          this.handlePlay()
+        }
+        ev.preventDefault()
+      }
+    })
   }
 
   resetMap () {

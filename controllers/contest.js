@@ -25,7 +25,9 @@ module.exports.base = async (req, res, next) => {
  * Home page.
  */
 module.exports.index = async (req, res) => {
-	const markdown = new MarkdownIt();
+	const markdown = new MarkdownIt({
+		html: true
+	});
 
 	const presets = await Submission.find({
 		contest: req.contest,
