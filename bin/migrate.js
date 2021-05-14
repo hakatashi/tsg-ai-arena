@@ -14,7 +14,7 @@ mongoose.Promise = global.Promise;
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
 	await User.updateMany({}, {$set: {admin: false}});
-	for (const id of ['hakatashi', 'azaika_', 'platypus999', 'hideo54', 'ishitatsuyuki', 'naan112358']) {
+	for (const id of ['hakatashi', 'azaika_', 'platypus999', 'hideo54', 'ishitatsuyuki', 'naan112358', 'noko_ut']) {
 		const user = await User.findOne({email: `${id}@twitter.com`});
 		if (user) {
 			user.admin = true;
@@ -36,8 +36,8 @@ mongoose.Promise = global.Promise;
 	await Contest.updateOne({id: 'mayfes2021-marathon'}, {
 		name: 'TSG LIVE! 6 Live Programming Contest Marathon Match',
 		id: 'mayfes2021-marathon',
-		start: new Date('2020-05-15T15:33:00+0900'),
-		end: new Date('2020-05-15T17:03:00+0900'),
+		start: new Date('2021-05-15T15:33:00+0900'),
+		end: new Date('2021-05-15T17:03:00+0900'),
 		type: 'score',
 		description: {
 			ja: fs.readFileSync(path.resolve(__dirname, "../contests/mayfes2021-marathon.md")),
