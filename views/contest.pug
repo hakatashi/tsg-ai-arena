@@ -16,6 +16,7 @@ block head
           right: '$',
           display: false,
         }],
+        ignoredTags: ["script", "noscript", "style", "textarea", "option"], // Render math inside code block
       });
     });
   if contest.isStarted() || (user && user.admin)

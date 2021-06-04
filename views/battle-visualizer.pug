@@ -21,7 +21,9 @@ block head
     script(src='/js/contest-komabasai2019-marathon.js', defer)
   else if contest.id === 'mayfes2020-marathon'
     script(src='/js/contest-mayfes2020-marathon.js', defer)
-      
+  else if contest.id === 'mayfes2021-marathon'
+    script(src='/js/contest-mayfes2021-marathon.js', defer)
+
   style.
     body {
       display: flex;
@@ -31,7 +33,7 @@ block head
     #app {
       flex: 1 1 0;
     }
-      
+
   meta(name='data', content=JSON.stringify(data))
 
 block content
