@@ -5,7 +5,7 @@ block content
     .row
       each contest in contests
         a.col-12.col-sm-6.jumbotron-wrap(href=`/contests/${contest.id}`)
-          .jumbotron(class=`contest-${contest.isStarted() ? contest.id : 'unknown'}`)
+          .contest.p-4.mb-4.rounded-3(class=`contest-${contest.isStarted() ? contest.id : 'unknown'}`)
             h1.display-5= contest.name
             p.lead
               strong= contest.spanText()

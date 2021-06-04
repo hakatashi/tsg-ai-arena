@@ -13,7 +13,7 @@ const chalk = require('chalk');
 const errorHandler = require('errorhandler');
 const lusca = require('lusca');
 const dotenv = require('dotenv');
-const MongoStore = require('connect-mongo')(session);
+const MongoStore = require('connect-mongo');
 const flash = require('express-flash');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -121,8 +121,8 @@ app.use(
 		resave: true,
 		saveUninitialized: true,
 		secret: process.env.SESSION_SECRET,
-		store: new MongoStore({
-			url: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
+		store: MongoStore.create({
+			mongoUrl: process.env.MONGODB_URI || process.env.MONGOLAB_URI,
 			autoReconnect: true,
 		}),
 	}),

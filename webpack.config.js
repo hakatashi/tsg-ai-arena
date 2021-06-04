@@ -48,7 +48,7 @@ module.exports = (env, argv = {}) => {
 		devtool:
 			argv.mode === 'production'
 				? 'source-map'
-				: 'cheap-module-eval-source-map',
+				: 'eval-cheap-module-source-map',
 		module: {
 			rules: [
 				{
@@ -70,14 +70,16 @@ module.exports = (env, argv = {}) => {
 				},
 				{
 					test: /\.s?css$/,
-					loaders: ['style-loader', 'css-loader', 'sass-loader'],
+					use: ['style-loader', 'css-loader', 'sass-loader'],
 				},
 			],
 		},
-		node: {
-			fs: 'empty',
-			net: 'empty',
-			tls: 'empty',
+		resolve: {
+			fallback: {
+				fs: false,
+				net: false,
+				tls: false,
+			},
 		},
 		plugins: [
 			new webpack.HotModuleReplacementPlugin(),

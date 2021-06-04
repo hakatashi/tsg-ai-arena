@@ -24,6 +24,13 @@ textarea {
 	resize: vertical;
 }
 
+a {
+	text-decoration: none;
+	&:hover {
+		color: inherit;
+	}
+}
+
 // Navbar
 // -------------------------
 
@@ -74,6 +81,10 @@ pre {
 
 pre.hexdump {
 	color: darkgray;
+}
+
+.contest {
+	background: lightgray;
 }
 
 .jumbotron-wrap {
