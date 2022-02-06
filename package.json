@@ -44,7 +44,7 @@
 		"css-loader": "^6.5.1",
 		"d3": "^7.3.0",
 		"dockerode": "^3.3.1",
-		"dotenv": "^12.0.3",
+		"dotenv": "^12.0.4",
 		"errorhandler": "^1.5.1",
 		"express": "^4.17.2",
 		"express-flash": "^0.0.2",
