@@ -60,7 +60,7 @@
 		"mongoose": "^6.1.8",
 		"morgan": "^1.10.0",
 		"multer": "^2.0.0-alpha.6",
-		"node-sass-middleware": "^0.11.0",
+		"node-sass-middleware": "^1.0.0",
 		"p-queue": "^7.1.0",
 		"passport": "^0.5.2",
 		"passport-twitter": "^1.0.4",
