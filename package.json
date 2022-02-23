@@ -41,7 +41,7 @@
 		"compression": "^1.7.4",
 		"concat-stream": "^2.0.0",
 		"connect-mongo": "^4.6.0",
-		"css-loader": "^6.5.1",
+		"css-loader": "^6.6.0",
 		"d3": "^7.3.0",
 		"dockerode": "^3.3.1",
 		"dotenv": "^15.0.0",
