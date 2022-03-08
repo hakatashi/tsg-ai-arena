@@ -18,9 +18,9 @@
 		"node": "^10.4.0"
 	},
 	"dependencies": {
-		"@babel/core": "^7.17.4",
+		"@babel/core": "^7.17.2",
 		"@babel/plugin-proposal-class-properties": "^7.16.7",
-		"@babel/plugin-proposal-object-rest-spread": "^7.17.3",
+		"@babel/plugin-proposal-object-rest-spread": "^7.16.7",
 		"@babel/polyfill": "^7.12.1",
 		"@babel/preset-env": "^7.16.11",
 		"@babel/preset-react": "^7.16.7",
@@ -71,13 +71,13 @@
 		"react-dom": "^17.0.2",
 		"react-transition-group": "^4.4.2",
 		"reactstrap": "^9.0.1",
-		"sass-loader": "^12.6.0",
+		"sass-loader": "^12.5.0",
 		"seedrandom": "^3.0.5",
 		"shell-escape": "^0.2.0",
 		"socket.io": "^4.4.1",
 		"style-loader": "^3.3.1",
 		"tmp": "^0.2.1",
-		"webpack": "^5.68.0",
+		"webpack": "^5.69.0",
 		"webpack-dev-middleware": "^5.3.1",
 		"webpack-hot-middleware": "^2.25.1",
 		"winston": "^3.6.0"
