@@ -18,9 +18,9 @@
 		"node": "^10.4.0"
 	},
 	"dependencies": {
-		"@babel/core": "^7.17.4",
+		"@babel/core": "^7.17.2",
 		"@babel/plugin-proposal-class-properties": "^7.16.7",
-		"@babel/plugin-proposal-object-rest-spread": "^7.17.3",
+		"@babel/plugin-proposal-object-rest-spread": "^7.16.7",
 		"@babel/polyfill": "^7.12.1",
 		"@babel/preset-env": "^7.16.11",
 		"@babel/preset-react": "^7.16.7",
@@ -60,7 +60,7 @@
 		"mongoose": "^6.2.1",
 		"morgan": "^1.10.0",
 		"multer": "^2.0.0-alpha.6",
-		"node-sass-middleware": "^1.0.0",
+		"node-sass-middleware": "^1.0.1",
 		"p-queue": "^7.2.0",
 		"passport": "^0.5.2",
 		"passport-twitter": "^1.0.4",
