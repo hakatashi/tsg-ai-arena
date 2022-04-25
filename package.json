@@ -80,7 +80,7 @@
 		"webpack": "^5.71.0",
 		"webpack-dev-middleware": "^5.3.1",
 		"webpack-hot-middleware": "^2.25.1",
-		"winston": "^3.6.0"
+		"winston": "^3.7.2"
 	},
 	"devDependencies": {
 		"@hakatashi/eslint-config": "^1.15.0",
