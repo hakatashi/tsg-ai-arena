@@ -18,11 +18,11 @@
 		"node": "^10.4.0"
 	},
 	"dependencies": {
-		"@babel/core": "^7.17.12",
+		"@babel/core": "^7.18.0",
 		"@babel/plugin-proposal-class-properties": "^7.17.12",
-		"@babel/plugin-proposal-object-rest-spread": "^7.17.12",
+		"@babel/plugin-proposal-object-rest-spread": "^7.18.0",
 		"@babel/polyfill": "^7.12.1",
-		"@babel/preset-env": "^7.17.12",
+		"@babel/preset-env": "^7.18.0",
 		"@babel/preset-react": "^7.17.12",
 		"@fortawesome/fontawesome-svg-core": "^6.1.1",
 		"@fortawesome/free-solid-svg-icons": "^6.1.1",
