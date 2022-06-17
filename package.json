@@ -70,7 +70,7 @@
 		"react": "^18.1.0",
 		"react-dom": "^18.1.0",
 		"react-transition-group": "^4.4.2",
-		"reactstrap": "^9.0.2",
+		"reactstrap": "^9.0.3",
 		"sass-loader": "^12.6.0",
 		"seedrandom": "^3.0.5",
 		"shell-escape": "^0.2.0",
