@@ -51,7 +51,7 @@
 		"express-promise-router": "^4.1.1",
 		"express-session": "^1.17.3",
 		"garlicjs": "^1.4.2",
-		"jstransformer-scss": "^1.0.0",
+		"jstransformer-scss": "^2.0.0",
 		"lodash": "^4.17.21",
 		"lusca": "^1.7.0",
 		"markdown-it": "^13.0.1",
