@@ -36,7 +36,7 @@
 		"body-parser": "^1.20.0",
 		"bootstrap": "^5.2.0",
 		"chalk": "^5.0.1",
-		"classnames": "^2.3.1",
+		"classnames": "^2.3.2",
 		"common-tags": "^1.8.2",
 		"compression": "^1.7.4",
 		"concat-stream": "^2.0.0",
