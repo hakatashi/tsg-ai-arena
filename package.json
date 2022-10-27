@@ -33,7 +33,7 @@
 		"bcrypt-nodejs": "^0.0.3",
 		"big-rational": "^0.10.9",
 		"bluebird": "^3.7.2",
-		"body-parser": "^1.20.0",
+		"body-parser": "^1.20.1",
 		"bootstrap": "^5.2.1",
 		"chalk": "^5.1.0",
 		"classnames": "^2.3.2",
