@@ -266,25 +266,10 @@ module.exports.judgeMatch = (results) => ({
 
 if (require.main === module) {
 	const params = {
-		artifacts: 10,
+		artifacts: 100,
 		experience: 2704750,
 	};
-	const artifacts = generateArtifacts(params.artifacts - 1);
-	artifacts.push({
-		id: params.artifacts,
-		level: 0,
-		excessExperience: 0,
-		statuses: [{
-			status: 1,
-			value: 3.5,
-		}, {
-			status: 5,
-			value: 1,
-		}, {
-			status: 8,
-			value: 1,
-		}],
-	});
+	const artifacts = generateArtifacts(params.artifacts);
 	const initialState = {
 		artifacts,
 		turns: 0,
@@ -294,8 +279,4 @@ if (require.main === module) {
 	const data = serialize({params, state: initialState});
 
 	console.log(data);
-
-	incrementLevel(initialState.artifacts[9]);
-
-	console.log(serialize({params, state: initialState}));
 }
