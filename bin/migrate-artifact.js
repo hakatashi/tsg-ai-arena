@@ -163,6 +163,68 @@ mongoose.Promise = global.Promise;
 				* large: 10件
 					* N = 300
 					* E = 4057125
+
+				## サンプルコード
+
+				以下のプログラムは、この問題に対して不正でない出力を行うプログラムである。
+
+				\`\`\`
+				#include <iostream>
+				#include <cstdio>
+				#include <vector>
+				using namespace std;
+
+				struct Artifact {
+					int id;
+					int level;
+					int count;
+					double s0;
+					double s1;
+					double s2;
+					double s3;
+					double s4;
+					double s5;
+					double s6;
+					double s7;
+					double s8;
+					double s9;
+				};
+
+				int main() {
+					int F, N, M, E, Ei;
+
+					while (1) {
+						cin >> F >> N >> M >> E >> Ei;
+
+						if (F == 3) {
+							fprintf(stdout, "%d %d\\n", 0, 0);
+							fflush(stdout);
+							break;
+						}
+
+						if (cin.eof()) {
+							break;
+						}
+
+						vector <struct Artifact> artifacts;
+
+						for (size_t i = 0; i < M; i++) {
+							struct Artifact artifact;
+							int temp;
+							cin >> artifact.id >> artifact.level >> temp >> artifact.count >> artifact.s0 >>
+									artifact.s1 >> artifact.s2 >> artifact.s3 >> artifact.s4 >>
+									artifact.s5 >> artifact.s6 >> artifact.s7 >> artifact.s8 >>
+									artifact.s9;
+							artifacts.push_back(artifact);
+						}
+
+						fprintf(stdout, "%d %d\\n", F + 1, 0);
+						fflush(stdout);
+					}
+
+					return 0;
+				}
+				\`\`\`
 			`,
 			en: stripIndent`
 			`,
