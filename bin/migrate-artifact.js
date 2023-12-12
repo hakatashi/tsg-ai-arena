@@ -154,13 +154,13 @@ mongoose.Promise = global.Promise;
 
 				実行ごとに、以下の制約に基づきテストケースが生成される。
 
-				* small: 1件
+				* small: 3件
 					* N = 10
 					* E = 270475
-				* medium: 10件
+				* medium: 30件
 					* N = 100
 					* E = 2704750
-				* large: 10件
+				* large: 30件
 					* N = 300
 					* E = 4057125
 

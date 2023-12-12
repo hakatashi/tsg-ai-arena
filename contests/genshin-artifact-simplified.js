@@ -244,15 +244,15 @@ module.exports.configs = [
 ];
 
 module.exports.matchConfigs = [
-	...Array(1).fill().map(() => ({
+	...Array(3).fill().map(() => ({
 		config: 'small',
 		players: [0],
 	})),
-	...Array(10).fill().map(() => ({
+	...Array(30).fill().map(() => ({
 		config: 'medium',
 		players: [0],
 	})),
-	...Array(10).fill().map(() => ({
+	...Array(30).fill().map(() => ({
 		config: 'large',
 		players: [0],
 	})),
