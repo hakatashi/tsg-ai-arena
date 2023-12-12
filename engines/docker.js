@@ -158,7 +158,7 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 			});
 
 			try {
-				await runner.timeout(15000);
+				await runner.timeout(30000);
 			} catch (error) {
 				if (error instanceof Promise.TimeoutError) {
 					logger.warn('Container timed out');
