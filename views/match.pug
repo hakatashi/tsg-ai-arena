@@ -19,7 +19,7 @@ block content
         h2 Result
         p= match.result
         
-      if contest.type === 'score'
+      if contest.type === 'score' || contest.type === 'turn-based-score'
         h2 Score
         p= match.scoreText()
       
@@ -36,7 +36,7 @@ block content
               th Config
               if contest.type === 'battle'
                 th Result
-              else if contest.type === 'score'
+              else if contest.type === 'score' || contest.type === 'turn-based-score'
                 th Score
               th Date
           tbody
@@ -66,7 +66,7 @@ block content
                       = battle.getWinner().userText()
                       = ' '
                       | Won
-                else if contest.type === 'score'
+                else if contest.type === 'score' || contest.type === 'turn-based-score'
                   td= battle.scoreText()
                 td
                   a(href=`../battles/${battle._id}`)= battle.timeText()

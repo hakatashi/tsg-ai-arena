@@ -28,7 +28,7 @@ block content
             th Config
             if contest.type === 'battle'
               th Result
-            else if contest.type === 'score'
+            else if contest.type === 'score' || contest.type === 'turn-based-score'
               th Score
             th Date
         tbody
@@ -54,7 +54,7 @@ block content
                       | Win
                     else
                       | Lose
-              else if contest.type === 'score'
+              else if contest.type === 'score' || contest.type === 'turn-based-score'
                 td= battle.scoreText()
               td
                 a(href=`/contests/${contest.id}/battles/${battle._id}`)= battle.timeText()

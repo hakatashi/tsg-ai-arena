@@ -83,6 +83,10 @@ pre.hexdump {
 	color: darkgray;
 }
 
+thead, tbody, tfoot, tr, td, th {
+	border-width: 1px;
+	padding: 0.4rem;
+}
 .contest {
 	background: lightgray;
 }

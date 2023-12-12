@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const moment = require('moment');
+const mongoose = require('mongoose');
 
 const contestSchema = new mongoose.Schema({
 	name: {type: String},
@@ -12,7 +12,7 @@ const contestSchema = new mongoose.Schema({
 	},
 	type: {
 		type: String,
-		enum: ['battle', 'score'],
+		enum: ['battle', 'score', 'turn-based-score'],
 	},
 });
 

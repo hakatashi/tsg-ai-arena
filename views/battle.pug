@@ -25,7 +25,7 @@ block content
           = ' '
           | Won
         
-    if contest.type === 'score'
+    if contest.type === 'score' || contest.type === 'turn-based-score'
       h3 Score
       
       p= battle.scores[0]

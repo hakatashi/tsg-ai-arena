@@ -1,13 +1,13 @@
 /* eslint-env browser */
-const Docker = require('dockerode');
 const assert = require('assert');
-const Promise = require('bluebird');
 const path = require('path');
-const tmp = require('tmp');
 const stream = require('stream');
+const Promise = require('bluebird');
 const {stripIndent} = require('common-tags');
-const {getCodeLimit, Deferred, createLineDrainer} = require('../lib/utils.js');
+const Docker = require('dockerode');
+const tmp = require('tmp');
 const logger = require('../lib/logger.js');
+const {getCodeLimit, Deferred, createLineDrainer} = require('../lib/utils.js');
 const fs = Promise.promisifyAll(require('fs'));
 
 const docker = new Docker();
@@ -31,22 +31,21 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 	const deferred = new Deferred();
 
 	(async () => {
-		const tmpOption = { unsafeCleanup: true };
+		const tmpOption = {unsafeCleanup: true};
 		if (process.platform === 'darwin') {
-			Object.assign(tmpOption, { dir: '/tmp' });
+			Object.assign(tmpOption, {dir: '/tmp'});
 		}
 		const {tmpPath, cleanup} = await new Promise((resolve, reject) => {
 			tmp.dir(tmpOption, (error, dTmpPath, dCleanup) => {
-					if (error) {
-						reject(error);
-					} else {
-						resolve({
-							tmpPath: dTmpPath,
-							cleanup: dCleanup,
-						});
-					}
-				},
-			);
+				if (error) {
+					reject(error);
+				} else {
+					resolve({
+						tmpPath: dTmpPath,
+						cleanup: dCleanup,
+					});
+				}
+			});
 		});
 
 		const codePath = path.join(tmpPath, 'CODE');
@@ -139,7 +138,17 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 						: {}),
 				});
 
-				await container.stop();
+				try {
+					await container.stop();
+				} catch (error) {
+					if (error.statusCode === 304) {
+						logger.info(
+							`Stopping of container conflicted: ${container.id}`,
+						);
+					} else {
+						throw error;
+					}
+				}
 				logger.info('container stopped');
 
 				await container.remove();
@@ -148,7 +157,15 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 				resolve();
 			});
 
-			await runner.timeout(15000);
+			try {
+				await runner.timeout(15000);
+			} catch (error) {
+				if (error instanceof Promise.TimeoutError) {
+					logger.warn('Container timed out');
+				} else {
+					throw error;
+				}
+			}
 
 			cleanup();
 		} catch (error) {
