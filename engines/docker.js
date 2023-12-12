@@ -162,6 +162,11 @@ module.exports = ({id, code, stdinStream}) => new Promise((rootResolve) => {
 			} catch (error) {
 				if (error instanceof Promise.TimeoutError) {
 					logger.warn('Container timed out');
+					if (!deferred.isRejected && !deferred.isResolved) {
+						deferred.resolve({
+							error: new Error('Container timed out'),
+						});
+					}
 				} else {
 					throw error;
 				}
