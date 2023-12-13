@@ -1,3 +1,4 @@
+const {inspect} = require('util');
 const noop = require('lodash/noop');
 const sample = require('lodash/sample');
 const sumBy = require('lodash/sumBy');
@@ -8,7 +9,7 @@ const normalize = (stdout) => {
 	const line = stdout.toString().trim().split('\n')[0];
 	const tokens = line.trim().split(/\s+/);
 	const selectedArtifact = parseInt(tokens[0]);
-	const usedArtifact = parseInt(tokens[0]);
+	const usedArtifact = parseInt(tokens[1]);
 	return {
 		selectedArtifact: Number.isNaN(selectedArtifact) ? 0 : selectedArtifact,
 		usedArtifact: Number.isNaN(usedArtifact) ? 0 : usedArtifact,
@@ -145,6 +146,16 @@ const requiredExperiences = [
 	117175,
 ];
 
+const calculateStockedExperience = (artifact) => {
+	let experience = artifact.excessExperience;
+
+	for (const i of Array(artifact.level).keys()) {
+		experience += requiredExperiences[i];
+	}
+
+	return experience;
+};
+
 const incrementLevel = (artifact) => {
 	if (artifact.level === 0 && artifact.statuses.length === 3) {
 		const selectedStatus = selectStatus(artifact.statuses.map(({status}) => status));
@@ -158,6 +169,22 @@ const incrementLevel = (artifact) => {
 	}
 
 	artifact.level++;
+	artifact.excessExperience = 0;
+};
+
+const addExperience = (artifact, experience) => {
+	let remainingExperience = artifact.excessExperience + experience;
+
+	while (artifact.level < 5 && remainingExperience >= requiredExperiences[artifact.level]) {
+		remainingExperience -= requiredExperiences[artifact.level];
+		incrementLevel(artifact);
+	}
+
+	if (artifact.level === 5) {
+		artifact.excessExperience = 0;
+	} else {
+		artifact.excessExperience = remainingExperience;
+	}
 };
 
 module.exports.battler = async (execute, params, {onFrame = noop, initState} = {}) => {
@@ -173,7 +200,7 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 		state = deserializedData.state;
 
 		const {stdout} = await execute(serialize({params, state}), 0);
-		const {selectedArtifact} = normalize(stdout);
+		const {selectedArtifact, usedArtifact} = normalize(stdout);
 
 		if (selectedArtifact === 0) {
 			break;
@@ -189,16 +216,37 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 			break;
 		}
 
-		const requiredExperience = requiredExperiences[artifact.level];
+		if (usedArtifact === 0) {
+			const requiredExperience = requiredExperiences[artifact.level] - artifact.excessExperience;
 
-		if (state.experience < requiredExperience) {
-			break;
+			if (state.experience < requiredExperience) {
+				break;
+			}
+
+			incrementLevel(artifact);
+
+			state.experience -= requiredExperience;
+		} else {
+			if (selectedArtifact === usedArtifact) {
+				break;
+			}
+
+			const consumedArtifact = state.artifacts.find(({id}) => id === usedArtifact);
+
+			if (consumedArtifact === undefined) {
+				break;
+			}
+
+			const stockedExperience = calculateStockedExperience(consumedArtifact);
+
+			addExperience(artifact, stockedExperience + 3780);
+
+			state.artifacts = state.artifacts.filter(({id}) => id !== usedArtifact);
 		}
 
-		incrementLevel(artifact);
-
-		state.experience -= requiredExperience;
 		state.turns++;
+
+		console.log(inspect(state, {depth: null}));
 
 		onFrame(state);
 	}
@@ -227,7 +275,7 @@ module.exports.configs = [
 		name: 'medium',
 		params: {
 			artifacts: 100,
-			experience: 2704750,
+			experience: 1352375,
 		},
 	},
 	{
@@ -235,7 +283,7 @@ module.exports.configs = [
 		name: 'large',
 		params: {
 			artifacts: 300,
-			experience: 4057125,
+			experience: 2704750,
 		},
 	},
 ];
@@ -264,7 +312,7 @@ module.exports.judgeMatch = (results) => ({
 if (require.main === module) {
 	const params = {
 		artifacts: 100,
-		experience: 2704750,
+		experience: 1352375,
 	};
 	const artifacts = generateArtifacts(params.artifacts);
 	const initialState = {

@@ -1,5 +1,6 @@
 const dragonBall = require('./dragon-ball');
 const dragonPuzzles = require('./dragon-puzzles');
+const genshinArtifact = require('./genshin-artifact');
 const genshinArtifactSimplified = require('./genshin-artifact-simplified');
 const komabasai2018Ai = require('./komabasai2018-ai');
 const komabasai2018Procon = require('./komabasai2018-procon');
@@ -24,4 +25,5 @@ module.exports = {
 	'komabasai2018-procon': komabasai2018Procon,
 	'komabasai2019-marathon': komabasai2019Marathon,
 	'genshin-artifact-simplified': genshinArtifactSimplified,
+	'genshin-artifact': genshinArtifact,
 };

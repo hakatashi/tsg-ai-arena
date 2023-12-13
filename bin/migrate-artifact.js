@@ -8,7 +8,7 @@ mongoose.Promise = global.Promise;
 	await mongoose.connect('mongodb://localhost:27017/tsg-ai-arena');
 
 	await Contest.updateOne({id: 'genshin-artifact-simplified'}, {
-		name: '原神 Heuristic Contest',
+		name: '原神 Heuristic Contest (簡易版)',
 		id: 'genshin-artifact-simplified',
 		start: new Date('1970-01-01T00:00:00.000Z'),
 		end: new Date('2038-01-19T12:14:07.000+0900'),
@@ -96,7 +96,7 @@ mongoose.Promise = global.Promise;
 
 				* 以下の数値を1行に出力せよ。
 					* I: レベルをアップさせる聖遺物のID。
-						指定された聖遺物のレベルが1上がり、ステータスが確率的に上昇する。
+						* 指定された聖遺物のレベルが1上がり、ステータスが確率的に上昇する。
 						* これ以上聖遺物のレベルを上げない場合、\`0\`を出力せよ。
 						* 存在しない聖遺物のIDを出力したり、レベルアップに必要な経験値が不足したりしている場合は不正な出力とみなされる。
 					* T: 簡易版では使用しない。
@@ -219,6 +219,161 @@ mongoose.Promise = global.Promise;
 						}
 
 						fprintf(stdout, "%d %d\\n", F + 1, 0);
+						fflush(stdout);
+					}
+
+					return 0;
+				}
+				\`\`\`
+			`,
+			en: stripIndent`
+			`,
+		},
+	}, {upsert: true});
+
+	await Contest.updateOne({id: 'genshin-artifact'}, {
+		name: '原神 Heuristic Contest',
+		id: 'genshin-artifact',
+		start: new Date('1970-01-01T00:00:00.000Z'),
+		end: new Date('2038-01-19T12:14:07.000+0900'),
+		type: 'turn-based-score',
+		description: {
+			ja: stripIndent`
+				# 原神 Heuristic Contest
+
+				## 説明
+
+				あなたは世界中で人気のオープンワールドRPG「原神」をプレイしている。
+
+				以前、あなたは「[原神 Heuristic Contest (簡易版)](/contests/genshin-artifact-simplified)」に参加し、最強の聖遺物を作り上げるための最適な戦略を考えた。しかし、聖遺物のレベルを上げるためには経験値アイテムを使用するだけでなく、他の聖遺物を素材として消費することもできることに気づいた。そこで、あなたは聖遺物のレベルを上げるための最適な戦略を再考することにした。
+
+				基本的なルールは「[原神 Heuristic Contest (簡易版)](/contests/genshin-artifact-simplified)」と同じである。しかし、以下の点が異なる。
+
+				聖遺物のレベルを上げるための手段として、経験値アイテムの他に、他の聖遺物を素材として消費することができる。聖遺物を素材として消費することで、「消費した聖遺物に投入された経験値の80%」に3780を加えた値の経験値を加えることができる。経験値を加えられた聖遺物はそれに応じたレベルアップを行い、通常の手段でレベルアップしたときと同様にステータスが確率的に上昇する。
+
+				聖遺物を素材として消費した際、レベルアップに使用されなかった余剰経験値は聖遺物に保存され、次のレベルアップ時に使用される。ただし、聖遺物のレベルが5の場合、余剰経験値は破棄される。
+
+				限られた経験値の中でレベルアップを行うための最適な戦略を考え、実装せよ。
+
+				## 入力
+
+				\`\`\`
+				F N M E Ei
+				I_1 L_1 E_1 C_1 s_1_0 s_1_1 s_1_2 ... s_1_9
+				I_2 L_2 E_2 C_2 s_2_0 s_2_1 s_2_2 ... s_2_9
+				...
+				I_M L_M E_M C_M s_M_0 s_M_1 s_M_2 ... s_M_9
+				\`\`\`
+
+				* 1行目に、以下の数値が与えられる。
+					* F: ゲーム開始から経過したターン数
+					* N: ゲーム開始時に所持していた聖遺物の数
+					* M: 現在所持している聖遺物の数
+					* E: 使用可能な残りの経験値の量
+					* Ei: ゲーム開始時点で与えられていた経験値の量
+				* i+1 (1 <= i <= M) 行目に、以下の数値が与えられる。
+					* I_i: この行が表す聖遺物のID
+						* 1 ≦ I_i ≦ N
+					* L_i: この聖遺物の現在のレベル
+						* L_i ∈ {0,1,2,3,4,5}
+					* E_i: この聖遺物が持つ余剰経験値
+					* C_i: この聖遺物が現在持っているステータスの数
+						* C_i ∈ {3,4}
+					* s_i_j: この聖遺物の現在のステータスIDがjのステータスの値。ステータスIDとステータスの名称の対応は「ステータスのIDと選択重率」に従う。
+						* s_i_j が0のとき、この聖遺物はステータスIDがjのステータスを持っていない。
+
+				## 出力
+
+				\`\`\`
+				I T
+				\`\`\`
+
+				* 以下の数値を1行に出力せよ。
+					* I: 経験値を加える聖遺物のID。
+						* レベルアップの条件を満たした場合、該当聖遺物のレベルが上がり、ステータスが確率的に上昇する。
+						* これ以上聖遺物に経験値を加えない場合、\`0\`を出力せよ。
+						* 存在しない聖遺物のIDを出力したり、レベルアップに必要な経験値が不足したりしている場合は不正な出力とみなされる。
+					* T: 聖遺物の経験値を上げるための手段。
+						* 経験値アイテムを加える場合は \`0\` を、他の聖遺物を素材として消費する場合はその聖遺物のIDを出力せよ。
+						* 経験値アイテムを加える場合、該当聖遺物のレベルが1上昇するまで所持している経験値から経験値が加えられる。
+						* I = 0 の場合は、T にどのような値を出力してもよい。
+				* 不正な出力をした場合、\`0 0\`を出力したものとみなされる。
+
+				## スコア
+
+				プログラムが T = 0 を出力した時点で、ゲームは終了する。ゲーム終了時に、最も高い聖遺物のスコアがそのままあなたのスコアとなる。
+
+				## テストケース
+
+				実行ごとに、以下の制約に基づきテストケースが生成される。
+
+				* small: 3件
+					* N = 10
+					* E = 270475
+				* medium: 30件
+					* N = 100
+					* E = 1352375
+				* large: 30件
+					* N = 300
+					* E = 2704750
+
+				## サンプルコード
+
+				以下のプログラムは、この問題に対して不正でない出力を行うプログラムである。
+
+				\`\`\`
+				#include <iostream>
+				#include <cstdio>
+				#include <vector>
+				using namespace std;
+
+				struct Artifact {
+					int id;
+					int level;
+					int count;
+					int excessExperience;
+					double s0;
+					double s1;
+					double s2;
+					double s3;
+					double s4;
+					double s5;
+					double s6;
+					double s7;
+					double s8;
+					double s9;
+				};
+
+				int main() {
+					int F, N, M, E, Ei;
+
+					while (1) {
+						cin >> F >> N >> M >> E >> Ei;
+
+						if (cin.eof()) {
+							break;
+						}
+
+						vector <struct Artifact> artifacts;
+
+						for (size_t i = 0; i < M; i++) {
+							struct Artifact artifact;
+							cin >> artifact.id >> artifact.level >> artifact.excessExperience >> artifact.count >> artifact.s0 >>
+									artifact.s1 >> artifact.s2 >> artifact.s3 >> artifact.s4 >>
+									artifact.s5 >> artifact.s6 >> artifact.s7 >> artifact.s8 >>
+									artifact.s9;
+							artifacts.push_back(artifact);
+						}
+
+						if (F == 5) {
+							fprintf(stdout, "%d %d\\n", 1, 0);
+						} else if (F == 6) {
+							fprintf(stdout, "%d %d\\n", 0, 0);
+							break;
+						} else {
+							fprintf(stdout, "%d %d\\n", 1, F + 2);
+						}
+
 						fflush(stdout);
 					}
 
