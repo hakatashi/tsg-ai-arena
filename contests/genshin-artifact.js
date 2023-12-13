@@ -1,4 +1,3 @@
-const {inspect} = require('util');
 const noop = require('lodash/noop');
 const sample = require('lodash/sample');
 const sumBy = require('lodash/sumBy');
@@ -245,8 +244,6 @@ module.exports.battler = async (execute, params, {onFrame = noop, initState} = {
 		}
 
 		state.turns++;
-
-		console.log(inspect(state, {depth: null}));
 
 		onFrame(state);
 	}
