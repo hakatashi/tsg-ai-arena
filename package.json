@@ -79,7 +79,7 @@
 		"tmp": "^0.2.1",
 		"webpack": "^5.89.0",
 		"webpack-dev-middleware": "^5.3.3",
-		"webpack-hot-middleware": "^2.25.2",
+		"webpack-hot-middleware": "^2.25.4",
 		"winston": "^3.8.1"
 	},
 	"devDependencies": {
