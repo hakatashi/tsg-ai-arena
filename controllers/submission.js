@@ -1,12 +1,12 @@
-const Submission = require('../models/Submission');
-const User = require('../models/User');
-const Battle = require('../models/Battle');
-const Match = require('../models/Match');
+const assert = require('assert');
+const qs = require('querystring');
+const concatStream = require('concat-stream');
 const runner = require('../lib/runner');
 const {getCodeLimit, transaction} = require('../lib/utils');
-const assert = require('assert');
-const concatStream = require('concat-stream');
-const qs = require('querystring');
+const Battle = require('../models/Battle');
+const Match = require('../models/Match');
+const Submission = require('../models/Submission');
+const User = require('../models/User');
 
 /*
  * GET /submissions
@@ -72,7 +72,7 @@ module.exports.getSubmission = async (req, res) => {
 
 	if (submission.contest.id !== req.params.contest) {
 		res.redirect(
-			`/contests/${submission.contest.id}/submissions/${submission._id}`
+			`/contests/${submission.contest.id}/submissions/${submission._id}`,
 		);
 		return;
 	}
@@ -100,7 +100,7 @@ module.exports.postSubmission = async (req, res) => {
 
 		if (
 			!['node', 'c-gcc', 'python3', 'cpp-clang', 'ruby'].includes(
-				req.body.language
+				req.body.language,
 			)
 		) {
 			throw new Error('language unknown');
@@ -125,7 +125,7 @@ module.exports.postSubmission = async (req, res) => {
 		if (req.files && req.files.file && req.files.file.length === 1) {
 			assert(
 				req.files.file[0].size < getCodeLimit(req.body.language),
-				'Code cannot be longer than 10,000 bytes'
+				'Code cannot be longer than 1,048,576 bytes',
 			);
 			code = await new Promise((resolve) => {
 				const stream = concatStream({encoding: 'buffer'}, resolve);
@@ -138,7 +138,7 @@ module.exports.postSubmission = async (req, res) => {
 		assert(code.length >= 1, 'Code cannot be empty');
 		assert(
 			code.length <= getCodeLimit(req.body.language),
-			'Code cannot be longer than 10,000 bytes'
+			'Code cannot be longer than 1,048,576 bytes',
 		);
 
 		const latestSubmission = await Submission.findOne({user: req.user})
@@ -215,6 +215,6 @@ module.exports.getOldSubmission = async (req, res) => {
 	}
 
 	res.redirect(
-		`/contests/${submission.contest.id}/submissions/${submission._id}`
+		`/contests/${submission.contest.id}/submissions/${submission._id}`,
 	);
 };
