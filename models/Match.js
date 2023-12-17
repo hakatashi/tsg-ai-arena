@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const moment = require('moment');
+const mongoose = require('mongoose');
 
 const matchSchema = new mongoose.Schema(
 	{
@@ -11,7 +11,7 @@ const matchSchema = new mongoose.Schema(
 		user: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 		executedAt: Date,
 	},
-	{timestamps: true}
+	{timestamps: true},
 );
 
 matchSchema.methods.versusText = function() {
@@ -25,7 +25,14 @@ matchSchema.methods.timeText = function() {
 };
 
 matchSchema.methods.scoreText = function() {
-	return this.scores[0] === null ? 'Pending' : this.scores[0];
+	const score = this.scores[0];
+	if (score === null) {
+		return 'Pending';
+	}
+	if (typeof score === 'number') {
+		return parseFloat(score.toPrecision(10));
+	}
+	return score;
 };
 
 matchSchema.methods.getOpponents = function(submission) {
@@ -50,7 +57,7 @@ matchSchema.methods.isViewableBy = function(user) {
 	}
 
 	return this.players.some(
-		(player) => !player.isPreset && player.user._id.equals(user._id)
+		(player) => !player.isPreset && player.user._id.equals(user._id),
 	);
 };
 

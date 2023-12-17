@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const moment = require('moment');
+const mongoose = require('mongoose');
 const contests = require('../contests');
 
 const battleSchema = new mongoose.Schema(
@@ -15,7 +15,7 @@ const battleSchema = new mongoose.Schema(
 		configIndex: Number,
 		match: {type: mongoose.Schema.Types.ObjectId, ref: 'Match'},
 	},
-	{timestamps: true}
+	{timestamps: true},
 );
 
 battleSchema.methods.versusText = function() {
@@ -34,7 +34,14 @@ battleSchema.methods.configText = function(contest) {
 };
 
 battleSchema.methods.scoreText = function() {
-	return this.scores[0] === null ? 'Pending' : this.scores[0];
+	const score = this.scores[0];
+	if (score === null) {
+		return 'Pending';
+	}
+	if (typeof score === 'number') {
+		return parseFloat(score.toPrecision(10));
+	}
+	return score;
 };
 
 battleSchema.methods.getOpponents = function(submission) {
@@ -59,7 +66,7 @@ battleSchema.methods.isViewableBy = function(user) {
 	}
 
 	return this.players.some(
-		(player) => !player.isPreset && player.user._id.equals(user._id)
+		(player) => !player.isPreset && player.user._id.equals(user._id),
 	);
 };
 
