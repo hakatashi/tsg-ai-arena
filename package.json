@@ -78,7 +78,7 @@
 		"style-loader": "^3.3.1",
 		"tmp": "^0.2.1",
 		"webpack": "^5.89.0",
-		"webpack-dev-middleware": "^5.3.3",
+		"webpack-dev-middleware": "^6.1.1",
 		"webpack-hot-middleware": "^2.25.4",
 		"winston": "^3.11.0"
 	},
