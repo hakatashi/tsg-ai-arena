@@ -59,7 +59,7 @@
 		"moment": "^2.29.4",
 		"mongoose": "^8.0.3",
 		"morgan": "^1.10.0",
-		"multer": "^2.0.0-alpha.6",
+		"multer": "^2.0.0-rc.4",
 		"node-sass-middleware": "^1.1.0",
 		"p-queue": "^6",
 		"passport": "^0.7.0",
