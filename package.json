@@ -25,7 +25,7 @@
 		"@babel/preset-env": "^7.24.8",
 		"@babel/preset-react": "^7.24.7",
 		"@fortawesome/fontawesome-svg-core": "^6.6.0",
-		"@fortawesome/free-solid-svg-icons": "^6.5.2",
+		"@fortawesome/free-solid-svg-icons": "^6.6.0",
 		"@fortawesome/react-fontawesome": "^0.2.2",
 		"@tweenjs/tween.js": "^23.1.2",
 		"agenda": "^5.0.0",
