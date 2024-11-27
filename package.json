@@ -24,7 +24,7 @@
 		"@babel/polyfill": "^7.12.1",
 		"@babel/preset-env": "^7.26.0",
 		"@babel/preset-react": "^7.25.9",
-		"@fortawesome/fontawesome-svg-core": "^6.7.0",
+		"@fortawesome/fontawesome-svg-core": "^6.7.1",
 		"@fortawesome/free-solid-svg-icons": "^6.7.1",
 		"@fortawesome/react-fontawesome": "^0.2.2",
 		"@tweenjs/tween.js": "^25.0.0",
