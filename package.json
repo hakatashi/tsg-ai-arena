@@ -38,7 +38,7 @@
 		"chalk": "^4",
 		"classnames": "^2.5.1",
 		"common-tags": "^1.8.2",
-		"compression": "^1.7.5",
+		"compression": "^1.8.0",
 		"concat-stream": "^2.0.0",
 		"connect-mongo": "^5.1.0",
 		"css-loader": "^7.1.2",
