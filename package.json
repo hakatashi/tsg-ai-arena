@@ -64,7 +64,7 @@
 		"p-queue": "^6",
 		"passport": "^0.7.0",
 		"passport-twitter": "^1.0.4",
-		"prismjs": "^1.29.0",
+		"prismjs": "^1.30.0",
 		"prop-types": "^15.8.1",
 		"pug": "^3.0.3",
 		"react": "^19.0.0",
