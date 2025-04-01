@@ -43,7 +43,7 @@
 		"connect-mongo": "^5.1.0",
 		"css-loader": "^7.1.2",
 		"d3": "^7.9.0",
-		"dockerode": "^4.0.4",
+		"dockerode": "^4.0.5",
 		"dotenv": "^16.4.7",
 		"errorhandler": "^1.5.1",
 		"express": "^4.21.2",
