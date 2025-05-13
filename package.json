@@ -94,6 +94,6 @@
 		"prettier-eslint-cli": "^8.0.1",
 		"sinon": "^20",
 		"sinon-mongoose": "^2.3.0",
-		"supertest": "^7.1.0"
+		"supertest": "^7.1.1"
 	}
 }
