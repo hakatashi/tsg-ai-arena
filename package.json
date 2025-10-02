@@ -67,7 +67,7 @@
 		"prismjs": "^1.30.0",
 		"prop-types": "^15.8.1",
 		"pug": "^3.0.3",
-		"react": "^19.1.1",
+		"react": "^19.2.0",
 		"react-dom": "^19.1.1",
 		"react-transition-group": "^4.4.5",
 		"reactstrap": "^9.2.3",
