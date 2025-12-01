@@ -40,7 +40,7 @@
 		"common-tags": "^1.8.2",
 		"compression": "^1.8.1",
 		"concat-stream": "^2.0.0",
-		"connect-mongo": "^5.1.0",
+		"connect-mongo": "^6.0.0",
 		"css-loader": "^7.1.2",
 		"d3": "^7.9.0",
 		"dockerode": "^4.0.9",
