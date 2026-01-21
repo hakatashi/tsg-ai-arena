@@ -52,7 +52,7 @@
 		"express-session": "^1.18.2",
 		"garlicjs": "^1.4.2",
 		"jstransformer-scss": "^2.0.0",
-		"lodash": "^4.17.21",
+		"lodash": "^4.17.23",
 		"lusca": "^1.7.0",
 		"markdown-it": "^14.1.0",
 		"material-colors": "^1.2.6",
