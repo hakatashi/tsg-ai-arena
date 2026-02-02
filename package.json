@@ -22,7 +22,7 @@
 		"@babel/plugin-proposal-class-properties": "^7.18.6",
 		"@babel/plugin-proposal-object-rest-spread": "^7.20.7",
 		"@babel/polyfill": "^7.12.1",
-		"@babel/preset-env": "^7.28.6",
+		"@babel/preset-env": "^7.29.0",
 		"@babel/preset-react": "^7.28.5",
 		"@fortawesome/fontawesome-svg-core": "^7.1.0",
 		"@fortawesome/free-solid-svg-icons": "^7.1.0",
