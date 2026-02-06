@@ -71,7 +71,7 @@
 		"react-dom": "^19.2.4",
 		"react-transition-group": "^4.4.5",
 		"reactstrap": "^9.2.3",
-		"sass-loader": "^16.0.6",
+		"sass-loader": "^16.0.7",
 		"seedrandom": "^3.0.5",
 		"shell-escape": "^0.2.0",
 		"socket.io": "^4.8.3",
