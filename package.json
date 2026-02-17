@@ -28,7 +28,7 @@
 		"@fortawesome/free-solid-svg-icons": "^7.2.0",
 		"@fortawesome/react-fontawesome": "^3.2.0",
 		"@tweenjs/tween.js": "^25.0.0",
-		"agenda": "^6.2.2",
+		"agenda": "^6.2.3",
 		"babel-loader": "^10.0.0",
 		"bcrypt-nodejs": "^0.0.3",
 		"big-rational": "^0.10.9",
