@@ -54,7 +54,7 @@
 		"jstransformer-scss": "^2.0.0",
 		"lodash": "^4.18.1",
 		"lusca": "^1.7.0",
-		"markdown-it": "^14.1.1",
+		"markdown-it": "^14.2.0",
 		"material-colors": "^1.2.6",
 		"moment": "^2.30.1",
 		"mongoose": "^9.6.2",
