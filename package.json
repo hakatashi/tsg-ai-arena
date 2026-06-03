@@ -58,7 +58,7 @@
 		"material-colors": "^1.2.6",
 		"moment": "^2.30.1",
 		"mongoose": "^9.6.3",
-		"morgan": "^1.10.1",
+		"morgan": "^1.11.0",
 		"multer": "^2.1.1",
 		"node-sass-middleware": "^1.1.0",
 		"p-queue": "^6",
