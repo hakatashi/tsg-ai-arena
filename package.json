@@ -57,7 +57,7 @@
 		"markdown-it": "^15.0.3",
 		"material-colors": "^1.2.6",
 		"moment": "^2.31.0",
-		"mongoose": "^9.10.4",
+		"mongoose": "^9.11.4",
 		"morgan": "^1.12.1",
 		"multer": "^2.5.0",
 		"node-sass-middleware": "^1.1.0",
